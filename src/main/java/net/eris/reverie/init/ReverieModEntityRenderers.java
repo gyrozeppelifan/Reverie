@@ -1,7 +1,4 @@
 
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
 import net.minecraftforge.fml.common.Mod;
@@ -12,6 +9,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.eris.reverie.client.renderer.SpikedLogRenderer;
 import net.eris.reverie.client.renderer.DrunkardRenderer;
 import net.eris.reverie.client.renderer.BrawlerRenderer;
+import net.eris.reverie.client.renderer.GoblinRenderer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ReverieModEntityRenderers {
@@ -20,5 +18,7 @@ public class ReverieModEntityRenderers {
 		event.registerEntityRenderer(ReverieModEntities.BRAWLER.get(), BrawlerRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.DRUNKARD.get(), DrunkardRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.SPIKED_LOG.get(), SpikedLogRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.GOBLIN.get(), GoblinRenderer::new);
+
 	}
 }

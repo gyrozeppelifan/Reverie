@@ -68,5 +68,6 @@
   "advancements.spiked_log_flame.descr": "Alev almış bir Dikenli Tomruk ile bir canlı öldür",
   "block.reverie.hay_thatch_slab": "Saman Sazı Basamak",
   "advancements.killing_drunkard_before_charge.descr": "Ayyaş\u0027ı hücüm saldırısına başlamadan önce öldür",
-  "block.reverie.olive_slab": "Zeytin Basamak"
+  "block.reverie.olive_slab": "Zeytin Basamak",
+  "entity.reverie.goblin": "Goblin"
 }

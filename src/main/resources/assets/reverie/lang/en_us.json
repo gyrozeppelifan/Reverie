@@ -68,5 +68,6 @@
   "advancements.spiked_log_flame.descr": "Kill a mob with a flaming Spiked Log",
   "block.reverie.hay_thatch_slab": "Hay Thatch Slab",
   "advancements.killing_drunkard_before_charge.descr": "Kill a Drunkard before it goes into charging mode",
-  "block.reverie.olive_slab": "Olive Slab"
+  "block.reverie.olive_slab": "Olive Slab",
+  "entity.reverie.goblin": "Goblin"
 }
