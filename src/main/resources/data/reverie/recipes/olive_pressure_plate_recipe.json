@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    {
+      "item": "reverie:olive_planks"
+    },
+    {
+      "item": "reverie:olive_planks"
+    }
+  ],
+  "result": {
+    "item": "reverie:olive_pressure_plate",
+    "count": 1
+  }
+}

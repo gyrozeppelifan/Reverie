@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "reverie:block/hay_thatch_slab"
+    },
+    "type=top": {
+      "model": "reverie:block/hay_thatch_slab_top"
+    },
+    "type=double": {
+      "model": "reverie:block/hay_thatch_slab_full"
+    }
+  }
+}

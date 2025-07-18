@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "default": {
+      "map": {
+        "0": "booze_bottle_inhand"
+      },
+      "name": "default"
+    }
+  }
+}

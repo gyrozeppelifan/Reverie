@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "reverie:block/olive_slab"
+    },
+    "type=top": {
+      "model": "reverie:block/olive_slab_top"
+    },
+    "type=double": {
+      "model": "reverie:block/olive_slab_full"
+    }
+  }
+}

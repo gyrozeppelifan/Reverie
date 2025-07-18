@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "reverie:drunkardshack",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 35,
+    "separation": 32,
+    "salt": 1792010794
+  }
+}

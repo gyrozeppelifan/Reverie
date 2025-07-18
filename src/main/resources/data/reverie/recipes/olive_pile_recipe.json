@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "reverie:green_olive_branch"
+    },
+    {
+      "item": "reverie:green_olive_branch"
+    },
+    {
+      "item": "reverie:black_olive_branch"
+    },
+    {
+      "item": "reverie:green_olive_branch"
+    },
+    {
+      "item": "reverie:black_olive_branch"
+    },
+    {
+      "item": "reverie:black_olive_branch"
+    },
+    {
+      "item": "reverie:green_olive_branch"
+    },
+    {
+      "item": "reverie:black_olive_branch"
+    },
+    {
+      "item": "reverie:black_olive_branch"
+    }
+  ],
+  "result": {
+    "item": "reverie:olive_pile",
+    "count": 1
+  }
+}

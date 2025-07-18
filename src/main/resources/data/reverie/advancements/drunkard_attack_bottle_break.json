@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:broken_booze_bottle"
+    },
+    "title": {
+      "translate": "advancements.drunkard_attack_bottle_break.title"
+    },
+    "description": {
+      "translate": "advancements.drunkard_attack_bottle_break.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "drunkard_attack_bottle_break_0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "reverie:reverie_start"
+}

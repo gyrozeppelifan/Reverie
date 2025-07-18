@@ -1,0 +1,23 @@
+{
+  "parent": "item/handheld",
+  "loader": "forge:separate_transforms",
+  "base": {
+  	"parent": "reverie:item/broken_booze_bottle_inhand"
+  },
+  
+  "textures": {
+    "layer0": "reverie:item/broken_booze_bottle"
+  },
+  "perspectives": {
+  	"gui": {
+  		"parent": "reverie:item/broken_booze_bottle_sprite"
+  	},
+  	 "ground": {
+  		"parent": "reverie:item/broken_booze_bottle_sprite"
+  	},
+  	 "fixed": {
+  		"parent": "reverie:item/broken_booze_bottle_sprite"
+  	}
+  	
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "reverie:olive_wood",
+    "reverie:stripped_olive_wood",
+    "reverie:olive_log",
+    "reverie:stripped_olive_log"
+  ]
+}

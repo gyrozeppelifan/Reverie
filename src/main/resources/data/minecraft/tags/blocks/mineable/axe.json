@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "reverie:stripped_olive_wood",
+    "reverie:stripped_olive_log",
+    "reverie:olive_fence_gate",
+    "reverie:olive_button",
+    "reverie:olive_pressure_plate",
+    "reverie:olive_stairs",
+    "reverie:olive_slab",
+    "reverie:olive_fence",
+    "reverie:olive_planks",
+    "reverie:olive_log",
+    "reverie:olive_wood"
+  ]
+}

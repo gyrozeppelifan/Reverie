@@ -1,0 +1,232 @@
+{
+  "charge": {
+    "subtitle": "subtitles.charge",
+    "sounds": [
+      {
+        "name": "reverie:charge_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:charge_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:charge_1",
+        "stream": false
+      }
+    ]
+  },
+  "drunkard_drink": {
+    "subtitle": "subtitles.drunkard_drink",
+    "sounds": [
+      {
+        "name": "reverie:drink",
+        "stream": false
+      }
+    ]
+  },
+  "bottle_crash": {
+    "subtitle": "subtitles.bottle_crash",
+    "sounds": [
+      {
+        "name": "reverie:crash_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:crash_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:crash_1",
+        "stream": false
+      }
+    ]
+  },
+  "drunkard_charge": {
+    "subtitle": "subtitles.drunkard_charge",
+    "sounds": [
+      {
+        "name": "reverie:drunkard_charge_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_charge_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_charge_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_charge_4",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_charge_5",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_charge_6",
+        "stream": false
+      }
+    ]
+  },
+  "drunkard_hurt": {
+    "subtitle": "subtitles.drunkard_hurt",
+    "sounds": [
+      {
+        "name": "reverie:drunkard_hurt_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_hurt_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_hurt_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_hurt_4",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_hurt_5",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_hurt_6",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_hurt_7",
+        "stream": false
+      }
+    ]
+  },
+  "drunkard_idle": {
+    "subtitle": "subtitles.drunkard_idle",
+    "sounds": [
+      {
+        "name": "reverie:drunkard_idle_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_4",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_5",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_6",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_7",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_8",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_9",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_10",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_idle_11",
+        "stream": false
+      }
+    ]
+  },
+  "drunkard_death": {
+    "subtitle": "subtitles.drunkard_death",
+    "sounds": [
+      {
+        "name": "reverie:drunkard_death_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_death_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_death_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_death_4",
+        "stream": false
+      },
+      {
+        "name": "reverie:drunkard_death_5",
+        "stream": false
+      }
+    ]
+  },
+  "glue": {
+    "sounds": [
+      {
+        "name": "reverie:glue",
+        "stream": false
+      }
+    ]
+  },
+  "spiked_log_crash": {
+    "subtitle": "subtitles.spiked_log_crash",
+    "sounds": [
+      {
+        "name": "reverie:spiked_log_crash",
+        "stream": false
+      }
+    ]
+  },
+  "spiked_log_roll": {
+    "subtitle": "subtitles.spiked_log_roll",
+    "sounds": [
+      {
+        "name": "reverie:spiked_log_roll_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:spiked_log_roll_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:spiked_log_roll_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:spiked_log_roll_4",
+        "stream": false
+      },
+      {
+        "name": "reverie:spiked_log_roll_5",
+        "stream": false
+      }
+    ]
+  },
+  "spiked_log_throw": {
+    "subtitle": "subtitles.spiked_log_throw",
+    "sounds": [
+      {
+        "name": "reverie:spiked_log_throw",
+        "stream": false
+      }
+    ]
+  }
+}

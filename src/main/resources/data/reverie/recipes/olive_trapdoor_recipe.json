@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "aaa",
+    "aaa"
+  ],
+  "key": {
+    "a": {
+      "item": "reverie:olive_planks"
+    }
+  },
+  "result": {
+    "item": "reverie:olive_trapdoor",
+    "count": 2
+  }
+}

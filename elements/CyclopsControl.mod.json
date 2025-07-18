@@ -1,0 +1,7 @@
+{
+  "_fv": 73,
+  "_type": "procedure",
+  "definition": {
+    "procedurexml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"event_trigger\" deletable=\"false\" x=\"345\" y=\"392\"><field name=\"trigger\">entity_ticks</field><next><block type=\"controls_if\"><value name=\"IF0\"><block type=\"logic_negate\"><value name=\"BOOL\"><block type=\"world_data_isremote\"></block></value></block></value><statement name=\"DO0\"><block type=\"controls_if\"><value name=\"IF0\"><block type=\"logic_binary_ops\"><field name=\"OP\">EQ</field><value name=\"A\"><block type=\"logic_entity_compare\"><field name=\"entity\">CUSTOM:Drunkard</field><value name=\"compareTo\"><block type=\"entity_from_deps\"></block></value></block></value><value name=\"B\"><block type=\"text_binary_ops\"><value name=\"A\"><block type=\"entity_name\"><value name=\"entity\"><block type=\"entity_from_deps\"></block></value></block></value><value name=\"B\"><block type=\"text\"><field name=\"TEXT\">Cyclops</field></block></value></block></value></block></value><statement name=\"DO0\"><block type=\"entity_data_logic_set\"><field name=\"customEntity\">CUSTOM:Drunkard</field><field name=\"accessor\">Cyclops</field><value name=\"entity\"><block type=\"entity_from_deps\"></block></value><value name=\"value\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value></block></statement></block></statement></block></next></block></xml>"
+  }
+}

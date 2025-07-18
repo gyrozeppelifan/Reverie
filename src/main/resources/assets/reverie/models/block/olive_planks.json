@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/olive_planks",
+    "up": "reverie:block/olive_planks",
+    "north": "reverie:block/olive_planks",
+    "east": "reverie:block/olive_planks",
+    "south": "reverie:block/olive_planks",
+    "west": "reverie:block/olive_planks",
+    "particle": "reverie:block/olive_planks"
+  },
+  "render_type": "solid"
+}

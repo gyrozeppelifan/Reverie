@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "reverie:olive_planks"
+    },
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "reverie:olive_planks"
+    },
+    {
+      "item": "reverie:olive_planks"
+    },
+    {
+      "item": "minecraft:stick"
+    },
+    {
+      "item": "reverie:olive_planks"
+    }
+  ],
+  "result": {
+    "item": "reverie:olive_fence",
+    "count": 3
+  }
+}

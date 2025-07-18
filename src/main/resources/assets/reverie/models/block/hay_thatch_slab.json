@@ -1,0 +1,10 @@
+{
+  "parent": "block/slab",
+  "textures": {
+    "particle": "reverie:block/hay_thatch",
+    "bottom": "reverie:block/hay_thatch",
+    "top": "reverie:block/hay_thatch",
+    "side": "reverie:block/hay_thatch"
+  },
+  "render_type": "solid"
+}

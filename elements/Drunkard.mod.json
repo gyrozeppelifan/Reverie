@@ -1,0 +1,300 @@
+{
+  "_fv": 73,
+  "_type": "livingentity",
+  "definition": {
+    "mobName": "Drunkard",
+    "mobLabel": "",
+    "mobModelName": "ModelDrunkard",
+    "mobModelTexture": "blank.png",
+    "transparentModelCondition": {
+      "fixedValue": false
+    },
+    "isShakingCondition": {
+      "fixedValue": false
+    },
+    "solidBoundingBox": {
+      "fixedValue": false
+    },
+    "visualScale": {
+      "fixedValue": 1.0
+    },
+    "boundingBoxScale": {
+      "fixedValue": 1.0
+    },
+    "modelLayers": [
+      {
+        "model": "Default",
+        "texture": "drunkard_bottle.png",
+        "disableHurtOverlay": true,
+        "glow": false,
+        "condition": {
+          "name": "DrunkardBottleDisplay"
+        }
+      },
+      {
+        "model": "Default",
+        "texture": "drunkard_broken_bottle.png",
+        "disableHurtOverlay": true,
+        "glow": false,
+        "condition": {
+          "name": "DrunkardBrokenBottleDisplay"
+        }
+      },
+      {
+        "model": "Default",
+        "texture": "cyclops.png",
+        "disableHurtOverlay": false,
+        "glow": false,
+        "condition": {
+          "name": "DrunkardDisplayCondition"
+        }
+      },
+      {
+        "model": "Default",
+        "texture": "drunkard.png",
+        "disableHurtOverlay": false,
+        "glow": false,
+        "condition": {
+          "name": "DrunkardBaseSkin"
+        }
+      },
+      {
+        "model": "Default",
+        "texture": "cyclops_bottle.png",
+        "disableHurtOverlay": false,
+        "glow": false,
+        "condition": {
+          "name": "CyclopsBottleCondition"
+        }
+      },
+      {
+        "model": "Default",
+        "texture": "cyclops_broken_bottle.png",
+        "disableHurtOverlay": false,
+        "glow": false,
+        "condition": {
+          "name": "CyclopsBrokenBottleCondition"
+        }
+      }
+    ],
+    "animations": [
+      {
+        "animation": {
+          "value": "CUSTOM:DrunkardChargeAnimation.charge_anim"
+        },
+        "speed": 2.0,
+        "condition": {
+          "name": "DrunkardCharge"
+        },
+        "walking": false,
+        "amplitude": 1.0
+      },
+      {
+        "animation": {
+          "value": "CUSTOM:DrunkardDrinkAnimation.drink_anim"
+        },
+        "speed": 1.0,
+        "condition": {
+          "name": "DrunkardDrinkPlayback"
+        },
+        "walking": false,
+        "amplitude": 1.0
+      },
+      {
+        "animation": {
+          "value": "CUSTOM:DrunkardWalkAnimation.walk"
+        },
+        "speed": 4.0,
+        "condition": {
+          "name": "DrunkardWalkRemoval"
+        },
+        "walking": true,
+        "amplitude": 3.4
+      },
+      {
+        "animation": {
+          "value": "CUSTOM:DrunkardAttackAnimation.attack"
+        },
+        "speed": 1.2,
+        "condition": {
+          "name": "DrunkardAttackCondition"
+        },
+        "walking": false,
+        "amplitude": 1.0
+      }
+    ],
+    "modelWidth": 0.6,
+    "modelHeight": 1.8,
+    "modelShadowSize": 0.5,
+    "mountedYOffset": 0.0,
+    "hasSpawnEgg": true,
+    "spawnEggBaseColor": {
+      "value": -6710887,
+      "falpha": 0.0
+    },
+    "spawnEggDotColor": {
+      "value": -26368,
+      "falpha": 0.0
+    },
+    "creativeTabs": [
+      {
+        "value": "MISC"
+      }
+    ],
+    "isBoss": false,
+    "bossBarColor": "PINK",
+    "bossBarType": "PROGRESS",
+    "equipmentMainHand": {
+      "value": ""
+    },
+    "equipmentOffHand": {
+      "value": ""
+    },
+    "equipmentHelmet": {
+      "value": ""
+    },
+    "equipmentBody": {
+      "value": ""
+    },
+    "equipmentLeggings": {
+      "value": ""
+    },
+    "equipmentBoots": {
+      "value": ""
+    },
+    "mobBehaviourType": "Raider",
+    "mobCreatureType": "ILLAGER",
+    "attackStrength": 5,
+    "attackKnockback": 0.5,
+    "knockbackResistance": 0.2,
+    "movementSpeed": 0.23,
+    "stepHeight": 0.6,
+    "armorBaseValue": 2.0,
+    "trackingRange": 64,
+    "followRange": 48,
+    "health": 30,
+    "xpAmount": 5,
+    "waterMob": false,
+    "breatheUnderwater": {
+      "fixedValue": false
+    },
+    "pushedByFluids": {
+      "fixedValue": true
+    },
+    "flyingMob": false,
+    "inventorySize": 9,
+    "inventoryStackSize": 64,
+    "disableCollisions": false,
+    "ridable": false,
+    "canControlForward": false,
+    "canControlStrafe": false,
+    "immuneToFire": false,
+    "immuneToArrows": false,
+    "immuneToFallDamage": false,
+    "immuneToCactus": false,
+    "immuneToDrowning": false,
+    "immuneToLightning": false,
+    "immuneToPotions": false,
+    "immuneToPlayer": false,
+    "immuneToExplosion": false,
+    "immuneToTrident": false,
+    "immuneToAnvil": false,
+    "immuneToWither": false,
+    "immuneToDragonBreath": false,
+    "mobDrop": {
+      "value": ""
+    },
+    "livingSound": {
+      "value": "CUSTOM:drunkard_idle"
+    },
+    "hurtSound": {
+      "value": "CUSTOM:drunkard_hurt"
+    },
+    "deathSound": {
+      "value": "CUSTOM:drunkard_death"
+    },
+    "stepSound": {
+      "value": ""
+    },
+    "raidCelebrationSound": {
+      "value": "CUSTOM:drunkard_charge"
+    },
+    "entityDataEntries": [
+      {
+        "name": "isCharging",
+        "type": "logic",
+        "value": false
+      },
+      {
+        "name": "hasBrokenBottle",
+        "type": "logic",
+        "value": false
+      },
+      {
+        "name": "isDrinking",
+        "type": "logic",
+        "value": false
+      },
+      {
+        "min": -2147483648,
+        "max": 2147483647,
+        "name": "DrinkTime",
+        "type": "integer",
+        "value": 120
+      },
+      {
+        "min": -2147483648,
+        "max": 2147483647,
+        "name": "canDrink",
+        "type": "integer",
+        "value": 1
+      },
+      {
+        "name": "Cyclops",
+        "type": "logic",
+        "value": false
+      },
+      {
+        "name": "isAttacking",
+        "type": "logic",
+        "value": false
+      }
+    ],
+    "whenMobIsHurt": {
+      "name": "DrunkardEntityIsHurt"
+    },
+    "onMobTickUpdate": {
+      "name": "DrunkardStageUpdate"
+    },
+    "hasAI": true,
+    "aiBase": "(none)",
+    "aixml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"aitasks_container\" deletable=\"false\" x=\"84\" y=\"94\"><next><block type=\"attack_entity\"><field name=\"insight\">FALSE</field><field name=\"nearby\">FALSE</field><field name=\"entity\">EntityPlayer</field><field name=\"condition\">null,null</field><next><block type=\"attack_entity\"><field name=\"insight\">FALSE</field><field name=\"nearby\">FALSE</field><field name=\"entity\">EntityVillager</field><field name=\"condition\">null,null</field><next><block type=\"attack_on_collide\"><field name=\"speed\">2</field><field name=\"longmemory\">FALSE</field><field name=\"condition\">null,null</field><next><block type=\"attack_action\"><field name=\"callhelp\">FALSE</field><field name=\"condition\">null,null</field><next><block type=\"doors_open\"><field name=\"condition\">null,null</field><next><block type=\"wander\"><field name=\"speed\">1</field><field name=\"condition\">DrunkardWanderRemoval,DrunkardWanderRemoval</field><next><block type=\"watch_closest_entity\"><field name=\"entity\">EntityLiving</field><field name=\"radius\">6</field><field name=\"condition\">DrunkardWanderRemoval,DrunkardWanderRemoval</field><next><block type=\"look_around\"><field name=\"condition\">DrunkardWanderRemoval,DrunkardWanderRemoval</field><next><block type=\"swim_in_water\"><field name=\"condition\">null,null</field></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></next></block></xml>",
+    "breedable": false,
+    "tameable": false,
+    "breedTriggerItems": [],
+    "ranged": false,
+    "rangedAttackItem": {
+      "value": ""
+    },
+    "rangedItemType": "Default item",
+    "rangedAttackInterval": 20,
+    "rangedAttackRadius": 10.0,
+    "spawnThisMob": false,
+    "doesDespawnWhenIdle": false,
+    "spawningProbability": 20,
+    "mobSpawningType": "monster",
+    "minNumberOfMobsPerGroup": 4,
+    "maxNumberOfMobsPerGroup": 4,
+    "restrictionBiomes": [],
+    "spawnInDungeons": false,
+    "raidSpawnsCount": [
+      4,
+      3,
+      3,
+      4,
+      4,
+      4,
+      2
+    ]
+  }
+}

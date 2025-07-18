@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:booze_bottle"
+    },
+    "title": {
+      "translate": "advancements.killing_drunkard_before_charge.title"
+    },
+    "description": {
+      "translate": "advancements.killing_drunkard_before_charge.descr"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "killing_drunkard_before_charge_0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "reverie:drunkard_attack_bottle_break"
+}

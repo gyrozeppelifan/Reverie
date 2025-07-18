@@ -1,0 +1,21 @@
+# IntelliJ
+.idea/
+*.iml
+
+# Gradle
+.gradle/
+build/
+out/
+run/
+
+# MCreator
+.mcreator/
+*.mcreator
+
+# Sistem dosyaları
+.DS_Store
+Thumbs.db
+
+# Diğer
+*.log
+*.tmp

@@ -1,0 +1,11 @@
+{
+  "_fv": 73,
+  "_type": "tab",
+  "definition": {
+    "name": "Reverie",
+    "icon": {
+      "value": "CUSTOM:BoozeBottle"
+    },
+    "showSearch": false
+  }
+}

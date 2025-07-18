@@ -1,0 +1,8 @@
+{
+  "parent": "block/crop",
+  "textures": {
+    "crop": "reverie:block/olive_branches_1",
+    "particle": "reverie:block/olive_branches_1"
+  },
+  "render_type": "cutout"
+}

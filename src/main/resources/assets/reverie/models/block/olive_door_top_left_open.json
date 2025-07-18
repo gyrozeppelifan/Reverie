@@ -1,0 +1,9 @@
+{
+  "parent": "block/door_top_left_open",
+  "textures": {
+    "particle": "reverie:block/olive_door_bottom",
+    "bottom": "reverie:block/olive_door_bottom",
+    "top": "reverie:block/olive_door_top"
+  },
+  "render_type": "cutout"
+}

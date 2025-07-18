@@ -1,0 +1,30 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:spiked_log_item"
+    },
+    "title": {
+      "translate": "advancements.spiked_log_use.title"
+    },
+    "description": {
+      "translate": "advancements.spiked_log_use.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "spiked_log_kill": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "killing_blow": {
+          "damage_type": {
+            "type": "reverie:spikedlogsmash"
+          }
+        }
+      }
+    }
+  },
+  "parent": "reverie:reverie_start"
+}

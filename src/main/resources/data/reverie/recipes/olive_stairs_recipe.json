@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "reverie:olive_fence"
+    },
+    {
+      "item": "reverie:olive_fence"
+    },
+    {
+      "item": "reverie:olive_fence"
+    },
+    {
+      "item": "reverie:olive_fence"
+    },
+    {
+      "item": "reverie:olive_fence"
+    },
+    {
+      "item": "reverie:olive_fence"
+    }
+  ],
+  "result": {
+    "item": "reverie:olive_stairs",
+    "count": 4
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "minecraft:matching_block_state",
+          "block": "reverie:olive_branches",
+          "properties": { "age": "1" }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "reverie:green_olive_branch"
+        }
+      ]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {
+          "condition": "minecraft:matching_block_state",
+          "block": "reverie:olive_branches",
+          "properties": { "age": "2" }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "reverie:black_olive_branch"
+        }
+      ]
+    }
+  ]
+}

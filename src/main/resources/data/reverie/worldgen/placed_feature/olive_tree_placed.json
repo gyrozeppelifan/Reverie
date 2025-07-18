@@ -1,0 +1,26 @@
+// src/main/resources/data/reverie/worldgen/placed_feature/olive_tree_placed.json
+{
+  "feature": "reverie:olive_tree",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 32
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:heightmap",
+      "heightmap": "MOTION_BLOCKING_NO_LEAVES"
+    },
+    {
+      "type": "minecraft:surface_relative_threshold_filter",
+      "heightmap": "MOTION_BLOCKING_NO_LEAVES",
+      "min_inclusive": 0,
+      "max_inclusive": 0
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

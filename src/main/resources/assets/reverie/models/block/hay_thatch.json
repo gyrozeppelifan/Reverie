@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/hay_thatch",
+    "up": "reverie:block/hay_thatch",
+    "north": "reverie:block/hay_thatch",
+    "east": "reverie:block/hay_thatch",
+    "south": "reverie:block/hay_thatch",
+    "west": "reverie:block/hay_thatch",
+    "particle": "reverie:block/hay_thatch"
+  },
+  "render_type": "solid"
+}

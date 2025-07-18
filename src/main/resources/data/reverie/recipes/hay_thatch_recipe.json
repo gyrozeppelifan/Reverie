@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "aa",
+    "aa"
+  ],
+  "key": {
+    "a": {
+      "item": "minecraft:wheat"
+    }
+  },
+  "result": {
+    "item": "reverie:hay_thatch",
+    "count": 1
+  }
+}

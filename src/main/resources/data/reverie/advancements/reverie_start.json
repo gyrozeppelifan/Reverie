@@ -1,0 +1,31 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:booze_bottle"
+    },
+    "title": {
+      "translate": "advancements.reverie_start.title"
+    },
+    "description": {
+      "translate": "advancements.reverie_start.descr"
+    },
+    "background": "minecraft:textures/block/stone.png",
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "entered_overworld": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "location": {
+          "dimension": "minecraft:overworld"
+        }
+      }
+    }
+  },
+  "requirements": [
+    ["entered_overworld"]
+  ]
+}

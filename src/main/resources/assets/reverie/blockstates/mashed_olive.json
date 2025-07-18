@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "greasy=true": {
+      "model": "reverie:block/greasy_mashed_olive"
+    },
+    "greasy=false": {
+      "model": "reverie:block/mashed_olive"
+    }
+  }
+}

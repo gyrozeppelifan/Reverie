@@ -1,0 +1,24 @@
+{
+  "_fv": 73,
+  "_type": "achievement",
+  "definition": {
+    "achievementName": "Ain't That a Kick in the Head",
+    "achievementDescription": "Let the drunkard smash his bottle on your head. Don't worry, your head will heal! (hopefully)",
+    "achievementIcon": {
+      "value": "CUSTOM:BrokenBoozeBottle"
+    },
+    "background": "Default",
+    "disableDisplay": false,
+    "showPopup": true,
+    "announceToChat": true,
+    "hideIfNotCompleted": false,
+    "rewardLoot": [],
+    "rewardRecipes": [],
+    "rewardXP": 0,
+    "achievementType": "task",
+    "parent": {
+      "value": "CUSTOM:ReverieStart"
+    },
+    "triggerxml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"advancement_trigger\" deletable=\"false\" x=\"146\" y=\"200\"><next><block type=\"custom_trigger\"></block></next></block></xml>"
+  }
+}

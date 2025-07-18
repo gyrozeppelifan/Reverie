@@ -1,0 +1,27 @@
+{
+  "parent": "block/block",
+  "ambientocclusion": false,
+  "render_type": "cutout",
+  "elements": [
+    {
+      "from": [0, 0, 8],
+      "to": [16, 16, 8],
+      "faces": {
+        "north": { "uv": [0, 0, 16, 16], "texture": "#crop" },
+        "south": { "uv": [0, 0, 16, 16], "texture": "#crop" }
+      }
+    },
+    {
+      "from": [8, 0, 0],
+      "to": [8, 16, 16],
+      "faces": {
+        "east": { "uv": [0, 0, 16, 16], "texture": "#crop" },
+        "west": { "uv": [0, 0, 16, 16], "texture": "#crop" }
+      }
+    }
+  ],
+  "textures": {
+    "crop": "reverie:block/olive_branches_1",
+    "particle": "reverie:block/olive_branches_1"
+  }
+}

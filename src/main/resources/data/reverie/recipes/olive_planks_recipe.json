@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "tag": "reverie:olive_logs"
+    }
+  ],
+  "result": {
+    "item": "reverie:olive_planks",
+    "count": 4
+  }
+}

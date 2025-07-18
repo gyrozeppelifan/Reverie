@@ -1,0 +1,10 @@
+{
+  "parent": "block/stairs",
+  "textures": {
+    "particle": "reverie:block/olive_planks",
+    "bottom": "reverie:block/olive_planks",
+    "top": "reverie:block/olive_planks",
+    "side": "reverie:block/olive_planks"
+  },
+  "render_type": "solid"
+}
