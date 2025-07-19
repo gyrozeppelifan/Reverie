@@ -69,5 +69,9 @@
   "block.reverie.hay_thatch_slab": "Hay Thatch Slab",
   "advancements.killing_drunkard_before_charge.descr": "Kill a Drunkard before it goes into charging mode",
   "block.reverie.olive_slab": "Olive Slab",
-  "entity.reverie.goblin": "Goblin"
+  "entity.reverie.goblin": "Goblin",
+  "item.reverie.goblin_spawn_egg": "Goblin Spawn Egg",
+  "command.reverie.goblinmeter.show": "Goblin Rep for {0}: {1} ({2})",
+  "command.reverie.goblinmeter.set": "Set Goblin Rep for {0} to {1}. ({2})"
+
 }

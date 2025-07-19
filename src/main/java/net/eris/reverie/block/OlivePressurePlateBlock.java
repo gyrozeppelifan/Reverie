@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 
 public class OlivePressurePlateBlock extends PressurePlateBlock {
 	public OlivePressurePlateBlock() {
-		super(Sensitivity.MOBS, BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(2f).forceSolidOn(), BlockSetType.IRON);
+		super(Sensitivity.MOBS, BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(2f).forceSolidOn(), BlockSetType.OAK);
 	}
 
 	@Override

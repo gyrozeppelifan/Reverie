@@ -20,6 +20,9 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.damagesource.DamageTypes;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.resources.ResourceLocation;
 
 public class PointyBoneBlock extends Block {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
@@ -29,6 +32,16 @@ public class PointyBoneBlock extends Block {
 		super(BlockBehaviour.Properties.of().sound(SoundType.BONE_BLOCK).strength(2f, 10f).noOcclusion().isRedstoneConductor((bs, br, bp) -> false));
 		this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(FACE, AttachFace.WALL));
 	}
+
+	@Override
+	public void fallOn(net.minecraft.world.level.Level world, BlockState state, BlockPos pos, net.minecraft.world.entity.Entity entity, float fallDistance) {
+		if (!world.isClientSide && entity instanceof net.minecraft.world.entity.LivingEntity living && !entity.isSuppressingBounce()) {
+			float damage = Math.min(2.0F + fallDistance * 0.5F, 20.0F);
+			living.hurt(world.damageSources().cactus(), damage);
+		}
+		super.fallOn(world, state, pos, entity, fallDistance);
+	}
+
 
 	@Override
 	public boolean propagatesSkylightDown(BlockState state, BlockGetter reader, BlockPos pos) {

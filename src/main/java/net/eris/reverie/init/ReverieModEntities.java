@@ -1,6 +1,8 @@
 
 package net.eris.reverie.init;
 
+import io.netty.util.Attribute;
+import net.eris.reverie.entity.*;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
@@ -13,10 +15,6 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 
-import net.eris.reverie.entity.SpikedLogEntity;
-import net.eris.reverie.entity.DrunkardEntity;
-import net.eris.reverie.entity.BrawlerEntity;
-import net.eris.reverie.entity.GoblinEntity;
 import net.eris.reverie.ReverieMod;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -34,6 +32,12 @@ public class ReverieModEntities {
 	public static final RegistryObject<EntityType<GoblinEntity>> GOBLIN = register("goblin",
 			EntityType.Builder.<GoblinEntity>of(GoblinEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinEntity::new)
 					.sized(0.6f, 1.8f));
+	public static final RegistryObject<EntityType<ShooterGoblinEntity>> SHOOTER_GOBLIN = register("shooter_goblin",
+			EntityType.Builder.<ShooterGoblinEntity>of(ShooterGoblinEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(ShooterGoblinEntity::new)
+					.sized(0.6f, 1.8f));
+	public static final RegistryObject<EntityType<BoneSpearProjectileEntity>> BONE_SPEAR_PROJECTILE = register("bone_spear",
+			EntityType.Builder.<BoneSpearProjectileEntity>of(BoneSpearProjectileEntity::new, MobCategory.MISC).setCustomClientFactory(BoneSpearProjectileEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
+
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -46,6 +50,7 @@ public class ReverieModEntities {
 			DrunkardEntity.init();
 			SpikedLogEntity.init();
 			GoblinEntity.init();
+			ShooterGoblinEntity.init();
 		});
 	}
 
@@ -55,5 +60,6 @@ public class ReverieModEntities {
 		event.put(DRUNKARD.get(), DrunkardEntity.createAttributes().build());
 		event.put(SPIKED_LOG.get(), SpikedLogEntity.createAttributes().build());
 		event.put(GOBLIN.get(), GoblinEntity.createAttributes().build());
+		event.put(SHOOTER_GOBLIN.get(), ShooterGoblinEntity.createAttributes().build());
 	}
 }

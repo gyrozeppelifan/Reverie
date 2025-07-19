@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 
 public class OliveTrapdoorBlock extends TrapDoorBlock {
 	public OliveTrapdoorBlock() {
-		super(BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(3f).noOcclusion().isRedstoneConductor((bs, br, bp) -> false), BlockSetType.STONE);
+		super(BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(3f).noOcclusion().isRedstoneConductor((bs, br, bp) -> false), BlockSetType.OAK);
 	}
 
 	@Override

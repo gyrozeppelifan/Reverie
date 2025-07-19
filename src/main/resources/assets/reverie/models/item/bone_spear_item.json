@@ -1,0 +1,7 @@
+{
+  "parent": "reverie:item/bone_spear_inhand",
+  "textures": {
+    "0": "reverie:block/bone_spear_inhand",
+    "particle": "reverie:block/bone_spear_inhand"
+  }
+}
