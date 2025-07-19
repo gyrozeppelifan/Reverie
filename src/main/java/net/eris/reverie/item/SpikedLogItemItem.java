@@ -54,7 +54,7 @@ public InteractionResultHolder<ItemStack> use(Level level, Player player, Intera
             player.getItemInHand(hand).shrink(1);
         }
 
-           player.getCooldowns().addCooldown(this, 140);
+           player.getCooldowns().addCooldown(this, 120);
     }
 
     return InteractionResultHolder.sidedSuccess(player.getItemInHand(hand), level.isClientSide());

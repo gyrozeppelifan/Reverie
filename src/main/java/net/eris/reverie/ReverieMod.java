@@ -1,5 +1,8 @@
 package net.eris.reverie;
 
+import net.eris.reverie.events.GoblinRepPersistEvent;
+import net.eris.reverie.init.*;
+import net.eris.reverie.registry.ReverieBannerPatterns;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
@@ -10,6 +13,7 @@ import net.minecraftforge.fml.util.thread.SidedThreadGroups;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,13 +21,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.FriendlyByteBuf;
 
-import net.eris.reverie.init.ReverieModTabs;
-import net.eris.reverie.init.ReverieModSounds;
-import net.eris.reverie.init.ReverieModParticleTypes;
-import net.eris.reverie.init.ReverieModMobEffects;
-import net.eris.reverie.init.ReverieModItems;
-import net.eris.reverie.init.ReverieModEntities;
-import net.eris.reverie.init.ReverieModBlocks;
+import net.eris.reverie.registry.ReverieBannerPatterns;
+
+import net.eris.reverie.util.GoblinReputation; // <-- GoblinReputation'un yolunu buraya göre ayarla
+import net.eris.reverie.events.GoblinRepEvent; // <-- Event dosyanı doğru importla!
 
 import java.util.function.Supplier;
 import java.util.function.Function;
@@ -40,28 +41,28 @@ public class ReverieMod {
 	public static final String MODID = "reverie";
 
 	public ReverieMod() {
-		// Start of user code block mod constructor
-		// End of user code block mod constructor
 		MinecraftForge.EVENT_BUS.register(this);
+
+		// *** Eventleri burada register et! ***
+		MinecraftForge.EVENT_BUS.register(GoblinRepEvent.class);
+		MinecraftForge.EVENT_BUS.register(GoblinRepPersistEvent.class);
+
+
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+		ReverieBannerPatterns.BANNER_PATTERNS.register(bus);
 		ReverieModSounds.REGISTRY.register(bus);
 		ReverieModBlocks.REGISTRY.register(bus);
-
+		ReverieModBlockEntities.register(bus);
 		ReverieModItems.REGISTRY.register(bus);
 		ReverieModEntities.REGISTRY.register(bus);
-
 		ReverieModTabs.REGISTRY.register(bus);
-
 		ReverieModMobEffects.REGISTRY.register(bus);
-
 		ReverieModParticleTypes.REGISTRY.register(bus);
+		ReverieModPaintings.PAINTINGS.register(bus);
 
-		// Start of user code block mod init
-		// End of user code block mod init
+
 	}
 
-	// Start of user code block mod methods
-	// End of user code block mod methods
 	private static final String PROTOCOL_VERSION = "1";
 	public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 	private static int messageID = 0;
@@ -90,5 +91,11 @@ public class ReverieMod {
 			actions.forEach(e -> e.getKey().run());
 			workQueue.removeAll(actions);
 		}
+	}
+
+	// *** GOBLIN KOMUTU REGISTER! ***
+	@SubscribeEvent
+	public void onCommandRegister(RegisterCommandsEvent event) {
+		GoblinReputation.registerCommand(event.getDispatcher());
 	}
 }

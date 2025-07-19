@@ -1,37 +1,13 @@
 
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
+import net.eris.reverie.block.*;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
 
 import net.minecraft.world.level.block.Block;
 
-import net.eris.reverie.block.StrippedOliveWoodBlock;
-import net.eris.reverie.block.StrippedOliveLogBlock;
-import net.eris.reverie.block.PointyBoneBlock;
-import net.eris.reverie.block.OliveWoodBlock;
-import net.eris.reverie.block.OliveTrapdoorBlock;
-import net.eris.reverie.block.OliveStairsBlock;
-import net.eris.reverie.block.OliveSlabBlock;
-import net.eris.reverie.block.OliveSaplingBlock;
-import net.eris.reverie.block.OlivePressurePlateBlock;
-import net.eris.reverie.block.OlivePlanksBlock;
-import net.eris.reverie.block.OlivePileBlock;
-import net.eris.reverie.block.OliveLogBlock;
-import net.eris.reverie.block.OliveLeavesBlock;
-import net.eris.reverie.block.OliveFenceGateBlock;
-import net.eris.reverie.block.OliveFenceBlock;
-import net.eris.reverie.block.OliveDoorBlock;
-import net.eris.reverie.block.OliveButtonBlock;
-import net.eris.reverie.block.OliveBranchesBlock;
-import net.eris.reverie.block.MashedOliveBlock;
-import net.eris.reverie.block.HayThatchStairsBlock;
-import net.eris.reverie.block.HayThatchSlabBlock;
-import net.eris.reverie.block.HayThatchBlock;
 import net.eris.reverie.ReverieMod;
 
 public class ReverieModBlocks {
@@ -58,6 +34,6 @@ public class ReverieModBlocks {
 	public static final RegistryObject<Block> MASHED_OLIVE = REGISTRY.register("mashed_olive", () -> new MashedOliveBlock());
 	public static final RegistryObject<Block> STRIPPED_OLIVE_LOG = REGISTRY.register("stripped_olive_log", () -> new StrippedOliveLogBlock());
 	public static final RegistryObject<Block> STRIPPED_OLIVE_WOOD = REGISTRY.register("stripped_olive_wood", () -> new StrippedOliveWoodBlock());
-	// Start of user code block custom blocks
-	// End of user code block custom blocks
+	public static final RegistryObject<Block> COPPER_CONDUIT = REGISTRY.register("copper_conduit", () -> new CopperConduitBlock());
+	public static final RegistryObject<Block> COPPER_JUNCTION = REGISTRY.register("copper_junction", () -> new CopperJunctionBlock());
 }

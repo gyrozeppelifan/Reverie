@@ -16,12 +16,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.eris.reverie.init.ReverieModMobEffects;
 
 public class DrunkenOutlineLayer<T extends LivingEntity, M extends EntityModel<T>>
-    extends RenderLayer<T, M> {
+        extends RenderLayer<T, M> {
 
     private static final ResourceLocation SWIRL_OVERLAY =
-        new ResourceLocation("reverie", "textures/entities/foam_overlay.png");
+            new ResourceLocation("reverie", "textures/entities/foam_overlay.png");
     private static final ResourceLocation WHITE =
-        new ResourceLocation("minecraft", "textures/misc/white.png");
+            new ResourceLocation("minecraft", "textures/misc/white.png");
 
     private static final float SCROLL_SPEED = 0.015f;
     private static final float SWIRL_ALPHA  = 0.25f;
@@ -55,24 +55,24 @@ public class DrunkenOutlineLayer<T extends LivingEntity, M extends EntityModel<T
 
         // --- Swirl pass: aynı model, UV kaydırmalı overlay ---
         VertexConsumer swirlVb = buffers.getBuffer(
-            RenderType.energySwirl(SWIRL_OVERLAY, uOff, vOff)
+                RenderType.energySwirl(SWIRL_OVERLAY, uOff, vOff)
         );
         this.getParentModel().renderToBuffer(
-            ms, swirlVb, light,
-            OverlayTexture.NO_OVERLAY,
-            1f, 1f, 1f, SWIRL_ALPHA
+                ms, swirlVb, light,
+                OverlayTexture.NO_OVERLAY,
+                1f, 1f, 1f, SWIRL_ALPHA
         );
 
         // --- Pink tint pass: sabit beyaz + magenta, fullbright ---
         RenderSystem.disableCull();  // iç yüzeyleri de kapla
         VertexConsumer pinkVb = buffers.getBuffer(
-            RenderType.entityTranslucent(WHITE)
+                RenderType.entityTranslucent(WHITE)
         );
         int fullBright = 0xF000F0;
         this.getParentModel().renderToBuffer(
-            ms, pinkVb, fullBright,
-            OverlayTexture.NO_OVERLAY,
-            1f, 0f, 1f, PINK_ALPHA
+                ms, pinkVb, fullBright,
+                OverlayTexture.NO_OVERLAY,
+                1f, 0f, 1f, PINK_ALPHA
         );
         RenderSystem.enableCull();
     }

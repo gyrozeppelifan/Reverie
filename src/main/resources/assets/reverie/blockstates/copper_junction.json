@@ -1,0 +1,7 @@
+
+{
+  "variants": {
+    "powered=false": { "model": "reverie:block/copper_junction"},
+    "powered=true":  { "model": "reverie:block/copper_junction_activated"}
+  }
+  }

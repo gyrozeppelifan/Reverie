@@ -1,7 +1,4 @@
 
-/*
- *	MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
 import net.minecraftforge.registries.RegistryObject;

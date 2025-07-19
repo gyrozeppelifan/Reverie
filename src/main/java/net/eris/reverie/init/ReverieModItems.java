@@ -1,9 +1,9 @@
 
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
+import net.eris.reverie.item.*;
+import net.eris.reverie.registry.ReverieBannerPatterns;
+import net.minecraft.world.item.BannerPatternItem;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
@@ -14,14 +14,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.DoubleHighBlockItem;
 import net.minecraft.world.item.BlockItem;
 
-import net.eris.reverie.item.SpikedLogItemItem;
-import net.eris.reverie.item.OlivePasteItem;
-import net.eris.reverie.item.OliveOilBottleItem;
-import net.eris.reverie.item.OliveBagelItem;
-import net.eris.reverie.item.GreenOliveBranchItem;
-import net.eris.reverie.item.BrokenBoozeBottleItem;
-import net.eris.reverie.item.BoozeBottleItem;
-import net.eris.reverie.item.BlackOliveBranchItem;
 import net.eris.reverie.ReverieMod;
 
 public class ReverieModItems {
@@ -58,9 +50,13 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> STRIPPED_OLIVE_WOOD = block(ReverieModBlocks.STRIPPED_OLIVE_WOOD);
 	public static final RegistryObject<Item> OLIVE_BAGEL = REGISTRY.register("olive_bagel", () -> new OliveBagelItem());
 	public static final RegistryObject<Item> SPIKED_LOG_ITEM = REGISTRY.register("spiked_log_item", () -> new SpikedLogItemItem());
+	public static final RegistryObject<Item> GOBLIN_SPAWN_EGG = REGISTRY.register("goblin_spawn_egg", () -> new ForgeSpawnEggItem(ReverieModEntities.GOBLIN, -1, -1, new Item.Properties()));
+	public static final RegistryObject<Item> SHOOTER_GOBLIN_SPAWN_EGG = REGISTRY.register("shooter_goblin_spawn_egg", () -> new ForgeSpawnEggItem(ReverieModEntities.SHOOTER_GOBLIN, -1, -1, new Item.Properties()));
+	public static final RegistryObject<Item> BONE_SPEAR = REGISTRY.register("bone_spear_item", () -> new BoneSpearItem());
+	public static final RegistryObject<Item> GOBLIN_SYMBOL_BANNER_PATTERN = REGISTRY.register("goblin_symbol_banner_pattern", () -> new BannerPatternItem(ReverieBannerPatterns.GOBLIN_SYMBOL_TAG, new Item.Properties().stacksTo(1)));
+	public static final RegistryObject<Item> COPPER_CONDUIT = block(ReverieModBlocks.COPPER_CONDUIT);
+	public static final RegistryObject<Item> COPPER_JUNCTION = block(ReverieModBlocks.COPPER_JUNCTION);
 
-	// Start of user code block custom items
-	// End of user code block custom items
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
 	}

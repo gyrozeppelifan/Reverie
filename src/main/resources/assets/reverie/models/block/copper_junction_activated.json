@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/copper_junction_activated",
+    "up": "reverie:block/copper_junction_activated",
+    "north": "reverie:block/copper_junction_activated",
+    "east": "reverie:block/copper_junction_activated",
+    "south": "reverie:block/copper_junction_activated",
+    "west": "reverie:block/copper_junction_activated",
+    "particle": "reverie:block/copper_junction_activated"
+  },
+  "render_type": "solid"
+}

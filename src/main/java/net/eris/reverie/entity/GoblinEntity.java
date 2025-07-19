@@ -1,5 +1,7 @@
 package net.eris.reverie.entity;
 
+import net.eris.reverie.entity.goal.GoblinHurtByTargetGoal;
+import net.eris.reverie.entity.goal.GoblinTargetPlayerGoal;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -129,21 +131,16 @@ public class GoblinEntity extends Monster {
 
     @Override
     protected void registerGoals() {
-        this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(
-                this,
-                Player.class,
-                10,
-                true,
-                false,
-                LivingEntity::isAlive
-        ));
+        this.targetSelector.addGoal(1, new GoblinHurtByTargetGoal(this).setAlertOthers());
+        this.targetSelector.addGoal(2, new GoblinTargetPlayerGoal(this)); // <-- SADECE BU!
+        // Eskisi: this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(...)); <-- SİL!
         this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.2D, true));
         this.goalSelector.addGoal(2, new WaterAvoidingRandomStrollGoal(this, 0.8D));
         this.goalSelector.addGoal(3, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(4, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(5, new FloatGoal(this));
     }
+
 
     @Override
     public void tick() {

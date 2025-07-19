@@ -4,15 +4,11 @@
  */
 package net.eris.reverie.init;
 
+import net.eris.reverie.client.model.*;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.api.distmarker.Dist;
-
-import net.eris.reverie.client.model.Modelspiked_log;
-import net.eris.reverie.client.model.ModelDrunkard;
-import net.eris.reverie.client.model.ModelBrawler;
-import net.eris.reverie.client.model.Modelgoblin;
 
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = {Dist.CLIENT})
@@ -23,5 +19,7 @@ public class ReverieModModels {
 		event.registerLayerDefinition(Modelspiked_log.LAYER_LOCATION, Modelspiked_log::createBodyLayer);
 		event.registerLayerDefinition(ModelBrawler.LAYER_LOCATION, ModelBrawler::createBodyLayer);
 		event.registerLayerDefinition(Modelgoblin.LAYER_LOCATION, Modelgoblin::createBodyLayer);
+		event.registerLayerDefinition(Modelshooter_goblin.LAYER_LOCATION, Modelshooter_goblin::createBodyLayer);
+		event.registerLayerDefinition(ModelBoneSpearProjectile.LAYER_LOCATION, ModelBoneSpearProjectile::createBodyLayer);
 	}
 }

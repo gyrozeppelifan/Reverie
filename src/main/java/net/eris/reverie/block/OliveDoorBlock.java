@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 
 public class OliveDoorBlock extends DoorBlock {
 	public OliveDoorBlock() {
-		super(BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(3f).noOcclusion().isRedstoneConductor((bs, br, bp) -> false), BlockSetType.STONE);
+		super(BlockBehaviour.Properties.of().sound(SoundType.WOOD).strength(3f).noOcclusion().isRedstoneConductor((bs, br, bp) -> false), BlockSetType.OAK);
 	}
 
 	@Override

@@ -10,6 +10,8 @@ import net.eris.reverie.client.renderer.SpikedLogRenderer;
 import net.eris.reverie.client.renderer.DrunkardRenderer;
 import net.eris.reverie.client.renderer.BrawlerRenderer;
 import net.eris.reverie.client.renderer.GoblinRenderer;
+import net.eris.reverie.client.renderer.ShooterGoblinRenderer;
+import net.eris.reverie.client.renderer.BoneSpearProjectileRenderer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ReverieModEntityRenderers {
@@ -19,6 +21,7 @@ public class ReverieModEntityRenderers {
 		event.registerEntityRenderer(ReverieModEntities.DRUNKARD.get(), DrunkardRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.SPIKED_LOG.get(), SpikedLogRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.GOBLIN.get(), GoblinRenderer::new);
-
+		event.registerEntityRenderer(ReverieModEntities.SHOOTER_GOBLIN.get(), ShooterGoblinRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.BONE_SPEAR_PROJECTILE.get(), BoneSpearProjectileRenderer::new);
 	}
 }
