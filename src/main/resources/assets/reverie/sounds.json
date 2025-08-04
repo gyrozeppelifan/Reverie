@@ -228,5 +228,100 @@
         "stream": false
       }
     ]
+  },
+  "barrel_goblin_spawn": {
+    "subtitle": "subtitles.barrel_goblin_spawn",
+    "sounds": [
+      {
+        "name": "reverie:barrel_goblin_spawn_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:barrel_goblin_spawn_2",
+        "stream": false
+      }
+    ]
+},
+  "goblin_barrel_break": {
+    "subtitle": "subtitles.goblin_barrel_break",
+    "sounds": [
+      {
+        "name": "reverie:goblin_barrel_break",
+        "stream": false
+      }
+    ]
+  },
+  "struggle": {
+    "subtitle": "subtitles.struggle",
+    "sounds": [
+      {
+        "name": "reverie:struggle_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:struggle_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:struggle_3",
+        "stream": false
+      },
+      {
+        "name": "reverie:struggle_4",
+        "stream": false
+      }
+    ]
+  },
+  "goblin_barrel_ground_hit": {
+    "subtitle": "subtitles.struggle",
+    "sounds": [
+      {
+        "name": "reverie:goblin_barrel_ground_hit_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:goblin_barrel_ground_hit_2",
+        "stream": false
+      }
+    ]
+  },
+  "goblin_staff_decline": {
+    "subtitle": "subtitles.goblin_staff_decline",
+    "sounds": [
+      {
+        "name": "reverie:goblin_staff_decline_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:goblin_staff_decline_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:goblin_staff_decline_3",
+        "stream": false
+      }
+    ]
+  },
+  "goblin_barrel_summon": {
+    "subtitle": "subtitles.goblin_barrel_summon",
+    "sounds": [
+      {
+        "name": "reverie:goblin_barrel_summon_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:goblin_barrel_summon_2",
+        "stream": false
+      }
+    ]
+  },
+  "lucky_crit": {
+    "subtitle": "subtitles.lucky_cirt",
+    "sounds": [
+      {
+        "name": "reverie:lucky_crit",
+        "stream": false
+      }
+    ]
   }
 }

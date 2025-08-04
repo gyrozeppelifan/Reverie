@@ -25,15 +25,14 @@ public class ShooterGoblinRenderer extends MobRenderer<ShooterGoblinEntity, Shoo
     public ShooterGoblinRenderer(EntityRendererProvider.Context context) {
         super(context, new AnimatedModel(context.bakeLayer(Modelshooter_goblin.LAYER_LOCATION)), 0.5f);
 
-        // Mischief Layer (örn: hedef alınca overlay/üst katman)
-// Mischief Layer (sadece hedefi varsa overlay/üst katman!)
+// Mischief Layer - sadece hedefi varsa overlay/üst katman
         this.addLayer(new RenderLayer<ShooterGoblinEntity, AnimatedModel>(this) {
             final ResourceLocation LAYER_TEXTURE = new ResourceLocation("reverie:textures/entities/shooter_goblin_mischief.png");
             @Override
             public void render(PoseStack poseStack, MultiBufferSource bufferSource, int light, ShooterGoblinEntity entity,
                                float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks,
                                float netHeadYaw, float headPitch) {
-                // SADECE HEDEFİ VARSA OYNAT!
+                // sadece hedefi varsa buradan ayarlanacak
                 if (!entity.hasTargetClient()) return;
                 AnimatedModel model = this.getParentModel();
                 model.renderToBuffer(poseStack, bufferSource.getBuffer(RenderType.entityCutoutNoCull(LAYER_TEXTURE)), light,

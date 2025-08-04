@@ -2,6 +2,7 @@
 package net.eris.reverie.init;
 
 import io.netty.util.Attribute;
+import net.eris.reverie.client.renderer.GoblinBarrelRenderer;
 import net.eris.reverie.entity.*;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -37,6 +38,12 @@ public class ReverieModEntities {
 					.sized(0.6f, 1.8f));
 	public static final RegistryObject<EntityType<BoneSpearProjectileEntity>> BONE_SPEAR_PROJECTILE = register("bone_spear",
 			EntityType.Builder.<BoneSpearProjectileEntity>of(BoneSpearProjectileEntity::new, MobCategory.MISC).setCustomClientFactory(BoneSpearProjectileEntity::new).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(1).sized(0.5f, 0.5f));
+	public static final RegistryObject<EntityType<BarrelGoblinEntity>> BARREL_GOBLIN = register("barrel_goblin",
+			EntityType.Builder.<BarrelGoblinEntity>of(BarrelGoblinEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(BarrelGoblinEntity::new)
+					.sized(0.6f, 1.8f));
+	public static final RegistryObject<EntityType<GoblinBarrelEntity>> GOBLIN_BARREL = register("goblin_barrel",
+			EntityType.Builder.<GoblinBarrelEntity>of(GoblinBarrelEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinBarrelEntity::new)
+					.sized(2.1f, 1.1f));
 
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
@@ -51,6 +58,7 @@ public class ReverieModEntities {
 			SpikedLogEntity.init();
 			GoblinEntity.init();
 			ShooterGoblinEntity.init();
+			GoblinBarrelEntity.init();
 		});
 	}
 
@@ -61,5 +69,7 @@ public class ReverieModEntities {
 		event.put(SPIKED_LOG.get(), SpikedLogEntity.createAttributes().build());
 		event.put(GOBLIN.get(), GoblinEntity.createAttributes().build());
 		event.put(SHOOTER_GOBLIN.get(), ShooterGoblinEntity.createAttributes().build());
+		event.put(BARREL_GOBLIN.get(), BarrelGoblinEntity.createAttributes().build());
+		event.put(GOBLIN_BARREL.get(), GoblinBarrelEntity.createAttributes().build());
 	}
 }

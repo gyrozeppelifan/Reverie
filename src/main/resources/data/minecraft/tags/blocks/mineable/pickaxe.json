@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
-    "reverie:pointy_bone"
+    "reverie:pointy_bone",
+    "reverie:copper_conduit",
+    "reverie:copper_junction"
   ]
 }

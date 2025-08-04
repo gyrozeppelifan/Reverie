@@ -1,0 +1,37 @@
+{
+  "variants": {
+    "facing=north,state=living": {
+      "model": "reverie:block/elder_olive_right_eye",
+      "y": 0
+    },
+    "facing=east,state=living": {
+      "model": "reverie:block/elder_olive_right_eye",
+      "y": 90
+    },
+    "facing=south,state=living": {
+      "model": "reverie:block/elder_olive_right_eye",
+      "y": 180
+    },
+    "facing=west,state=living": {
+      "model": "reverie:block/elder_olive_right_eye",
+      "y": 270
+    },
+
+    "facing=north,state=angry": {
+      "model": "reverie:block/elder_olive_right_eye_angry",
+      "y": 0
+    },
+    "facing=east,state=angry": {
+      "model": "reverie:block/elder_olive_right_eye_angry",
+      "y": 90
+    },
+    "facing=south,state=angry": {
+      "model": "reverie:block/elder_olive_right_eye_angry",
+      "y": 180
+    },
+    "facing=west,state=angry": {
+      "model": "reverie:block/elder_olive_right_eye_angry",
+      "y": 270
+    }
+  }
+}

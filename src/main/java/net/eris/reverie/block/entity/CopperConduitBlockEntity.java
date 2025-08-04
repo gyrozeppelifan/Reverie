@@ -19,7 +19,7 @@ public class CopperConduitBlockEntity extends BlockEntity {
     /** Başlatıldığında iki sayaç ayarlanır ve powered=true yapılır */
     public void startPowerCycle() {
         this.transferTimer = 5;
-        this.shutdownTimer = 20;
+        this.shutdownTimer = 4;
         if (!this.getBlockState().getValue(CopperConduitBlock.POWERED)) {
             level.setBlock(worldPosition,
                     getBlockState().setValue(CopperConduitBlock.POWERED, true),

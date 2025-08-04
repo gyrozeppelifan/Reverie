@@ -56,6 +56,19 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> GOBLIN_SYMBOL_BANNER_PATTERN = REGISTRY.register("goblin_symbol_banner_pattern", () -> new BannerPatternItem(ReverieBannerPatterns.GOBLIN_SYMBOL_TAG, new Item.Properties().stacksTo(1)));
 	public static final RegistryObject<Item> COPPER_CONDUIT = block(ReverieModBlocks.COPPER_CONDUIT);
 	public static final RegistryObject<Item> COPPER_JUNCTION = block(ReverieModBlocks.COPPER_JUNCTION);
+	public static final RegistryObject<Item> ELDER_OLIVE_STAFF = REGISTRY.register("elder_olive_staff", () -> new ElderOliveStaffItem());
+	public static final RegistryObject<Item> ELDER_OLIVE_LEAVES = block(ReverieModBlocks.ELDER_OLIVE_LEAVES);
+	public static final RegistryObject<Item> ELDER_OLIVE_LOG = block(ReverieModBlocks.ELDER_OLIVE_LOG);
+	public static final RegistryObject<Item> SHINY_ELDER_OLIVE_LOG = block(ReverieModBlocks.SHINY_ELDER_OLIVE_LOG);
+	public static final RegistryObject<Item> ELDER_OLIVE_HEART = block(ReverieModBlocks.ELDER_OLIVE_HEART);
+	public static final RegistryObject<Item> ELDER_OLIVE_LEFT_EYE = block(ReverieModBlocks.ELDER_OLIVE_LEFT_EYE);
+	public static final RegistryObject<Item> ELDER_OLIVE_RIGHT_EYE = block(ReverieModBlocks.ELDER_OLIVE_RIGHT_EYE);
+	public static final RegistryObject<Item> ELDER_OLIVE_MOUTH = block(ReverieModBlocks.ELDER_OLIVE_MOUTH);
+	public static final RegistryObject<Item> ELDER_OLIVE_NOSE_UP = block(ReverieModBlocks.ELDER_OLIVE_NOSE_UP);
+	public static final RegistryObject<Item> ELDER_OLIVE_NOSE_DOWN = block(ReverieModBlocks.ELDER_OLIVE_NOSE_DOWN);
+	public static final RegistryObject<Item> DEAD_LOG = block(ReverieModBlocks.DEAD_LOG);
+	public static final RegistryObject<Item> ELDER_OLIVE_BLOCK = block(ReverieModBlocks.ELDER_OLIVE_BLOCK);
+	public static final RegistryObject<Item> CARVED_ELDER_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK);
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));

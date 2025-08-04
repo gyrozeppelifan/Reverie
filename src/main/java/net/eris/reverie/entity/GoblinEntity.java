@@ -63,7 +63,7 @@ public class GoblinEntity extends Monster {
         this(ReverieModEntities.GOBLIN.get(), world);
     }
 
-    public GoblinEntity(EntityType<GoblinEntity> type, Level world) {
+    public GoblinEntity(EntityType<? extends GoblinEntity> type, Level world) {
         super(type, world);
         setMaxUpStep(0.6f);
         xpReward = 0;

@@ -1,7 +1,4 @@
 
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
 import net.minecraftforge.registries.RegistryObject;
@@ -18,4 +15,8 @@ public class ReverieModParticleTypes {
 	public static final RegistryObject<SimpleParticleType> BLOOD = REGISTRY.register("blood", () -> new SimpleParticleType(true));
 	public static final RegistryObject<SimpleParticleType> BOOZE_BUBBLES = REGISTRY.register("booze_bubbles", () -> new SimpleParticleType(true));
 	public static final RegistryObject<SimpleParticleType> GLASS_SHARDS = REGISTRY.register("glass_shards", () -> new SimpleParticleType(false));
+	public static final RegistryObject<SimpleParticleType> BARREL_SHARD_1 = REGISTRY.register("barrel_shard_1", () -> new SimpleParticleType(false));
+	public static final RegistryObject<SimpleParticleType> BARREL_SHARD_2 = REGISTRY.register("barrel_shard_2", () -> new SimpleParticleType(false));
+	public static final RegistryObject<SimpleParticleType> BARREL_NAIL = REGISTRY.register("barrel_nail", () -> new SimpleParticleType(false));
+	public static final RegistryObject<SimpleParticleType> BARREL_METAL_SHARD = REGISTRY.register("barrel_metal_shard", () -> new SimpleParticleType(false));
 }

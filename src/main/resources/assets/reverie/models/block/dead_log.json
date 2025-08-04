@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/dead_log_top",
+    "up": "reverie:block/dead_log_top",
+    "north": "reverie:block/dead_log",
+    "east": "reverie:block/dead_log",
+    "south": "reverie:block/dead_log",
+    "west": "reverie:block/dead_log",
+    "particle": "reverie:block/dead_log_top"
+  },
+  "render_type": "solid"
+}

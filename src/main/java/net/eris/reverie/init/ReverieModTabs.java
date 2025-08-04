@@ -36,6 +36,8 @@ public class ReverieModTabs {
 
 						// Hay Thatch & Bone
 						List<Item> hayItems = List.of(
+								ReverieModBlocks.COPPER_CONDUIT.get().asItem(),
+								ReverieModBlocks.COPPER_JUNCTION.get().asItem(),
 								ReverieModBlocks.HAY_THATCH.get().asItem(),
 								ReverieModBlocks.HAY_THATCH_STAIRS.get().asItem(),
 								ReverieModBlocks.HAY_THATCH_SLAB.get().asItem(),
@@ -53,7 +55,12 @@ public class ReverieModTabs {
 								ReverieModBlocks.OLIVE_TRAPDOOR.get().asItem(),
 								ReverieModBlocks.OLIVE_DOOR.get().asItem(),
 								ReverieModBlocks.OLIVE_PLANKS.get().asItem(),
-								ReverieModBlocks.OLIVE_SAPLING.get().asItem()
+								ReverieModBlocks.OLIVE_SAPLING.get().asItem(),
+								ReverieModBlocks.ELDER_OLIVE_LEAVES.get().asItem(),
+								ReverieModBlocks.ELDER_OLIVE_LOG.get().asItem(),
+								ReverieModBlocks.SHINY_ELDER_OLIVE_LOG.get().asItem(),
+								ReverieModBlocks.ELDER_OLIVE_BLOCK.get().asItem(),
+								ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK.get().asItem()
 						);
 						oliveBlocks.forEach(item -> output.accept(new ItemStack(item)));
 
@@ -76,6 +83,7 @@ public class ReverieModTabs {
 						output.accept(new ItemStack(ReverieModItems.OLIVE_BAGEL.get()));
 						output.accept(new ItemStack(ReverieModItems.SPIKED_LOG_ITEM.get()));
 						output.accept(new ItemStack(ReverieModItems.BONE_SPEAR.get()));
+						output.accept(new ItemStack(ReverieModItems.ELDER_OLIVE_STAFF.get()));
 						output.accept(new ItemStack(ReverieModItems.GOBLIN_SYMBOL_BANNER_PATTERN.get()));
 
 						// Spawn Eggs

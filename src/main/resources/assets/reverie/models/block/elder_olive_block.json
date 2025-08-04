@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/elder_olive_bottom",
+    "up": "reverie:block/elder_olive_top",
+    "north": "reverie:block/elder_olive",
+    "east": "reverie:block/elder_olive",
+    "south": "reverie:block/elder_olive",
+    "west": "reverie:block/elder_olive",
+    "particle": "reverie:block/elder_olive"
+  },
+  "render_type": "solid"
+}

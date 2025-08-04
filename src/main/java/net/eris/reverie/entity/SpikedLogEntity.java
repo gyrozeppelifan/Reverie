@@ -49,7 +49,11 @@ public class SpikedLogEntity extends PathfinderMob {
     private static final int ROLL_DURATION = 120; // 6 saniye
 
     private static final EntityDataAccessor<Boolean> DATA_IS_ROLLING =
-        SynchedEntityData.defineId(SpikedLogEntity.class, EntityDataSerializers.BOOLEAN);
+            SynchedEntityData.defineId(SpikedLogEntity.class, EntityDataSerializers.BOOLEAN);
+
+    // — EKLENDİ: ownerName için senkronize edilecek EntityDataAccessor
+    private static final EntityDataAccessor<String> DATA_OWNER_NAME =
+            SynchedEntityData.defineId(SpikedLogEntity.class, EntityDataSerializers.STRING);
 
     public final AnimationState animationState0 = new AnimationState();
     public final AnimationState animationState1 = new AnimationState();
@@ -57,7 +61,7 @@ public class SpikedLogEntity extends PathfinderMob {
     // İlk vuruşta knockback alan entity'ler
     private final Set<Integer> hitEntities = new HashSet<>();
 
-        // OWNER TAKİBİ
+    // OWNER TAKİBİ
     private UUID ownerUUID = null;
 
     public void setOwner(Player player) {
@@ -66,6 +70,15 @@ public class SpikedLogEntity extends PathfinderMob {
 
     public UUID getOwnerUUID() {
         return ownerUUID;
+    }
+
+    // — EKLENDİ: ownerName setter/getter
+    public void setOwnerName(String name) {
+        this.entityData.set(DATA_OWNER_NAME, name);
+    }
+
+    public String getOwnerName() {
+        return this.entityData.get(DATA_OWNER_NAME);
     }
 
     public SpikedLogEntity(PlayMessages.SpawnEntity packet, Level world) {
@@ -84,6 +97,9 @@ public class SpikedLogEntity extends PathfinderMob {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_IS_ROLLING, true);
+
+        // — EKLENDİ: ownerName için default boş string
+        this.entityData.define(DATA_OWNER_NAME, "");
     }
 
     @Override
@@ -103,6 +119,8 @@ public class SpikedLogEntity extends PathfinderMob {
     public void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putBoolean("IsRolling", this.entityData.get(DATA_IS_ROLLING));
+        // — EKLENDİ: OwnerName'i NBT'ye kaydet
+        nbt.putString("OwnerName", this.entityData.get(DATA_OWNER_NAME));
     }
 
     @Override
@@ -110,6 +128,10 @@ public class SpikedLogEntity extends PathfinderMob {
         super.readAdditionalSaveData(nbt);
         if (nbt.contains("IsRolling")) {
             this.entityData.set(DATA_IS_ROLLING, nbt.getBoolean("IsRolling"));
+        }
+        // — EKLENDİ: OwnerName'i NBT'den yükle
+        if (nbt.contains("OwnerName")) {
+            this.entityData.set(DATA_OWNER_NAME, nbt.getString("OwnerName"));
         }
     }
 
@@ -131,14 +153,14 @@ public class SpikedLogEntity extends PathfinderMob {
             if (stack.getItem() instanceof AxeItem) {
                 ServerLevel server = (ServerLevel) this.level();
                 server.sendParticles(
-                    ParticleTypes.POOF,
-                    this.getX(), this.getY() + 0.5, this.getZ(),
-                    20, 0.2, 0.2, 0.2, 0.02
+                        ParticleTypes.POOF,
+                        this.getX(), this.getY() + 0.5, this.getZ(),
+                        20, 0.2, 0.2, 0.2, 0.02
                 );
                 this.level().playSound(
-                    null, this.getX(), this.getY(), this.getZ(),
-                    ReverieModSounds.SPIKED_LOG_CRASH.get(),
-                    SoundSource.BLOCKS, 1f, 1f
+                        null, this.getX(), this.getY(), this.getZ(),
+                        ReverieModSounds.SPIKED_LOG_CRASH.get(),
+                        SoundSource.BLOCKS, 1f, 1f
                 );
                 this.spawnAtLocation(ReverieModItems.SPIKED_LOG_ITEM.get(), 1);
                 hitEntities.clear();
@@ -154,11 +176,11 @@ public class SpikedLogEntity extends PathfinderMob {
     @Override
     public void die(DamageSource source) {
         this.level().playSound(
-            null, this.getX(), this.getY(), this.getZ(),
-            ReverieModSounds.SPIKED_LOG_CRASH.get(),
-            SoundSource.BLOCKS, 1f, 1f
+                null, this.getX(), this.getY(), this.getZ(),
+                ReverieModSounds.SPIKED_LOG_CRASH.get(),
+                SoundSource.BLOCKS, 1f, 1f
         );
-            // ITEM DROP!
+        // ITEM DROP!
         this.spawnAtLocation(ReverieModItems.SPIKED_LOG_ITEM.get(), 1);
         hitEntities.clear();
         this.discard();
@@ -179,9 +201,9 @@ public class SpikedLogEntity extends PathfinderMob {
         if (!this.level().isClientSide() && this.entityData.get(DATA_IS_ROLLING)) {
             if (this.tickCount % 7 == 0) {
                 this.level().playSound(
-                    null, this.getX(), this.getY(), this.getZ(),
-                    ReverieModSounds.SPIKED_LOG_ROLL.get(),
-                    SoundSource.BLOCKS, 1f, 1f
+                        null, this.getX(), this.getY(), this.getZ(),
+                        ReverieModSounds.SPIKED_LOG_ROLL.get(),
+                        SoundSource.BLOCKS, 1f, 1f
                 );
             }
         }
@@ -195,8 +217,8 @@ public class SpikedLogEntity extends PathfinderMob {
 
         // Süre bitince rolling'i kapat
         if (!this.level().isClientSide()
-            && this.tickCount >= ROLL_DURATION
-            && this.entityData.get(DATA_IS_ROLLING)) {
+                && this.tickCount >= ROLL_DURATION
+                && this.entityData.get(DATA_IS_ROLLING)) {
             this.entityData.set(DATA_IS_ROLLING, false);
             this.setDeltaMovement(Vec3.ZERO);
             hitEntities.clear();
@@ -216,7 +238,7 @@ public class SpikedLogEntity extends PathfinderMob {
 
                 double yawRad = Math.toRadians(-this.getYRot());
                 Vec3 dirXZ = new Vec3(Math.sin(yawRad), 0, Math.cos(yawRad))
-                    .normalize().scale(SPEED);
+                        .normalize().scale(SPEED);
 
                 Vec3 newMotion = new Vec3(dirXZ.x, currentY, dirXZ.z);
                 this.setDeltaMovement(newMotion);
@@ -230,8 +252,8 @@ public class SpikedLogEntity extends PathfinderMob {
             if (this.entityData.get(DATA_IS_ROLLING)) {
                 this.animationState0.animateWhen(true, this.tickCount);
                 this.animationState1.animateWhen(
-                    SpikedLogPlaybackConditionProcedure.execute(),
-                    this.tickCount
+                        SpikedLogPlaybackConditionProcedure.execute(),
+                        this.tickCount
                 );
             }
             return;
@@ -240,85 +262,80 @@ public class SpikedLogEntity extends PathfinderMob {
         // Duvara çarpınca sadece ses
         if (this.horizontalCollision) {
             this.level().playSound(
-                null, this.blockPosition(),
-                SoundEvents.WOOD_BREAK,
-                SoundSource.BLOCKS, 1f, 1f
+                    null, this.blockPosition(),
+                    SoundEvents.WOOD_BREAK,
+                    SoundSource.BLOCKS, 1f, 1f
             );
         }
 
-if (this.entityData.get(DATA_IS_ROLLING)) { // SADECE rolling modundayken etki uygula!
-    for (LivingEntity target : this.level().getEntitiesOfClass(
-            LivingEntity.class, this.getBoundingBox())) {
-        if (target == this) continue;
+        if (this.entityData.get(DATA_IS_ROLLING)) { // SADECE rolling modundayken etki uygula!
+            for (LivingEntity target : this.level().getEntitiesOfClass(
+                    LivingEntity.class, this.getBoundingBox())) {
+                if (target == this) continue;
 
-        // *** OWNER'A VURMA! ***
-        if (this.ownerUUID != null && target.getUUID().equals(this.ownerUUID)) continue;
+                // *** OWNER'A VURMA! ***
+                if (this.ownerUUID != null && target.getUUID().equals(this.ownerUUID)) continue;
 
-        // Eğer log yanıyorsa, target'ı da yak!
-        if (this.isOnFire()) {
-            target.setSecondsOnFire(7);
-        }
+                // Eğer log yanıyorsa, target'ı da yak!
+                if (this.isOnFire()) {
+                    target.setSecondsOnFire(7);
+                }
 
-        // İlk temasta knockback uygula
-        if (!hitEntities.contains(target.getId())) {
-            hitEntities.add(target.getId());
-            double dx = target.getX() - this.getX();
-            double dz = target.getZ() - this.getZ();
-            double dist = Math.hypot(dx, dz);
-            if (dist > 0) {
-                target.push(dx/dist * 2.0, 0.5, dz/dist * 2.0);
+                // İlk temasta knockback uygula
+                if (!hitEntities.contains(target.getId())) {
+                    hitEntities.add(target.getId());
+                    double dx = target.getX() - this.getX();
+                    double dz = target.getZ() - this.getZ();
+                    double dist = Math.hypot(dx, dz);
+                    if (dist > 0) {
+                        target.push(dx/dist * 2.0, 0.5, dz/dist * 2.0);
+                    }
+                }
+
+                // Her temasta slow ve hasar uygula!
+                target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 3));
+
+                DamageSource logSmash = new DamageSource(
+                        this.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+                                .getHolderOrThrow(ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("reverie", "spikedlogsmash"))),
+                        this,
+                        (ownerUUID != null && this.level() instanceof ServerLevel server) ? server.getPlayerByUUID(ownerUUID) : null
+                );
+
+                if (target.getHealth() <= 6f) {
+                    target.hurt(logSmash, Float.MAX_VALUE);
+                } else {
+                    target.hurt(logSmash, 12f);
+                }
+                break;
             }
         }
+    }
 
-        // Her temasta slow ve hasar uygula!
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 3));
-
-        DamageSource logSmash = new DamageSource(
-            this.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
-                .getHolderOrThrow(ResourceKey.create(Registries.DAMAGE_TYPE, new ResourceLocation("reverie", "spikedlogsmash"))),
-            this,
-            (ownerUUID != null && this.level() instanceof ServerLevel server) ? server.getPlayerByUUID(ownerUUID) : null
-        );
-
-        if (target.getHealth() <= 6f) {
-            target.hurt(logSmash, Float.MAX_VALUE);
-        } else {
-            target.hurt(logSmash, 12f);
+    @Override
+    public LivingEntity getKillCredit() {
+        if (ownerUUID != null && this.level() instanceof ServerLevel server) {
+            Player owner = server.getPlayerByUUID(ownerUUID);
+            if (owner != null) return owner;
         }
-        break;
+        return super.getKillCredit();
     }
-}
-}
 
-
-@Override
-public LivingEntity getKillCredit() {
-    if (ownerUUID != null && this.level() instanceof ServerLevel server) {
-        Player owner = server.getPlayerByUUID(ownerUUID);
-        if (owner != null) return owner;
+    @Override
+    public boolean canBeAffected(MobEffectInstance effect) {
+        return false;
     }
-    return super.getKillCredit();
-}
 
-@Override
-public boolean canBeAffected(MobEffectInstance effect) {
-    return false;
-}
-
-
-    @Override
-    public boolean canBeCollidedWith() { return true; }
-    @Override
-    public boolean isPushable() { return false; }
-    @Override
-    public void push(Entity e) {}
+    @Override public boolean canBeCollidedWith() { return true; }
+    @Override public boolean isPushable() { return false; }
+    @Override public void push(Entity e) {}
 
     public static void init() {}
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
-            .add(Attributes.MOVEMENT_SPEED, 0.3)
-            .add(Attributes.MAX_HEALTH, 3)
-            .add(Attributes.ARMOR, 0)
-            .add(Attributes.FOLLOW_RANGE, 0);
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.MAX_HEALTH, 3)
+                .add(Attributes.ARMOR, 0)
+                .add(Attributes.FOLLOW_RANGE, 0);
     }
 }

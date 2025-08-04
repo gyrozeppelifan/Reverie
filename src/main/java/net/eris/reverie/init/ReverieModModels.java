@@ -1,7 +1,4 @@
 
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
 import net.eris.reverie.client.model.*;
@@ -21,5 +18,7 @@ public class ReverieModModels {
 		event.registerLayerDefinition(Modelgoblin.LAYER_LOCATION, Modelgoblin::createBodyLayer);
 		event.registerLayerDefinition(Modelshooter_goblin.LAYER_LOCATION, Modelshooter_goblin::createBodyLayer);
 		event.registerLayerDefinition(ModelBoneSpearProjectile.LAYER_LOCATION, ModelBoneSpearProjectile::createBodyLayer);
+		event.registerLayerDefinition(Modelgoblin_barrel.LAYER_LOCATION, Modelgoblin_barrel::createBodyLayer);
+
 	}
 }

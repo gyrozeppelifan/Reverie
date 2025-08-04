@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "reverie:block/shiny_elder_olive_log",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "reverie:block/shiny_elder_olive_log"
+    },
+    "axis=z": {
+      "model": "reverie:block/shiny_elder_olive_log",
+      "x": 90
+    }
+  }
+}

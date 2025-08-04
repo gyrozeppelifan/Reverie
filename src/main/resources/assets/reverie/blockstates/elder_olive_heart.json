@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "": {
+      "model": "reverie:block/elder_olive_heart",
+      "render_type": "cutout_emissive"
+    }
+  }
+}

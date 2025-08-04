@@ -36,4 +36,16 @@ public class ReverieModBlocks {
 	public static final RegistryObject<Block> STRIPPED_OLIVE_WOOD = REGISTRY.register("stripped_olive_wood", () -> new StrippedOliveWoodBlock());
 	public static final RegistryObject<Block> COPPER_CONDUIT = REGISTRY.register("copper_conduit", () -> new CopperConduitBlock());
 	public static final RegistryObject<Block> COPPER_JUNCTION = REGISTRY.register("copper_junction", () -> new CopperJunctionBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_LEAVES = REGISTRY.register("elder_olive_leaves", () -> new ElderOliveLeavesBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_LOG = REGISTRY.register("elder_olive_log", () -> new ElderOliveLogBlock());
+	public static final RegistryObject<Block> SHINY_ELDER_OLIVE_LOG = REGISTRY.register("shiny_elder_olive_log", () -> new ElderOliveLogBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_HEART = REGISTRY.register("elder_olive_heart", () -> new ElderOliveHeartBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_LEFT_EYE = REGISTRY.register("elder_olive_left_eye", () -> new ElderOliveLeftEyeBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_RIGHT_EYE = REGISTRY.register("elder_olive_right_eye", () -> new ElderOliveRightEyeBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_MOUTH = REGISTRY.register("elder_olive_mouth", () -> new ElderOliveMouthBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_NOSE_UP = REGISTRY.register("elder_olive_nose_up", () -> new ElderOliveNoseUpBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_NOSE_DOWN = REGISTRY.register("elder_olive_nose_down", () -> new ElderOliveNoseDownBlock());
+	public static final RegistryObject<Block> DEAD_LOG = REGISTRY.register("dead_log", () -> new DeadLogBlock());
+	public static final RegistryObject<Block> ELDER_OLIVE_BLOCK = REGISTRY.register("elder_olive_block", () -> new ElderOliveBlock());
+	public static final RegistryObject<Block> CARVED_ELDER_OLIVE_BLOCK = REGISTRY.register("carved_elder_olive_block", () -> new CarvedElderOliveBlock());
 }

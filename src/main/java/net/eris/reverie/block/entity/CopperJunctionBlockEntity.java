@@ -24,7 +24,7 @@ public class CopperJunctionBlockEntity extends BlockEntity {
         if (transferTimer > 0 || shutdownTimer > 0) return;
         this.incomingDir = incoming;
         this.transferTimer = 5;   // ~0.25s
-        this.shutdownTimer = 20;  // ~1s
+        this.shutdownTimer = 4;  // ~1s
 
         BlockState current = getBlockState();
         if (!current.getValue(CopperJunctionBlock.POWERED)) {

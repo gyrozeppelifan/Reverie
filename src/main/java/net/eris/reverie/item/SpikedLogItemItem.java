@@ -37,6 +37,9 @@ public InteractionResultHolder<ItemStack> use(Level level, Player player, Intera
         // OWNER’I ATA!
         log.setOwner(player);
 
+            // OWNER ADINI DA AÇIKLA ki client skin’i değiştirsin
+         log.setOwnerName(player.getName().getString());
+
         // Entity'yi dünyaya ekle
         level.addFreshEntity(log);
 

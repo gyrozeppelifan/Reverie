@@ -1,0 +1,23 @@
+{
+  "parent": "item/handheld",
+  "loader": "forge:separate_transforms",
+  "base": {
+    "parent": "reverie:item/elder_olive_staff_inhand"
+  },
+
+  "textures": {
+    "layer0": "reverie:item/elder_olive_staff_inhand"
+  },
+  "perspectives": {
+    "gui": {
+      "parent": "reverie:item/elder_olive_staff_sprite"
+    },
+    "ground": {
+      "parent": "reverie:item/elder_olive_staff_sprite"
+    },
+    "fixed": {
+      "parent": "reverie:item/elder_olive_staff_sprite"
+    }
+
+  }
+}

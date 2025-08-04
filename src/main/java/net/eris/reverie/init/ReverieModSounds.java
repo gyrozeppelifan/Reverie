@@ -1,7 +1,3 @@
-
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.eris.reverie.init;
 
 import net.minecraftforge.registries.RegistryObject;
@@ -26,4 +22,12 @@ public class ReverieModSounds {
 	public static final RegistryObject<SoundEvent> SPIKED_LOG_CRASH = REGISTRY.register("spiked_log_crash", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "spiked_log_crash")));
 	public static final RegistryObject<SoundEvent> SPIKED_LOG_ROLL = REGISTRY.register("spiked_log_roll", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "spiked_log_roll")));
 	public static final RegistryObject<SoundEvent> SPIKED_LOG_THROW = REGISTRY.register("spiked_log_throw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "spiked_log_throw")));
+	public static final RegistryObject<SoundEvent> GOBLIN_BARREL_GROUND_HIT = REGISTRY.register("goblin_barrel_ground_hit", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "goblin_barrel_ground_hit")));
+	public static final RegistryObject<SoundEvent> GOBLIN_BARREL_BREAK = REGISTRY.register("goblin_barrel_break", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "goblin_barrel_break")));
+	public static final RegistryObject<SoundEvent> STRUGGLE = REGISTRY.register("struggle", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "struggle")));
+	public static final RegistryObject<SoundEvent> BARREL_GOBLIN_SPAWN = REGISTRY.register("barrel_goblin_spawn", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "barrel_goblin_spawn")));
+	public static final RegistryObject<SoundEvent> GOBLIN_STAFF_DECLINE = REGISTRY.register("goblin_staff_decline", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "goblin_staff_decline")));
+	public static final RegistryObject<SoundEvent> GOBLIN_BARREL_SUMMON = REGISTRY.register("goblin_barrel_summon", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "goblin_barrel_summon")));
+	public static final RegistryObject<SoundEvent> LUCKY_CRIT = REGISTRY.register("lucky_crit", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "lucky_crit")));
 }
+

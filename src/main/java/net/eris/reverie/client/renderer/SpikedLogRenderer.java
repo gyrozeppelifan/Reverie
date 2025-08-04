@@ -10,14 +10,33 @@ import net.eris.reverie.entity.SpikedLogEntity;
 import net.eris.reverie.client.model.animations.spiked_logAnimation;
 import net.eris.reverie.client.model.Modelspiked_log;
 
+import java.util.Set;  // EKLENDİ
+
 public class SpikedLogRenderer extends MobRenderer<SpikedLogEntity, Modelspiked_log<SpikedLogEntity>> {
+    // — EKLENDİ: Texture sabitleri
+    private static final ResourceLocation DEFAULT =
+            new ResourceLocation("reverie:textures/entities/spiked_log.png");
+    private static final ResourceLocation DRESSED =
+            new ResourceLocation("reverie:textures/entities/dressed_spiked_log.png");
+    // — EKLENDİ: Özel skin alacak beta tester’lar
+    private static final Set<String> DRESSED_TESTERS = Set.of(
+            "yomai68",
+            "Steve"
+            // … başkalarını buraya ekle
+    );
+
     public SpikedLogRenderer(EntityRendererProvider.Context context) {
         super(context, new AnimatedModel(context.bakeLayer(Modelspiked_log.LAYER_LOCATION)), 0.5f);
     }
 
     @Override
     public ResourceLocation getTextureLocation(SpikedLogEntity entity) {
-        return new ResourceLocation("reverie:textures/entities/spiked_log.png");
+        // Eğer ownerName listeye dahilse, özel skin’i döndür; aksi halde default
+        String owner = entity.getOwnerName();
+        if (DRESSED_TESTERS.contains(owner)) {
+            return DRESSED;
+        }
+        return DEFAULT;
     }
 
     private static final class AnimatedModel extends Modelspiked_log<SpikedLogEntity> {

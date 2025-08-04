@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "reverie:item/elder_olive_staff_item"
+  }
+}
