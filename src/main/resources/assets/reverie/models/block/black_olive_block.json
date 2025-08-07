@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/black_olive_block_bottom",
+    "up": "reverie:block/black_olive_block_top",
+    "north": "reverie:block/black_olive_block",
+    "east": "reverie:block/black_olive_block",
+    "south": "reverie:block/black_olive_block",
+    "west": "reverie:block/black_olive_block",
+    "particle": "reverie:block/black_olive_block"
+  },
+  "render_type": "solid"
+}

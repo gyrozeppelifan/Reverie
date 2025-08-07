@@ -10,7 +10,7 @@ public class CarvedElderOliveBlock extends Block {
         super(Properties
                 .of()
                 .mapColor(MapColor.COLOR_LIGHT_BLUE)
-                .sound(SoundType.BAMBOO_WOOD)
+                .sound(SoundType.MUD)
                 .strength(0.6f)
                 .noOcclusion()
         );

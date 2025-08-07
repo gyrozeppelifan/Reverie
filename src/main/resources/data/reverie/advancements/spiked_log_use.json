@@ -16,15 +16,8 @@
   },
   "criteria": {
     "spiked_log_kill": {
-      "trigger": "minecraft:player_killed_entity",
-      "conditions": {
-        "killing_blow": {
-          "damage_type": {
-            "type": "reverie:spikedlogsmash"
-          }
-        }
+      "trigger": "minecraft:impossible"
       }
-    }
-  },
+    },
   "parent": "reverie:reverie_start"
 }

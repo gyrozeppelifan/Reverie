@@ -68,6 +68,8 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> ELDER_OLIVE_NOSE_DOWN = block(ReverieModBlocks.ELDER_OLIVE_NOSE_DOWN);
 	public static final RegistryObject<Item> DEAD_LOG = block(ReverieModBlocks.DEAD_LOG);
 	public static final RegistryObject<Item> ELDER_OLIVE_BLOCK = block(ReverieModBlocks.ELDER_OLIVE_BLOCK);
+	public static final RegistryObject<Item> GREEN_OLIVE_BLOCK = block(ReverieModBlocks.GREEN_OLIVE_BLOCK);
+	public static final RegistryObject<Item> BLACK_OLIVE_BLOCK = block(ReverieModBlocks.BLACK_OLIVE_BLOCK);
 	public static final RegistryObject<Item> CARVED_ELDER_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK);
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {

@@ -323,5 +323,27 @@
         "stream": false
       }
     ]
+  },
+  "goblin_brute_roar": {
+    "subtitle": "subtitles.goblin_brute_roar",
+    "sounds": [
+      {
+        "name": "reverie:goblin_brute_roar",
+        "stream": false
+      }
+    ]
+  },
+  "shooter_goblin_death": {
+    "subtitle": "subtitles.shooter_goblin_death",
+    "sounds": [
+      {
+        "name": "reverie:shooter_goblin_death_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:shooter_goblin_death_2",
+        "stream": false
+      }
+    ]
   }
 }

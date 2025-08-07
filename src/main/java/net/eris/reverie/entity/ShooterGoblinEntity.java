@@ -183,10 +183,10 @@ public class ShooterGoblinEntity extends Monster implements RangedAttackMob {
         return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.generic.hurt"));
     }
 
-    @Override
-    public SoundEvent getDeathSound() {
-        return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.generic.death"));
+    private SoundEvent getSound(String key) {
+        return ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("reverie:" + key));
     }
+    @Override public SoundEvent getDeathSound()        { return getSound("shooter_goblin_death"); }
 
     @Override
     public void tick() {

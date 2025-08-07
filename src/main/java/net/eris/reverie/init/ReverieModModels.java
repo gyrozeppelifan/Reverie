@@ -19,6 +19,8 @@ public class ReverieModModels {
 		event.registerLayerDefinition(Modelshooter_goblin.LAYER_LOCATION, Modelshooter_goblin::createBodyLayer);
 		event.registerLayerDefinition(ModelBoneSpearProjectile.LAYER_LOCATION, ModelBoneSpearProjectile::createBodyLayer);
 		event.registerLayerDefinition(Modelgoblin_barrel.LAYER_LOCATION, Modelgoblin_barrel::createBodyLayer);
+		event.registerLayerDefinition(ModelGoblet.LAYER_LOCATION, ModelGoblet::createBodyLayer);
+		event.registerLayerDefinition(ModelGoblinBrute.LAYER_LOCATION, ModelGoblinBrute::createBodyLayer);
 
 	}
 }

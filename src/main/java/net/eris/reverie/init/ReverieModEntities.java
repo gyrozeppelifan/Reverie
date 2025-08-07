@@ -4,6 +4,7 @@ package net.eris.reverie.init;
 import io.netty.util.Attribute;
 import net.eris.reverie.client.renderer.GoblinBarrelRenderer;
 import net.eris.reverie.entity.*;
+import net.eris.reverie.util.GoblinReputation;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
@@ -43,7 +44,15 @@ public class ReverieModEntities {
 					.sized(0.6f, 1.8f));
 	public static final RegistryObject<EntityType<GoblinBarrelEntity>> GOBLIN_BARREL = register("goblin_barrel",
 			EntityType.Builder.<GoblinBarrelEntity>of(GoblinBarrelEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinBarrelEntity::new)
-					.sized(2.1f, 1.1f));
+					.sized(2.1f, 2.1f));
+	public static final RegistryObject<EntityType<GobletEntity>> GOBLET = register("goblet",
+			EntityType.Builder.<GobletEntity>of(GobletEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GobletEntity::new)
+					.sized(0.6f, 0.8f));
+	public static final RegistryObject<EntityType<GoblinBruteEntity>> GOBLIN_BRUTE = register("goblin_brute",
+			EntityType.Builder.<GoblinBruteEntity>of(GoblinBruteEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinBruteEntity::new)
+					.sized(1.2f, 3.1f));
+
+
 
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
@@ -59,6 +68,8 @@ public class ReverieModEntities {
 			GoblinEntity.init();
 			ShooterGoblinEntity.init();
 			GoblinBarrelEntity.init();
+			GobletEntity.init();
+			GoblinBruteEntity.init();
 		});
 	}
 
@@ -71,5 +82,7 @@ public class ReverieModEntities {
 		event.put(SHOOTER_GOBLIN.get(), ShooterGoblinEntity.createAttributes().build());
 		event.put(BARREL_GOBLIN.get(), BarrelGoblinEntity.createAttributes().build());
 		event.put(GOBLIN_BARREL.get(), GoblinBarrelEntity.createAttributes().build());
+		event.put(GOBLET.get(), GobletEntity.createAttributes().build());
+		event.put(GOBLIN_BRUTE.get(),  GoblinBruteEntity.createAttributes().build());
 	}
 }

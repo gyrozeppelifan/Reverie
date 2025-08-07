@@ -47,5 +47,7 @@ public class ReverieModBlocks {
 	public static final RegistryObject<Block> ELDER_OLIVE_NOSE_DOWN = REGISTRY.register("elder_olive_nose_down", () -> new ElderOliveNoseDownBlock());
 	public static final RegistryObject<Block> DEAD_LOG = REGISTRY.register("dead_log", () -> new DeadLogBlock());
 	public static final RegistryObject<Block> ELDER_OLIVE_BLOCK = REGISTRY.register("elder_olive_block", () -> new ElderOliveBlock());
+	public static final RegistryObject<Block> GREEN_OLIVE_BLOCK = REGISTRY.register("green_olive_block", () -> new GreenOliveBlock());
+	public static final RegistryObject<Block> BLACK_OLIVE_BLOCK = REGISTRY.register("black_olive_block", () -> new BlackOliveBlock());
 	public static final RegistryObject<Block> CARVED_ELDER_OLIVE_BLOCK = REGISTRY.register("carved_elder_olive_block", () -> new CarvedElderOliveBlock());
 }

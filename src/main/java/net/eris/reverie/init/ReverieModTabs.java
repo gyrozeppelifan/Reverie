@@ -60,6 +60,8 @@ public class ReverieModTabs {
 								ReverieModBlocks.ELDER_OLIVE_LOG.get().asItem(),
 								ReverieModBlocks.SHINY_ELDER_OLIVE_LOG.get().asItem(),
 								ReverieModBlocks.ELDER_OLIVE_BLOCK.get().asItem(),
+								ReverieModBlocks.GREEN_OLIVE_BLOCK.get().asItem(),
+								ReverieModBlocks.BLACK_OLIVE_BLOCK.get().asItem(),
 								ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK.get().asItem()
 						);
 						oliveBlocks.forEach(item -> output.accept(new ItemStack(item)));

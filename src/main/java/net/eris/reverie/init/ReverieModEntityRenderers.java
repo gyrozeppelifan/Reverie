@@ -19,5 +19,7 @@ public class ReverieModEntityRenderers {
 		event.registerEntityRenderer(ReverieModEntities.BONE_SPEAR_PROJECTILE.get(), BoneSpearProjectileRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.BARREL_GOBLIN.get(), GoblinRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.GOBLIN_BARREL.get(), GoblinBarrelRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.GOBLET.get(), GobletRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.GOBLIN_BRUTE.get(), GoblinBruteRenderer::new);
 	}
 }

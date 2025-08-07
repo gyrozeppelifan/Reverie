@@ -1,5 +1,6 @@
 package net.eris.reverie.entity.goal;
 
+import net.eris.reverie.entity.GoblinBruteEntity;
 import net.eris.reverie.entity.ShooterGoblinEntity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -62,43 +63,32 @@ public class GenericRangedAttackGoal extends Goal {
     public void tick() {
         if (this.target == null) return;
 
-        // Ekstra: Dost oyuncu ise target'ı bırak!
-        if (this.target instanceof Player player) {
-            GoblinReputation.State state = GoblinReputation.getState(player);
-            if (state == GoblinReputation.State.FRIENDLY || state == GoblinReputation.State.HELPFUL
-                    || player.isCreative() || player.isSpectator()) {
-                this.mob.setTarget(null);
-                this.target = null;
-                this.mob.getNavigation().stop();
+        double distSq = this.mob.distanceToSqr(this.target);
+        boolean canSee = this.mob.getSensing().hasLineOfSight(this.target);
+
+        // Eğer GoblinBrute'un üzerinde bir ShooterGoblin ise kaçma mantığını atla:
+        boolean isRidden = this.mob.isPassenger() && this.mob.getVehicle() instanceof GoblinBruteEntity;
+        if (!isRidden) {
+            // Orijinal retreat mantığı
+            if (distSq <= minAttackRange) {
+                this.retreatTicks = 20;
+            }
+            if (this.retreatTicks > 0) {
+                double dx = this.mob.getX() - this.target.getX();
+                double dz = this.mob.getZ() - this.target.getZ();
+                double mag = Math.sqrt(dx * dx + dz * dz);
+                if (mag > 0.01) {
+                    double nx = this.mob.getX() + (dx / mag) * 2.0;
+                    double nz = this.mob.getZ() + (dz / mag) * 2.0;
+                    this.mob.getNavigation().moveTo(nx, this.mob.getY(), nz, this.speed * 1.5);
+                }
+                this.retreatTicks--;
+                this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
                 return;
             }
         }
 
-        double distSq = this.mob.distanceToSqr(this.target);
-        boolean canSee = this.mob.getSensing().hasLineOfSight(this.target);
-
-        // Oyuncu çok yaklaşırsa hızlıca kaç
-        if (distSq <= minAttackRange) {
-            // Oyuncudan uzaklaş (kaç)
-            this.retreatTicks = 20; // 1 saniye kaçsın
-        }
-
-        if (this.retreatTicks > 0) {
-            // Kaçma modunda: smooth bir şekilde ters yöne
-            double dx = this.mob.getX() - this.target.getX();
-            double dz = this.mob.getZ() - this.target.getZ();
-            double mag = Math.sqrt(dx * dx + dz * dz);
-            if (mag > 0.01) {
-                double nx = this.mob.getX() + (dx / mag) * 2.0; // 2 blok öteye hedefle
-                double nz = this.mob.getZ() + (dz / mag) * 2.0;
-                this.mob.getNavigation().moveTo(nx, this.mob.getY(), nz, this.speed * 1.5); // Hızlı kaç
-            }
-            this.retreatTicks--;
-            this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
-            return; // Bu turda saldırmasın
-        }
-
-        // Normal AI: menzile girmeye çalış
+        // Normal AI: menzile girince ateşle, yoksa yaklaş
         if (distSq <= attackRange && canSee) {
             this.mob.getNavigation().stop();
             this.mob.getLookControl().setLookAt(this.target, 30.0F, 30.0F);
@@ -107,7 +97,6 @@ public class GenericRangedAttackGoal extends Goal {
                 this.attackTime = this.cooldown;
             }
         } else {
-            // Hedefe yaklaş
             this.mob.getNavigation().moveTo(this.target, this.speed);
         }
     }

@@ -122,7 +122,7 @@ public class ElderOliveStaffItem extends Item {
             }
 
             stack.getOrCreateTag().putString(STATE_KEY, IDLE);
-            player.getCooldowns().addCooldown(this, 20);
+            player.getCooldowns().addCooldown(this, 800);
             return InteractionResultHolder.success(stack);
         }
 

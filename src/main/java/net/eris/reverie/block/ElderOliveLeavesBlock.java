@@ -1,5 +1,6 @@
 package net.eris.reverie.block;
 
+import net.eris.reverie.init.ReverieModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -7,9 +8,12 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
-import net.eris.reverie.init.ReverieModBlocks;
+import net.eris.reverie.block.ElderOliveBlock;
 
 public class ElderOliveLeavesBlock extends LeavesBlock {
 	public ElderOliveLeavesBlock() {
@@ -33,29 +37,27 @@ public class ElderOliveLeavesBlock extends LeavesBlock {
 		return 0;
 	}
 
-	// 1) Kesin random tick alması için
 	@Override
 	public boolean isRandomlyTicking(BlockState state) {
 		return !state.getValue(PERSISTENT);
 	}
 
-	// 2) RandomTick içinde yukarıdaki yağmur/gökyüzü kontrolü
 	@Override
 	public void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
-		// Sadece doğal yapraklar
 		if (!state.getValue(PERSISTENT)
-				// Global yağmur yağıyor mu?
 				&& world.isRaining()
-				// O pozisyona gökyüzü görünür mü?
 				&& world.canSeeSky(pos)
-				// Altı boş mu?
 				&& world.isEmptyBlock(pos.below())
 		) {
-			// %40 şansla spawn et
+			// %30 şansla blok oluştur
 			if (random.nextFloat() < 0.3f) {
+				// Oluşan blok %20 ihtimalle fertilized=true
+				boolean fertilized = random.nextFloat() < 0.2f;
 				world.setBlock(
 						pos.below(),
-						ReverieModBlocks.ELDER_OLIVE_BLOCK.get().defaultBlockState(),
+						ReverieModBlocks.ELDER_OLIVE_BLOCK.get()
+								.defaultBlockState()
+								.setValue(ElderOliveBlock.FERTILIZED, fertilized),
 						3
 				);
 			}
