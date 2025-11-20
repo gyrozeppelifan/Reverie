@@ -9,7 +9,8 @@
 	"ProjectileFocusMixin",
     "LivingEntityRendererMixin",
 	"PlayerRendererMixin",
-    "ServerPlayerMixin"
+    "ServerPlayerMixin",
+    "LivingEntityDataMixin"
   ],
   "client": [
     "MouseHandlerMixin",

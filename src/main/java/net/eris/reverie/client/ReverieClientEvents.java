@@ -4,9 +4,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.renderer.layer.AncientCloakLayer;
 import net.eris.reverie.init.ReverieModItems;
-import net.minecraft.client.model.EntityModel;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -29,6 +26,7 @@ public class ReverieClientEvents {
     public static ShaderInstance goblinFlagGlowShader;
     public static ShaderInstance ancientCloakShader;
 
+    // --- 1. SHADER KAYDI ---
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) {
         try {
@@ -36,9 +34,7 @@ public class ReverieClientEvents {
                     event.getResourceProvider(),
                     new ResourceLocation(ReverieMod.MODID, "goblin_radiation"),
                     DefaultVertexFormat.POSITION_COLOR_TEX
-            ), shaderInstance -> {
-                goblinFlagGlowShader = shaderInstance;
-            });
+            ), shaderInstance -> goblinFlagGlowShader = shaderInstance);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -48,14 +44,13 @@ public class ReverieClientEvents {
                     event.getResourceProvider(),
                     new ResourceLocation(ReverieMod.MODID, "ancient_cloak_aura"),
                     DefaultVertexFormat.POSITION_COLOR_TEX
-            ), shaderInstance -> {
-                ancientCloakShader = shaderInstance;
-            });
+            ), shaderInstance -> ancientCloakShader = shaderInstance);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    // --- 2. ITEM ANİMASYONLARI ---
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
@@ -71,34 +66,39 @@ public class ReverieClientEvents {
         });
     }
 
-    // --- DÜZELTİLMİŞ KATMAN KAYDI ---
+    // --- 3. KATMAN KAYDI (DÜZELTİLDİ) ---
     @SubscribeEvent
     public static void registerLayers(EntityRenderersEvent.AddLayers event) {
 
-        // 1. OYUNCULAR
+        // A) OYUNCU SKINLERI
         for (String skinType : event.getSkins()) {
             var renderer = event.getSkin(skinType);
-            // Hata 1 Çözümü: Pattern matching (instanceof ... renderer) yerine klasik if ve cast kullanıyoruz.
+
+            // HATA 1 ÇÖZÜMÜ: Pattern matching (instanceof X x) yerine klasik cast kullanıyoruz.
             if (renderer instanceof LivingEntityRenderer) {
                 LivingEntityRenderer livingRenderer = (LivingEntityRenderer) renderer;
                 livingRenderer.addLayer(new AncientCloakLayer(livingRenderer));
             }
         }
 
-        // 2. MOBLAR
+        // B) TÜM MOBLAR
         for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES) {
             try {
-                // Hata 2 Çözümü: EntityType<?> türünü zorla (EntityType<? extends LivingEntity>) türüne çeviriyoruz.
-                // Bu "Unchecked Cast" uyarısı verir ama çalışır.
+                // HATA 2 ÇÖZÜMÜ: "Unchecked Cast" ile türü zorla LivingEntity yapıyoruz.
+                // Bu sayede getRenderer() metodu hata vermiyor.
+                @SuppressWarnings("unchecked")
                 EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;
 
                 var renderer = event.getRenderer(livingType);
+
                 if (renderer instanceof LivingEntityRenderer) {
+                    @SuppressWarnings("unchecked")
                     LivingEntityRenderer livingRenderer = (LivingEntityRenderer) renderer;
+
                     livingRenderer.addLayer(new AncientCloakLayer(livingRenderer));
                 }
             } catch (Exception e) {
-                // Eğer entity bir LivingEntity değilse (örn: Ok, Tekne) buraya düşer, sorun yok devam et.
+                // Ok, Tekne gibi LivingEntity olmayan şeyler buraya düşer, sorun yok.
             }
         }
     }
