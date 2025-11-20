@@ -6,57 +6,80 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.eris.reverie.client.ReverieClientEvents;
 import net.eris.reverie.init.ReverieModMobEffects;
-import net.minecraft.client.model.PlayerModel;
-import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.LivingEntity;
 
-public class AncientCloakLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+import java.lang.reflect.Method;
 
-    public AncientCloakLayer(RenderLayerParent<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> renderer) {
+// GENERIC SINIF: Her türlü LivingEntity ve Model için çalışır
+public class AncientCloakLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
+
+    private final LivingEntityRenderer<T, M> renderer;
+
+    public AncientCloakLayer(RenderLayerParent<T, M> renderer) {
         super(renderer);
+        this.renderer = (LivingEntityRenderer<T, M>) renderer;
     }
 
     @Override
-    public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, AbstractClientPlayer player, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
+    public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, T entity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks, float netHeadYaw, float headPitch) {
 
-        // Sadece efekt varsa çiz
-        if (player.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
+        if (entity.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
 
-            // Oyuncu görünmezse layerı çizme
-            if (player.isInvisible()) return;
+            // --- DÜZELTME: İPTAL KONTROLÜNÜ KALDIRDIK ---
+            // "if (entity.isInvisible()) return;" satırını sildik.
+            // Çünkü zırhı gizlemek için entity'i zaten kodla görünmez yapıyoruz.
+            // Eğer o satır kalırsa shader da iptal oluyor.
+
+            // Shader Zamanı (Multiplayer Fix)
+            if (ReverieClientEvents.ancientCloakShader != null) {
+                ReverieClientEvents.ancientCloakShader.getUniform("GameTime").set(ageInTicks / 20.0F);
+            }
 
             poseStack.pushPose();
 
-            // --- SHELL TEKNİĞİ ---
+            // Shell (Büyütme)
             float scale = 1.10F;
             poseStack.scale(scale, scale, scale);
             poseStack.translate(0.0D, -0.15D, 0.0D);
 
             this.getParentModel().copyPropertiesTo(this.getParentModel());
 
-            ResourceLocation skin = player.getSkinTextureLocation();
+            // REFLECTION ILE TEXTURE ALMA
+            ResourceLocation skin = getEntityTexture(entity);
 
-            // DÜZELTME: Yardımcı sınıf üzerinden RenderType alıyoruz
-            VertexConsumer vertexConsumer = buffer.getBuffer(CloakRenderType.getAquaAura(skin));
+            if (skin != null) {
+                VertexConsumer vertexConsumer = buffer.getBuffer(CloakRenderType.getAquaAura(skin));
 
-            this.getParentModel().renderToBuffer(poseStack, vertexConsumer, packedLight,
-                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
-                    1.0F, 1.0F, 1.0F, 0.6F);
+                this.getParentModel().renderToBuffer(poseStack, vertexConsumer, packedLight,
+                        OverlayTexture.NO_OVERLAY,
+                        1.0F, 1.0F, 1.0F, 0.6F);
+            }
 
             poseStack.popPose();
         }
     }
 
-    // --- DÜZELTME BURADA: YARDIMCI SINIF ---
-    // RenderType'ı extend ettiği için protected değişkenlere erişebilir.
-    private static class CloakRenderType extends RenderType {
+    private ResourceLocation getEntityTexture(T entity) {
+        try {
+            Method method = EntityRenderer.class.getDeclaredMethod("getTextureLocation", net.minecraft.world.entity.Entity.class);
+            method.setAccessible(true);
+            return (ResourceLocation) method.invoke(renderer, entity);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
-        // Zorunlu constructor
+    private static class CloakRenderType extends RenderType {
         public CloakRenderType(String s, VertexFormat v, VertexFormat.Mode m, int i, boolean b, boolean b1, Runnable r, Runnable r1) {
             super(s, v, m, i, b, b1, r, r1);
         }
@@ -71,7 +94,6 @@ public class AncientCloakLayer extends RenderLayer<AbstractClientPlayer, PlayerM
                     RenderType.CompositeState.builder()
                             .setShaderState(new RenderStateShard.ShaderStateShard(() -> ReverieClientEvents.ancientCloakShader))
                             .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
-                            // ARTIK HATA VERMEZ:
                             .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                             .setCullState(NO_CULL)
                             .setWriteMaskState(COLOR_WRITE)

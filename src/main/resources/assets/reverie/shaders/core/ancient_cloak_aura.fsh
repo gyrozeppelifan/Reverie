@@ -16,8 +16,8 @@ void main() {
   float pulse = (sin(time) + 1.0) * 0.5;
 
   // 2. Blur (Yayılma)
-  float spread = 0.03;
-  vec4 blurSum = vec4(0.0);
+  float spread = 0.6;
+  vec4 blurSum = vec4(0.5);
 
   // 3x3 Örnekleme
   blurSum += texture(Sampler0, texCoord0 + vec2(-spread, -spread));
