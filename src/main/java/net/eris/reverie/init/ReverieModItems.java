@@ -21,6 +21,8 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> BRAWLER_SPAWN_EGG = REGISTRY.register("brawler_spawn_egg", () -> new ForgeSpawnEggItem(ReverieModEntities.BRAWLER, -1, -1, new Item.Properties()));
 	public static final RegistryObject<Item> DRUNKARD_SPAWN_EGG = REGISTRY.register("drunkard_spawn_egg", () -> new ForgeSpawnEggItem(ReverieModEntities.DRUNKARD, -6710887, -26368, new Item.Properties()));
 	public static final RegistryObject<Item> BOOZE_BOTTLE = REGISTRY.register("booze_bottle", () -> new BoozeBottleItem());
+	public static final RegistryObject<Item> GOBLIN_FLAG = REGISTRY.register("goblin_flag", () -> new GoblinFlagItem());
+	public static final RegistryObject<Item> ANCIENT_CROSSBOW = REGISTRY.register("ancient_crossbow", () -> new AncientCrossbowItem());
 	public static final RegistryObject<Item> BROKEN_BOOZE_BOTTLE = REGISTRY.register("broken_booze_bottle", () -> new BrokenBoozeBottleItem());
 	public static final RegistryObject<Item> HAY_THATCH = block(ReverieModBlocks.HAY_THATCH);
 	public static final RegistryObject<Item> HAY_THATCH_STAIRS = block(ReverieModBlocks.HAY_THATCH_STAIRS);
@@ -71,6 +73,17 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> GREEN_OLIVE_BLOCK = block(ReverieModBlocks.GREEN_OLIVE_BLOCK);
 	public static final RegistryObject<Item> BLACK_OLIVE_BLOCK = block(ReverieModBlocks.BLACK_OLIVE_BLOCK);
 	public static final RegistryObject<Item> CARVED_ELDER_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK);
+	public static final RegistryObject<Item> CARVED_BLACK_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_BLACK_OLIVE_BLOCK);
+	public static final RegistryObject<Item> CARVED_GREEN_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_GREEN_OLIVE_BLOCK);
+	public static final RegistryObject<Item> GOBLIN_BRUTE_SPAWN_EGG = REGISTRY.register("goblin_brute_spawn_egg", () -> new ForgeSpawnEggItem(ReverieModEntities.GOBLIN_BRUTE, -1, -1, new Item.Properties()));
+	public static final RegistryObject<Item> HANGING_HIDE = block(ReverieModBlocks.HANGING_HIDE);
+	public static final RegistryObject<Item> LEATHER_BLOCK = block(ReverieModBlocks.LEATHER_BLOCK);
+	public static final RegistryObject<Item> LEATHER_PATCH_BLOCK = block(ReverieModBlocks.LEATHER_PATCH_BLOCK);
+	public static final RegistryObject<Item> RABBIT_HIDE_BLOCK = block(ReverieModBlocks.RABBIT_HIDE_BLOCK);
+	public static final RegistryObject<Item> LAYERED_PELT_BLOCK = block(ReverieModBlocks.LAYERED_PELT_BLOCK);
+	public static final RegistryObject<Item> STITCHED_LEATHER_TILES = block(ReverieModBlocks.STITCHED_LEATHER_TILES);
+	public static final RegistryObject<Item> PATCHED_LEATHER_TILES = block(ReverieModBlocks.PATCHED_LEATHER_TILES);
+
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));

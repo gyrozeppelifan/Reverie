@@ -92,7 +92,7 @@ public class GoblinBruteRenderer extends MobRenderer<GoblinBruteEntity, ModelGob
 
 					// 3) Diğer durumların animasyonları
 					switch (entity.getState()) {
-						case IDLE, SEEK_PLAYER, CARRY_SHOOTER ->
+						case IDLE, SEEK_PLAYER, SEEK_SHOOTER, CARRY_SHOOTER ->
 								this.animateWalk(GoblinBruteAnimation.walk, limbSwing, limbSwingAmount, 1f, 1f);
 						case CHARGING ->
 								this.animateWalk(GoblinBruteAnimation.charge, limbSwing, limbSwingAmount, 1.3f, 1.2f);
@@ -113,7 +113,7 @@ public class GoblinBruteRenderer extends MobRenderer<GoblinBruteEntity, ModelGob
 
 					// 4) Attack overlay (en sona)
 					if (entity.getAttackTimer() > 0) {
-						this.animate(entity.animationState5, GoblinBruteAnimation.angryattack, ageInTicks, 1.6f);
+						this.animate(entity.animationState5, GoblinBruteAnimation.angryattack, ageInTicks, 1.8f);
 					}
 				}
 			};

@@ -1,0 +1,6 @@
+{
+  "parent": "reverie:item/template_ancient_crossbow",
+  "textures": {
+    "3": "reverie:item/ancient_crossbow_filled" 
+  }
+}

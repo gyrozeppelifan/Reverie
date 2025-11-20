@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/leather_patch_block",
+    "up": "reverie:block/leather_patch_block",
+    "north": "reverie:block/leather_patch_block",
+    "east": "reverie:block/leather_patch_block",
+    "south": "reverie:block/leather_patch_block",
+    "west": "reverie:block/leather_patch_block",
+    "particle": "reverie:block/leather_patch_block"
+  },
+  "render_type": "solid"
+}

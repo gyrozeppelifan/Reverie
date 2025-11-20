@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "reverie:block/stitched_leather_tiles",
+    "up": "reverie:block/stitched_leather_tiles",
+    "north": "reverie:block/stitched_leather_tiles",
+    "east": "reverie:block/stitched_leather_tiles",
+    "south": "reverie:block/stitched_leather_tiles",
+    "west": "reverie:block/stitched_leather_tiles",
+    "particle": "reverie:block/stitched_leather_tiles"
+  },
+  "render_type": "solid"
+}

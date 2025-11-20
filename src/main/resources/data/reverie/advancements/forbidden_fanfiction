@@ -1,0 +1,15 @@
+{
+  "parent": "reverie:reverie_start",
+  "display": {
+    "icon": { "item": "minecraft:pink_dye" },
+    "title": { "translate": "adv.reverie.forbidden_fanfiction.title" },
+    "description": { "translate": "adv.reverie.forbidden_fanfiction.desc" },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "kissed": { "trigger": "minecraft:impossible" }
+  }
+}

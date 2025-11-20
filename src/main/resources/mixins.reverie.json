@@ -8,13 +8,19 @@
     "ClientPlayerInputMixin",
 	"ProjectileFocusMixin",
     "LivingEntityRendererMixin",
-	"PlayerRendererMixin"
+	"PlayerRendererMixin",
+    "ServerPlayerMixin"
   ],
   "client": [
     "MouseHandlerMixin",
     "ClientPlayerInputMixin",
 	"LivingEntityRendererMixin",
-	"PlayerRendererMixin"
+	"PlayerRendererMixin",
+    "KeyboardInputMixin",
+    "MinecraftMixin",
+    "MouseBlockerMixin",
+    "LocalPlayerMixin",
+    "ItemInHandLayerMixin"
   ],
   "minVersion": "0.8"
 }

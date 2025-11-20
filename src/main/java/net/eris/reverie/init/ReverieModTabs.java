@@ -33,6 +33,10 @@ public class ReverieModTabs {
 						// Booze Items
 						output.accept(new ItemStack(ReverieModItems.BOOZE_BOTTLE.get()));
 						output.accept(new ItemStack(ReverieModItems.BROKEN_BOOZE_BOTTLE.get()));
+						output.accept(new ItemStack(ReverieModItems.GOBLIN_FLAG.get()));
+						output.accept(new ItemStack(ReverieModItems.ANCIENT_CROSSBOW.get()));
+
+
 
 						// Hay Thatch & Bone
 						List<Item> hayItems = List.of(
@@ -62,7 +66,9 @@ public class ReverieModTabs {
 								ReverieModBlocks.ELDER_OLIVE_BLOCK.get().asItem(),
 								ReverieModBlocks.GREEN_OLIVE_BLOCK.get().asItem(),
 								ReverieModBlocks.BLACK_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK.get().asItem()
+								ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK.get().asItem(),
+								ReverieModBlocks.CARVED_GREEN_OLIVE_BLOCK.get().asItem(),
+								ReverieModBlocks.CARVED_BLACK_OLIVE_BLOCK.get().asItem()
 						);
 						oliveBlocks.forEach(item -> output.accept(new ItemStack(item)));
 
@@ -77,7 +83,15 @@ public class ReverieModTabs {
 								ReverieModBlocks.OLIVE_BUTTON.get().asItem(),
 								ReverieModBlocks.OLIVE_FENCE_GATE.get().asItem(),
 								ReverieModBlocks.OLIVE_PILE.get().asItem(),
-								ReverieModBlocks.MASHED_OLIVE.get().asItem()
+								ReverieModBlocks.MASHED_OLIVE.get().asItem(),
+								ReverieModBlocks.LEATHER_BLOCK.get().asItem(),
+								ReverieModBlocks.LEATHER_PATCH_BLOCK.get().asItem(),
+								ReverieModBlocks.RABBIT_HIDE_BLOCK.get().asItem(),
+								ReverieModBlocks.LAYERED_PELT_BLOCK.get().asItem(),
+								ReverieModBlocks.STITCHED_LEATHER_TILES.get().asItem(),
+								ReverieModBlocks.PATCHED_LEATHER_TILES.get().asItem(),
+								ReverieModBlocks.HANGING_HIDE.get().asItem()
+
 						);
 						oliveDerived.forEach(item -> output.accept(new ItemStack(item)));
 						output.accept(new ItemStack(ReverieModItems.OLIVE_OIL_BOTTLE.get()));
@@ -93,7 +107,8 @@ public class ReverieModTabs {
 								ReverieModItems.BRAWLER_SPAWN_EGG.get(),
 								ReverieModItems.DRUNKARD_SPAWN_EGG.get(),
 								ReverieModItems.GOBLIN_SPAWN_EGG.get(),
-								ReverieModItems.SHOOTER_GOBLIN_SPAWN_EGG.get()
+								ReverieModItems.SHOOTER_GOBLIN_SPAWN_EGG.get(),
+								ReverieModItems.GOBLIN_BRUTE_SPAWN_EGG.get()
 						);
 						spawnEggs.forEach(egg -> output.accept(new ItemStack(egg)));
 					})

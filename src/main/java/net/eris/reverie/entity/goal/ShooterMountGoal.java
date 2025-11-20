@@ -2,12 +2,14 @@ package net.eris.reverie.entity.goal;
 
 import net.eris.reverie.entity.GoblinBruteEntity;
 import net.eris.reverie.entity.ShooterGoblinEntity;
-import net.eris.reverie.util.GoblinReputation;
-import net.eris.reverie.util.GoblinReputation.State;
+import net.eris.reverie.init.ReverieModSounds;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -16,9 +18,6 @@ import java.util.List;
  */
 public class ShooterMountGoal extends Goal {
     private final GoblinBruteEntity brute;
-    public GoblinBruteEntity getBrute() {
-        return brute;
-    }
     private ShooterGoblinEntity shooter;
 
     public ShooterMountGoal(GoblinBruteEntity brute) {
@@ -28,37 +27,78 @@ public class ShooterMountGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        // Only when in SEEK_SHOOTER state
         if (brute.getState() != GoblinBruteEntity.BruteState.SEEK_SHOOTER) return false;
-        // Find nearest idle shooter within 5 blocks
-        List<ShooterGoblinEntity> list = brute.level().getEntitiesOfClass(ShooterGoblinEntity.class,
-                brute.getBoundingBox().inflate(5),
-                e -> e.getVehicle() == null);
+
+        List<ShooterGoblinEntity> list = brute.level().getEntitiesOfClass(
+                ShooterGoblinEntity.class,
+                brute.getBoundingBox().inflate(5.0),
+                e -> e.getVehicle() == null
+        );
         if (list.isEmpty()) return false;
-        shooter = list.get(0);
+
+        shooter = list.stream()
+                .min(Comparator.comparingDouble(e -> brute.distanceTo(e)))
+                .orElse(list.get(0));
         return true;
     }
 
     @Override
     public void start() {
-        // Move toward shooter goblin
-        brute.getNavigation().moveTo(shooter, 1.0);
+        // if already within 3 blocks, mount immediately
+        if (shooter != null && brute.distanceTo(shooter) <= 3.0) {
+            mountShooter();
+        } else if (shooter != null) {
+            brute.getNavigation().moveTo(shooter, 1.0);
+        }
     }
 
     @Override
     public void tick() {
-        if (shooter != null) {
+        if (shooter == null) return;
+
+        double dist = brute.distanceTo(shooter);
+        if (dist <= 3.0) {
+            mountShooter();
+        } else {
             brute.getNavigation().moveTo(shooter, 1.0);
-            if (brute.distanceTo(shooter) < 1.5) {
-                shooter.startRiding(brute, true);
-                brute.setState(GoblinBruteEntity.BruteState.CARRY_SHOOTER);
-            }
+        }
+    }
+
+    private void mountShooter() {
+        shooter.startRiding(brute, true);
+        brute.setState(GoblinBruteEntity.BruteState.CARRY_SHOOTER);
+
+        // play team-up sound
+        brute.level().playSound(
+                null,
+                brute.getX(), brute.getY(), brute.getZ(),
+                ReverieModSounds.SHOOTER_BRUTE_TEAMUP.get(),
+                SoundSource.HOSTILE,
+                1.2F, 1.0F
+        );
+
+        // spawn visible particles
+        if (brute.level() instanceof ServerLevel server) {
+            Vec3 pos = brute.position().add(0, 1.2, 0);
+            server.sendParticles(
+                    ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                    pos.x, pos.y, pos.z,
+                    20,
+                    0.5, 0.5, 0.5,
+                    0.05
+            );
         }
     }
 
     @Override
     public boolean canContinueToUse() {
-        // Stop once shooter has mounted
-        return brute.getPassengers().stream().noneMatch(e -> e instanceof ShooterGoblinEntity);
+        return brute.getPassengers().stream()
+                .noneMatch(e -> e instanceof ShooterGoblinEntity);
+    }
+
+    @Override
+    public void stop() {
+        shooter = null;
+        super.stop();
     }
 }

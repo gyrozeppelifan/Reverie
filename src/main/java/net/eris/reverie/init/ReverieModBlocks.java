@@ -50,4 +50,13 @@ public class ReverieModBlocks {
 	public static final RegistryObject<Block> GREEN_OLIVE_BLOCK = REGISTRY.register("green_olive_block", () -> new GreenOliveBlock());
 	public static final RegistryObject<Block> BLACK_OLIVE_BLOCK = REGISTRY.register("black_olive_block", () -> new BlackOliveBlock());
 	public static final RegistryObject<Block> CARVED_ELDER_OLIVE_BLOCK = REGISTRY.register("carved_elder_olive_block", () -> new CarvedElderOliveBlock());
+	public static final RegistryObject<Block> CARVED_BLACK_OLIVE_BLOCK = REGISTRY.register("carved_black_olive_block", () -> new CarvedBlackOliveBlock());
+	public static final RegistryObject<Block> CARVED_GREEN_OLIVE_BLOCK = REGISTRY.register("carved_green_olive_block", () -> new CarvedGreenOliveBlock());
+	public static final RegistryObject<Block> HANGING_HIDE = REGISTRY.register("hanging_hide", () -> new HangingHideBlock());
+	public static final RegistryObject<Block> LEATHER_BLOCK = REGISTRY.register("leather_block", () -> new LeatherBlock());
+	public static final RegistryObject<Block> LEATHER_PATCH_BLOCK = REGISTRY.register("leather_patch_block", () -> new LeatherPatchBlock());
+	public static final RegistryObject<Block> RABBIT_HIDE_BLOCK = REGISTRY.register("rabbit_hide_patch_block", () -> new RabbitHideBlock());
+	public static final RegistryObject<Block> LAYERED_PELT_BLOCK = REGISTRY.register("layered_pelt_block", () -> new LayeredPeltBlock());
+	public static final RegistryObject<Block> STITCHED_LEATHER_TILES = REGISTRY.register("stitched_leather_tiles", () -> new StitchedLeatherTilesBlock());
+	public static final RegistryObject<Block> PATCHED_LEATHER_TILES = REGISTRY.register("patched_leather_tiles", () -> new PatchedLeatherTilesBlock());
 }

@@ -1,6 +1,6 @@
-
 package net.eris.reverie.entity;
 
+import net.minecraft.sounds.SoundEvents;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
@@ -23,10 +23,26 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.Packet;
 
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity.RemovalReason;
+
 import net.eris.reverie.init.ReverieModEntities;
 
 public class GobletEntity extends Monster {
+    // growthTime tanımı
+    private static final EntityDataAccessor<Integer> GROWTH_TIME =
+            SynchedEntityData.defineId(GobletEntity.class, EntityDataSerializers.INT);
+    private static final int INITIAL_GROWTH = 20 * 20; // 400 tick = ~20 saniye
+
     public final AnimationState animationState0 = new AnimationState();
+
+    // GobletEntity.java içinde
+    /** Kalan büyüme tick’ini verir */
+    public int getRemainingGrowth() {
+        return this.entityData.get(GROWTH_TIME);
+    }
 
     public GobletEntity(PlayMessages.SpawnEntity packet, Level world) {
         this(ReverieModEntities.GOBLET.get(), world);
@@ -37,6 +53,15 @@ public class GobletEntity extends Monster {
         setMaxUpStep(0.6f);
         xpReward = 0;
         setNoAi(false);
+        // growthTime başlangıcı
+        this.entityData.set(GROWTH_TIME, INITIAL_GROWTH);
+    }
+
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        // growthTime’ı data tracker’a tanıt
+        this.entityData.define(GROWTH_TIME, INITIAL_GROWTH);
     }
 
     @Override
@@ -45,7 +70,7 @@ public class GobletEntity extends Monster {
     }
 
     @Override
-    protected void registerGoals() {
+    public void registerGoals() {
         super.registerGoals();
         this.goalSelector.addGoal(1, new PanicGoal(this, 1.2));
         this.goalSelector.addGoal(2, new RandomStrollGoal(this, 1));
@@ -71,21 +96,73 @@ public class GobletEntity extends Monster {
     @Override
     public void tick() {
         super.tick();
-        if (this.level().isClientSide()) {
+
+
+
+        // client tarafı animasyonu
+        if (this.level().isClientSide) {
             this.animationState0.animateWhen(true, this.tickCount);
+        }
+
+        // server tarafı: growthTime azaltma & dönüşüm kontrol
+        if (!this.level().isClientSide) {
+            int time = this.entityData.get(GROWTH_TIME);
+            if (time <= 0) {
+                this.playSound(SoundEvents.FROG_TONGUE, 0.5f,
+                        0.9f + (random.nextFloat() - 0.5f) * 0.2f);
+                doGrowthTransform();
+                return;
+            }
+            this.entityData.set(GROWTH_TIME, time - 1);
         }
     }
 
-    public static void init() {
+    /**
+     * Renderer’da scale için kullanabileceğin metod.
+     * Eğer kalan time < 100 tick ise sinüsle salınım yapar, değilse 1.0f.
+     */
+    public float getStretchScale(float partialTicks) {
+        int time = this.entityData.get(GROWTH_TIME);
+        if (time >= 100) return 1.0f;
+        float phase = ((100 - time) + partialTicks) * (2 * (float)Math.PI / 20f);
+        return 1.0f + (float)Math.sin(phase) * 0.2f;
+    }
+
+    /**
+     * growthTime bittiğinde rastgele yeni goblin spawnlayıp bu entity’yi kaldırır.
+     */
+    private void doGrowthTransform() {
+        double x = this.getX(), y = this.getY(), z = this.getZ();
+        float yaw = this.getYRot(), pitch = this.getXRot();
+        int roll = this.random.nextInt(100);
+        EntityType<? extends Mob> newType;
+
+        if (roll < 50) {
+            newType = ReverieModEntities.GOBLIN.get();
+        } else if (roll < 90) {
+            newType = ReverieModEntities.SHOOTER_GOBLIN.get();
+        } else {
+            newType = ReverieModEntities.GOBLIN_BRUTE.get();
+        }
+
+        Mob baby = newType.create(this.level());
+        if (baby != null) {
+            baby.moveTo(x, y, z, yaw, pitch);
+            this.level().addFreshEntity(baby);
+        }
+        this.remove(RemovalReason.DISCARDED);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        AttributeSupplier.Builder builder = Mob.createMobAttributes();
-        builder = builder.add(Attributes.MOVEMENT_SPEED, 0.3);
-        builder = builder.add(Attributes.MAX_HEALTH, 10);
-        builder = builder.add(Attributes.ARMOR, 0);
-        builder = builder.add(Attributes.ATTACK_DAMAGE, 3);
-        builder = builder.add(Attributes.FOLLOW_RANGE, 16);
-        return builder;
+        return Mob.createMobAttributes()
+                .add(Attributes.MOVEMENT_SPEED, 0.3)
+                .add(Attributes.MAX_HEALTH, 10)
+                .add(Attributes.ARMOR, 0)
+                .add(Attributes.ATTACK_DAMAGE, 3)
+                .add(Attributes.FOLLOW_RANGE, 16);
+    }
+
+    public static void init() {
+        // ek init gerekirse buraya
     }
 }

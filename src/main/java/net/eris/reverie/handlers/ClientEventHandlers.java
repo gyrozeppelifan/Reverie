@@ -1,5 +1,5 @@
 // src/main/java/net/eris/reverie/client/ClientEventHandlers.java
-package net.eris.reverie.client;
+package net.eris.reverie.handlers;
 
 import net.eris.reverie.client.renderer.layer.DrunkenOutlineLayer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;

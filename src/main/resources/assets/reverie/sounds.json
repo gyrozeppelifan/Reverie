@@ -345,5 +345,39 @@
         "stream": false
       }
     ]
+  },
+  "shooter_brute_teamup": {
+    "subtitle": "subtitles.shooter_brute_teamup",
+    "sounds": [
+      {
+        "name": "reverie:shooter_brute_teamup",
+        "stream": false
+      },
+      {
+        "name": "reverie:shooter_brute_teamup_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:shooter_brute_teamup_3",
+        "stream": false
+      }
+    ]
+  },
+  "kissing": {
+    "subtitle": "subtitles.kissing",
+    "sounds": [
+      {
+        "name": "reverie:kissing_1",
+        "stream": false
+      },
+      {
+        "name": "reverie:kissing_2",
+        "stream": false
+      },
+      {
+        "name": "reverie:kissing_3",
+        "stream": false
+      }
+    ]
   }
 }

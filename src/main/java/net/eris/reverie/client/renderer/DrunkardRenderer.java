@@ -66,6 +66,7 @@ public class DrunkardRenderer extends MobRenderer<DrunkardEntity, ModelDrunkard<
 		this.addLayer(new RenderLayer<DrunkardEntity, ModelDrunkard<DrunkardEntity>>(this) {
 			final ResourceLocation LAYER_TEXTURE = new ResourceLocation("reverie:textures/entities/cyclops.png");
 
+
 			@Override
 			public void render(PoseStack poseStack, MultiBufferSource bufferSource, int light, DrunkardEntity entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
 				Level world = entity.level();

@@ -5,15 +5,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.MapColor;
-import net.eris.reverie.block.ElderOliveBlock;
+
+// Eğer farklı paketteyse bunu aç:
+// import net.eris.reverie.block.ElderOliveBlock;
 
 public class ElderOliveLeavesBlock extends LeavesBlock {
 	public ElderOliveLeavesBlock() {
@@ -37,30 +36,38 @@ public class ElderOliveLeavesBlock extends LeavesBlock {
 		return 0;
 	}
 
+	// TÜM doğal yapraklar tick alsın (vanilla decay yine super.randomTick'te koşul kontrollü çalışır)
 	@Override
 	public boolean isRandomlyTicking(BlockState state) {
 		return !state.getValue(PERSISTENT);
 	}
 
 	@Override
-	public void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
-		if (!state.getValue(PERSISTENT)
-				&& world.isRaining()
-				&& world.canSeeSky(pos)
-				&& world.isEmptyBlock(pos.below())
-		) {
-			// %30 şansla blok oluştur
-			if (random.nextFloat() < 0.3f) {
-				// Oluşan blok %20 ihtimalle fertilized=true
-				boolean fertilized = random.nextFloat() < 0.2f;
-				world.setBlock(
+	public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+		// 1) Önce vanilla decay çalışsın
+		super.randomTick(state, level, pos, random);
+
+		// 2) Yaprak hâlâ yerinde mi? (decay ile kırılmış olabilir)
+		BlockState now = level.getBlockState(pos);
+		if (now.getBlock() != this) return;
+
+		// 3) Persistent değilse VE decay durumunda değilse (DISTANCE < 7) yağmur bonusunu uygula
+		if (!now.getValue(PERSISTENT)
+				&& now.getValue(DISTANCE) < 7
+				&& level.isRainingAt(pos.above())
+				&& level.isEmptyBlock(pos.below())) {
+
+			if (random.nextFloat() < 0.20f) {
+				boolean fertilized = random.nextFloat() < 0.20f;
+				level.setBlock(
 						pos.below(),
-						ReverieModBlocks.ELDER_OLIVE_BLOCK.get()
+						net.eris.reverie.init.ReverieModBlocks.ELDER_OLIVE_BLOCK.get()
 								.defaultBlockState()
-								.setValue(ElderOliveBlock.FERTILIZED, fertilized),
+								.setValue(net.eris.reverie.block.ElderOliveBlock.FERTILIZED, fertilized),
 						3
 				);
 			}
 		}
 	}
 }
+

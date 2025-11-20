@@ -9,11 +9,16 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class GrabPlayerGoal extends Goal {
-    // Arama yarıçapını 16 bloka çıkardık
     public static final double SEARCH_RADIUS = 16.0;
     private static final double PICKUP_DISTANCE = 2.5;
+    // NEW: sqrt’sız karşılaştırma
+    private static final double PICKUP_DISTANCE_SQR = PICKUP_DISTANCE * PICKUP_DISTANCE;
+
     private final GoblinBruteEntity brute;
     private Player target;
+
+    // repath throttling
+    private int repathCooldown = 0;
 
     public GrabPlayerGoal(GoblinBruteEntity brute) {
         this.brute = brute;
@@ -27,8 +32,10 @@ public class GrabPlayerGoal extends Goal {
         if (brute.getState() != GoblinBruteEntity.BruteState.SEEK_PLAYER) return false;
         if (!brute.getPassengers().isEmpty()) return false;
 
-        // 1) SEARCH_RADIUS içinde bir hedef varsa başla:
-        //    Y eksenini 3 blokla sınırladık, X/Z ekseninde SEARCH_RADIUS
+        // Cooldown ve ateş hedefi olmadan hiç yeltenme
+        if (!brute.isFireThrowOffCooldown()) return false;
+        if (brute.getCachedFireTarget() == null) return false;
+
         List<Player> list = brute.level().getEntitiesOfClass(
                 Player.class,
                 brute.getBoundingBox().inflate(SEARCH_RADIUS, 3, SEARCH_RADIUS),
@@ -36,8 +43,7 @@ public class GrabPlayerGoal extends Goal {
                     if (p.isCreative() || p.isSpectator()) return false;
                     var rep = GoblinReputation.getState(p);
                     if (rep == GoblinReputation.State.AGGRESSIVE) return true;
-                    return rep == GoblinReputation.State.NEUTRAL
-                            && brute.getLastHurtByMob() == p;
+                    return rep == GoblinReputation.State.NEUTRAL && brute.getLastHurtByMob() == p;
                 }
         );
 
@@ -46,9 +52,9 @@ public class GrabPlayerGoal extends Goal {
             return false;
         }
 
-        // 2) En yakınını seç:
+        // NEW: distanceToSqr ile min seçimi
         target = list.stream()
-                .min((a, b) -> Double.compare(brute.distanceTo(a), brute.distanceTo(b)))
+                .min((a, b) -> Double.compare(brute.distanceToSqr(a), brute.distanceToSqr(b)))
                 .orElse(null);
 
         return target != null;
@@ -56,8 +62,8 @@ public class GrabPlayerGoal extends Goal {
 
     @Override
     public void start() {
-        // sadece chase başlasın
-        brute.getNavigation().moveTo(target, 1.15);
+        repathCooldown = 0;
+        if (target != null) brute.getNavigation().moveTo(target, 1.3);
     }
 
     @Override
@@ -65,7 +71,14 @@ public class GrabPlayerGoal extends Goal {
         if (brute.level().isClientSide) return false;
         if (target == null || !target.isAlive()) return false;
         if (brute.getState() != GoblinBruteEntity.BruteState.SEEK_PLAYER) return false;
-        // SEARCH_RADIUS içinde kaldığı sürece devam et
+
+        // NEW: hedef creative/spectator olduysa bırak
+        if (target.isCreative() || target.isSpectator()) return false;
+
+        // Cooldown/ateş hedefi uçtuysa kovalama iptal
+        if (!brute.isFireThrowOffCooldown()) return false;
+        if (brute.getCachedFireTarget() == null) return false;
+
         return brute.distanceTo(target) <= SEARCH_RADIUS;
     }
 
@@ -73,15 +86,18 @@ public class GrabPlayerGoal extends Goal {
     public void tick() {
         if (target == null || brute.level().isClientSide) return;
 
-        double dist = brute.distanceTo(target);
+        double distSqr = brute.distanceToSqr(target);
 
-        // eğer önceki yol tamamlandıysa, yeniden hedefe yönlendir
-        if (brute.getNavigation().isDone()) {
+        // repath throttling
+        if (repathCooldown > 0) {
+            repathCooldown--;
+        } else if (brute.getNavigation().isDone()) {
             brute.getNavigation().moveTo(target, 1.15);
+            repathCooldown = 10;
         }
 
-        // sadece PICKUP_DISTANCE içinde bindir:
-        if (dist <= PICKUP_DISTANCE) {
+        // NEW: sqrt’sız pickup check
+        if (distSqr <= PICKUP_DISTANCE_SQR) {
             if (target.startRiding(brute, true)) {
                 brute.setState(GoblinBruteEntity.BruteState.CARRY_PLAYER);
                 brute.grabCooldown = 40;

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "reverie:olive_leaves"
+    "reverie:olive_leaves",
+    "reverie:elder_olive_leaves"
   ]
 }

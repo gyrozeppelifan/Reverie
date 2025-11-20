@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:rose_bush"
+    },
+    "title": {
+      "translate": "advancements.forbidden_fanfiction.title"
+    },
+    "description": {
+      "translate": "advancements.forbidden_fanfiction.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "forbidden_fanfiction_0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "reverie:reverie_start"
+}

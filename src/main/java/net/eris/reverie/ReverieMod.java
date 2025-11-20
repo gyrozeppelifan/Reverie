@@ -17,6 +17,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.FriendlyByteBuf;
@@ -34,6 +35,10 @@ import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
 import java.util.AbstractMap;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+import net.eris.reverie.config.ReverieCommonConfig;
+
 
 @Mod("reverie")
 public class ReverieMod {
@@ -41,12 +46,13 @@ public class ReverieMod {
 	public static final String MODID = "reverie";
 
 	public ReverieMod() {
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, ReverieCommonConfig.SPEC);
 		MinecraftForge.EVENT_BUS.register(this);
 
 		// *** Eventleri burada register et! ***
 		MinecraftForge.EVENT_BUS.register(GoblinRepEvent.class);
 		MinecraftForge.EVENT_BUS.register(GoblinRepPersistEvent.class);
-
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
 
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
 		ReverieBannerPatterns.BANNER_PATTERNS.register(bus);
@@ -70,6 +76,18 @@ public class ReverieMod {
 	public static <T> void addNetworkMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
 		PACKET_HANDLER.registerMessage(messageID, messageType, encoder, decoder, messageConsumer);
 		messageID++;
+	}
+
+
+	private void commonSetup(final net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent e) {
+		e.enqueueWork(() -> {
+			ReverieMod.addNetworkMessage(
+					net.eris.reverie.client.network.ScreenShakeS2CPacket.class,
+					net.eris.reverie.client.network.ScreenShakeS2CPacket::encode,
+					net.eris.reverie.client.network.ScreenShakeS2CPacket::decode,
+					net.eris.reverie.client.network.ScreenShakeS2CPacket::handle
+			);
+		});
 	}
 
 	private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
