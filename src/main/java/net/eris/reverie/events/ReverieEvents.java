@@ -56,20 +56,22 @@ public class ReverieEvents {
         }
     }
 
-    // --- 2. GİZLİLİK: AI VE TARGET (Sunucu Tarafı) ---
+    // --- 2. GİZLİLİK: AI VE TARGET (Evrensel) ---
 
     @SubscribeEvent
     public static void onVisibilityCheck(LivingEvent.LivingVisibilityEvent event) {
+        // ARTIK TÜM CANLILAR İÇİN GEÇERLİ
         if (event.getEntity().hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
-            event.modifyVisibility(0.0D); // Moblar göremez
+            event.modifyVisibility(0.0D);
         }
     }
 
     @SubscribeEvent
     public static void onTargetSet(LivingChangeTargetEvent event) {
         LivingEntity newTarget = event.getNewTarget();
+        // Hedefte efekt varsa iptal et
         if (newTarget != null && newTarget.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
-            event.setCanceled(true); // Hedef almayı iptal et
+            event.setCanceled(true);
         }
     }
 
@@ -77,8 +79,9 @@ public class ReverieEvents {
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         if (event.getEntity() instanceof Mob mob) {
             LivingEntity target = mob.getTarget();
+            // Hedefte efekt varsa takibi bırak
             if (target != null && target.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
-                mob.setTarget(null); // Takipten vazgeç
+                mob.setTarget(null);
             }
         }
     }
@@ -87,45 +90,39 @@ public class ReverieEvents {
     public static void onItemUseTick(LivingEntityUseItemEvent.Tick event) {
         if (event.getEntity().hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get()) &&
                 event.getItem().getItem() instanceof AncientCrossbowItem) {
-            event.setDuration(event.getDuration() - 1); // Hızlı reload
+            event.setDuration(event.getDuration() - 1);
         }
     }
 
-    // --- 3. GÖRSEL: RENDER HACK (ZIRH SAKLAMA + TRANSPARANLIK) ---
+    // --- 3. GÖRSEL: RENDER HACK (HERKES İÇİN) ---
 
-    // Eşyaları geçici olarak saklamak için depo (Cache)
     private static final Map<UUID, Map<EquipmentSlot, ItemStack>> equipmentCache = new HashMap<>();
 
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
+        // Player yerine LivingEntity alıyoruz
         LivingEntity entity = event.getEntity();
 
         if (entity.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
 
-            // A) SOYUNMA İŞLEMİ (Strip Hack)
-            // setInvisible yerine, zırhları ve eldeki eşyaları söküyoruz.
-            // Böylece entity görünür kalıyor (Render çalışıyor) ama üstü boş oluyor.
-
+            // A) SOYUNMA İŞLEMİ (Zırhları Gizle)
             Map<EquipmentSlot, ItemStack> savedGear = new HashMap<>();
             for (EquipmentSlot slot : EquipmentSlot.values()) {
-                // Sadece Zırh ve Eller
                 if (slot.getType() == EquipmentSlot.Type.ARMOR || slot.getType() == EquipmentSlot.Type.HAND) {
                     ItemStack currentItem = entity.getItemBySlot(slot);
                     if (!currentItem.isEmpty()) {
-                        savedGear.put(slot, currentItem.copy()); // Kopyala ve sakla
-                        entity.setItemSlot(slot, ItemStack.EMPTY); // Slotu boşalt
+                        savedGear.put(slot, currentItem.copy());
+                        entity.setItemSlot(slot, ItemStack.EMPTY);
                     }
                 }
             }
-            // Depoya at
             equipmentCache.put(entity.getUUID(), savedGear);
 
-            // B) TRANSPARANLIK (VÜCUT İÇİN)
-            // Artık entity görünür olduğu için bu çalışacak!
+            // B) TRANSPARANLIK
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.35F); // %35 Görünür (Hayalet)
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.35F);
         }
     }
 
@@ -136,8 +133,7 @@ public class ReverieEvents {
 
         if (entity.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
 
-            // A) GİYİNME İŞLEMİ (Restore)
-            // Render bitti, eşyaları geri ver ki oyun bozulmasın
+            // A) GİYİNME İŞLEMİ
             if (equipmentCache.containsKey(entity.getUUID())) {
                 Map<EquipmentSlot, ItemStack> savedGear = equipmentCache.get(entity.getUUID());
                 for (Map.Entry<EquipmentSlot, ItemStack> entry : savedGear.entrySet()) {
@@ -146,13 +142,13 @@ public class ReverieEvents {
                 equipmentCache.remove(entity.getUUID());
             }
 
-            // B) RENKLERİ SIFIRLA
+            // B) RENGİ SIFIRLA
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             RenderSystem.disableBlend();
         }
     }
 
-    // FPS Modu (Sadece kendi elin için)
+    // FPS Modu (Sadece kendi elin için kalabilir)
     @SubscribeEvent
     @OnlyIn(Dist.CLIENT)
     public static void onRenderHand(RenderHandEvent event) {

@@ -10,7 +10,6 @@ import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
@@ -18,11 +17,10 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 
-import java.lang.reflect.Method;
-
-// GENERIC SINIF: Her türlü LivingEntity ve Model için çalışır
+// GENERIC SINIF
 public class AncientCloakLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
 
+    // Renderer'ı saklıyoruz
     private final LivingEntityRenderer<T, M> renderer;
 
     public AncientCloakLayer(RenderLayerParent<T, M> renderer) {
@@ -35,12 +33,7 @@ public class AncientCloakLayer<T extends LivingEntity, M extends EntityModel<T>>
 
         if (entity.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
 
-            // --- DÜZELTME: İPTAL KONTROLÜNÜ KALDIRDIK ---
-            // "if (entity.isInvisible()) return;" satırını sildik.
-            // Çünkü zırhı gizlemek için entity'i zaten kodla görünmez yapıyoruz.
-            // Eğer o satır kalırsa shader da iptal oluyor.
-
-            // Shader Zamanı (Multiplayer Fix)
+            // Shader Zamanı
             if (ReverieClientEvents.ancientCloakShader != null) {
                 ReverieClientEvents.ancientCloakShader.getUniform("GameTime").set(ageInTicks / 20.0F);
             }
@@ -54,8 +47,9 @@ public class AncientCloakLayer<T extends LivingEntity, M extends EntityModel<T>>
 
             this.getParentModel().copyPropertiesTo(this.getParentModel());
 
-            // REFLECTION ILE TEXTURE ALMA
-            ResourceLocation skin = getEntityTexture(entity);
+            // BASİTLEŞTİRİLMİŞ TEXTURE ALMA
+            // Reflection yok, direkt renderer'dan istiyoruz.
+            ResourceLocation skin = renderer.getTextureLocation(entity);
 
             if (skin != null) {
                 VertexConsumer vertexConsumer = buffer.getBuffer(CloakRenderType.getAquaAura(skin));
@@ -66,16 +60,6 @@ public class AncientCloakLayer<T extends LivingEntity, M extends EntityModel<T>>
             }
 
             poseStack.popPose();
-        }
-    }
-
-    private ResourceLocation getEntityTexture(T entity) {
-        try {
-            Method method = EntityRenderer.class.getDeclaredMethod("getTextureLocation", net.minecraft.world.entity.Entity.class);
-            method.setAccessible(true);
-            return (ResourceLocation) method.invoke(renderer, entity);
-        } catch (Exception e) {
-            return null;
         }
     }
 
