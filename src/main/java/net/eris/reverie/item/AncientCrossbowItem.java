@@ -1,6 +1,7 @@
 package net.eris.reverie.item;
 
 import net.eris.reverie.init.ReverieModMobEffects;
+import net.eris.reverie.init.ReverieModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.network.chat.Component;
@@ -70,7 +71,7 @@ public class AncientCrossbowItem extends Item {
                 } else {
                     player.addEffect(new MobEffectInstance(ReverieModMobEffects.ANCIENT_CLOAK.get(), 200000, 0, false, false, true));
                     player.displayClientMessage(Component.literal("§aGizlilik Aktif"), true);
-                    level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ILLUSIONER_PREPARE_MIRROR, SoundSource.PLAYERS, 1.0F, 1.5F);
+                    level.playSound(null, player.getX(), player.getY(), player.getZ(), ReverieModSounds.ANCIENT_CLOAK.get(), SoundSource.PLAYERS, 1.0F, 1.5F);
                 }
             }
             return InteractionResultHolder.success(stack);

@@ -22,82 +22,38 @@
       "replace_current_music": true
     },
     "particle": {
-      "options": {
-        "type": "minecraft:spore_blossom_air"
-      },
+      "options": { "type": "minecraft:spore_blossom_air" },
       "probability": 0.02
     }
   },
   "spawners": {
     "monster": [
-      {
-        "type": "reverie:goblin",
-        "weight": 100,
-        "minCount": 4,
-        "maxCount": 4
-      },
-      {
-        "type": "reverie:shooter_goblin",
-        "weight": 80,
-        "minCount": 2,
-        "maxCount": 4
-      },
-      {
-        "type": "reverie:goblin_brute",
-        "weight": 20,
-        "minCount": 1,
-        "maxCount": 1
-      },
-      {
-        "type": "reverie:barrel_goblin",
-        "weight": 10,
-        "minCount": 1,
-        "maxCount": 1
-      }
+      { "type": "reverie:goblin", "weight": 100, "minCount": 4, "maxCount": 4 },
+      { "type": "reverie:shooter_goblin", "weight": 80, "minCount": 2, "maxCount": 4 },
+      { "type": "reverie:goblin_brute", "weight": 20, "minCount": 1, "maxCount": 1 },
+      { "type": "reverie:barrel_goblin", "weight": 10, "minCount": 1, "maxCount": 1 }
     ],
     "creature": [],
     "ambient": [
-      {
-        "type": "minecraft:bat",
-        "weight": 10,
-        "minCount": 8,
-        "maxCount": 8
-      }
+      { "type": "minecraft:bat", "weight": 10, "minCount": 8, "maxCount": 8 }
     ],
     "underground_water_creature": [
-      {
-        "type": "minecraft:glow_squid",
-        "weight": 10,
-        "minCount": 4,
-        "maxCount": 6
-      }
+      { "type": "minecraft:glow_squid", "weight": 10, "minCount": 4, "maxCount": 6 }
     ]
   },
   "spawn_costs": {
-    "reverie:goblin": {
-      "energy_budget": 0.12,
-      "charge": 1.0
-    },
-    "reverie:shooter_goblin": {
-      "energy_budget": 0.12,
-      "charge": 1.0
-    }
+    "reverie:goblin": { "energy_budget": 0.12, "charge": 1.0 },
+    "reverie:shooter_goblin": { "energy_budget": 0.12, "charge": 1.0 }
   },
   "carvers": {
     "air": [
-      "minecraft:cave",
       "reverie:goblin_canyon"
     ]
   },
   "features": [
     [],
-    [
-      "minecraft:lake_lava_underground"
-    ],
-    [
-      "minecraft:monster_room",
-      "minecraft:monster_room_deep"
-    ],
+    [],
+    [ "minecraft:monster_room", "minecraft:monster_room_deep" ],
     [],
     [],
     [],
@@ -110,6 +66,7 @@
     [],
     [
       "reverie:coin_pile_placed",
+      "reverie:olive_tree_placed",
       "reverie:grassy_spire_placed"
     ],
     []

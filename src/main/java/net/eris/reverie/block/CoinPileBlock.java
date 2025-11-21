@@ -39,9 +39,14 @@ public class CoinPileBlock extends SnowLayerBlock {
 
     public CoinPileBlock() {
         super(BlockBehaviour.Properties.copy(Blocks.SNOW)
-                .sound(SoundType.CHAIN) // Şıngırtı sesi
+                .sound(SoundType.CHAIN) // Metal sesi
                 .strength(0.3F)
-                .noOcclusion());
+                .noOcclusion()
+                // --- YENİ: IŞIK AYARI ---
+                // Katman sayısı kadar ışık verir (Max 8).
+                // 1 katman = 1 ışık, 8 katman = 8 ışık.
+                .lightLevel(state -> state.getValue(LAYERS))
+        );
         this.registerDefaultState(this.stateDefinition.any().setValue(LAYERS, 1));
     }
 
@@ -60,7 +65,6 @@ public class CoinPileBlock extends SnowLayerBlock {
         return true;
     }
 
-    // Koyulma kuralı: Altında katı blok veya dolu bir Coin Pile olmalı
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockState belowState = level.getBlockState(pos.below());

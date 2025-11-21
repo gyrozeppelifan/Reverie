@@ -32,6 +32,8 @@ public class ReverieModSounds {
 	public static final RegistryObject<SoundEvent> GOBLIN_BRUTE_ROAR = REGISTRY.register("goblin_brute_roar", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "goblin_brute_roar")));
 	public static final RegistryObject<SoundEvent> SHOOTER_GOBLIN_DEATH = REGISTRY.register("shooter_goblin_death", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "shooter_goblin_death")));
 	public static final RegistryObject<SoundEvent> SHOOTER_BRUTE_TEAMUP = REGISTRY.register("shooter_brute_teamup", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "shooter_brute_teamup")));
+	public static final RegistryObject<SoundEvent> ANCIENT_CLOAK = REGISTRY.register("ancient_cloak", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "ancient_cloak")));
 	public static final RegistryObject<SoundEvent> KISSING = REGISTRY.register("kissing", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "kissing")));
 }
+
 

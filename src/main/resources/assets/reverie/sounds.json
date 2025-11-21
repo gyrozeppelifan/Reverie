@@ -379,5 +379,14 @@
         "stream": false
       }
     ]
+  },
+  "ancient_cloak": {
+    "subtitle": "subtitles.ancient_cloak",
+    "sounds": [
+      {
+        "name": "reverie:ancient_crossbow.cloak",
+        "stream": false
+      }
+    ]
   }
 }
