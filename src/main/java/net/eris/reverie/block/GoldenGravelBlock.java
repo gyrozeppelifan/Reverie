@@ -11,7 +11,8 @@ public class GoldenGravelBlock extends FallingBlock {
         super(BlockBehaviour.Properties.of()
                 .mapColor(MapColor.GOLD)
                 .strength(0.6F)
-                .sound(SoundType.SAND) // Üstüne basınca çıtırdayan ses (veya metal istersen CHAIN)
+                .sound(SoundType.CHAIN) // Üstüne basınca çıtırdayan ses (veya metal istersen CHAIN)
+                .lightLevel(state -> 5)
         );
     }
 }

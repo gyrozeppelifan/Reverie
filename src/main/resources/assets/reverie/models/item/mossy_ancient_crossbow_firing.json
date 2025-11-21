@@ -1,6 +1,6 @@
 {
   "parent": "reverie:item/template_ancient_crossbow",
   "textures": {
-    "3": "reverie:item/mossy_ancient_crossbow_filled"
+    "3": "reverie:item/mossy_ancient_crossbow"
   }
 }

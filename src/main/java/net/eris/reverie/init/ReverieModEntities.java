@@ -4,6 +4,7 @@ package net.eris.reverie.init;
 import io.netty.util.Attribute;
 import net.eris.reverie.client.renderer.GoblinBarrelRenderer;
 import net.eris.reverie.entity.*;
+import net.eris.reverie.entity.projectile.MagicArrow;
 import net.eris.reverie.util.GoblinReputation;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -54,6 +55,12 @@ public class ReverieModEntities {
 	public static final RegistryObject<EntityType<GoblinFlagEntity>> GOBLIN_FLAG = register("goblin_flag",
 			EntityType.Builder.<GoblinFlagEntity>of(GoblinFlagEntity::new, MobCategory.MISC).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinFlagEntity::new)
 					.sized(1.2f, 3.1f));
+	public static final RegistryObject<EntityType<MagicArrow>> MAGIC_ARROW = REGISTRY.register("magic_arrow",
+			() -> EntityType.Builder.<MagicArrow>of(MagicArrow::new, net.minecraft.world.entity.MobCategory.MISC)
+					.sized(0.5F, 0.5F)
+					.clientTrackingRange(4)
+					.updateInterval(20)
+					.build("magic_arrow"));
 	public static final RegistryObject<EntityType<PossessionPuppetEntity>> POSSESSION_PUPPET = register("possession_puppet",
 			EntityType.Builder.<PossessionPuppetEntity>of(PossessionPuppetEntity::new, MobCategory.MISC)
 					.setShouldReceiveVelocityUpdates(false) // gereksiz trafik yok

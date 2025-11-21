@@ -23,5 +23,7 @@ public class ReverieModEntityRenderers {
 		event.registerEntityRenderer(ReverieModEntities.GOBLIN_BRUTE.get(), GoblinBruteRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.POSSESSION_PUPPET.get(), PossessionPuppetRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.GOBLIN_FLAG.get(), GoblinFlagRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.MAGIC_ARROW.get(), MagicArrowRenderer::new);
+
 	}
 }

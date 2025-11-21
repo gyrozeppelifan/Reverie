@@ -1,10 +1,12 @@
 package net.eris.reverie.item;
 
+import net.eris.reverie.init.ReverieModBlocks;
 import net.eris.reverie.init.ReverieModMobEffects;
 import net.eris.reverie.init.ReverieModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -17,6 +19,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3; // Vektör işlemleri için gerekli
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -71,6 +74,7 @@ public class AncientCrossbowItem extends Item {
                 } else {
                     player.addEffect(new MobEffectInstance(ReverieModMobEffects.ANCIENT_CLOAK.get(), 200000, 0, false, false, true));
                     player.displayClientMessage(Component.literal("§aGizlilik Aktif"), true);
+                    // Burada efekt açılma sesi çalıyor (Kendi ses dosyan varsa değiştirebilirsin)
                     level.playSound(null, player.getX(), player.getY(), player.getZ(), ReverieModSounds.ANCIENT_CLOAK.get(), SoundSource.PLAYERS, 1.0F, 1.5F);
                 }
             }
@@ -104,13 +108,14 @@ public class AncientCrossbowItem extends Item {
             return;
         }
 
-        // Hız Hesaplama
+        // --- HIZ HESAPLAMA ---
         int startRate = 25;
         int maxRate = 5;
         int fireRate;
         int activeTicks = ticksHeld - STARTUP_DELAY;
+        boolean isStealth = player.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get());
 
-        if (player.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
+        if (isStealth) {
             fireRate = maxRate;
         } else {
             int rampUp = activeTicks / 12;
@@ -121,7 +126,7 @@ public class AncientCrossbowItem extends Item {
             fireRate = Math.max(12, fireRate);
         }
 
-        // Ateşleme
+        // --- ATEŞLEME ZAMANI ---
         ItemStack ammoStack = findAmmo(player);
         if (ammoStack.isEmpty() && !player.getAbilities().instabuild) {
             player.stopUsingItem();
@@ -145,15 +150,43 @@ public class AncientCrossbowItem extends Item {
             }
         }
 
-        // Efektler
-        float pitch = 1.0F + Math.min(1.0F, ticksHeld * 0.02F);
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1.0F, pitch);
+        // --- SES VE EFEKTLER ---
 
-        // Recoil Tetikleyici (Server tarafı sinyali)
-        // Smooth animasyon için Client tarafında bunu yumuşatacağız.
+        // 1. SES SEÇİMİ (YENİ)
+        SoundEvent soundToPlay;
+        float volume = 1.0F;
+        float pitch = 1.0F;
+
+        if (isStealth) {
+            // Gizlilik Modu Sesi
+            soundToPlay = ReverieModSounds.ANCIENT_CROSSBOW_CLOAK_SHOOT.get();
+            volume = 0.8F; // Biraz daha sessiz
+        } else {
+            // Normal Mod: Hıza göre ses değişimi
+            if (fireRate >= 15) {
+                soundToPlay = ReverieModSounds.ANCIENT_CROSSBOW_SHOOT_NORMAL.get();
+            } else if (fireRate >= 8) {
+                soundToPlay = ReverieModSounds.ANCIENT_CROSSBOW_SHOOT_FAST.get();
+            } else {
+                soundToPlay = ReverieModSounds.ANCIENT_CROSSBOW_SHOOT_RAPID.get();
+                // Makine tüfek gibi hissettirmesi için pitch'i çok hafif rastgele yapıyoruz
+                pitch = 0.9F + (level.random.nextFloat() * 0.2F);
+            }
+        }
+
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), soundToPlay, SoundSource.PLAYERS, volume, pitch);
+
+        // 2. OYUNCU GERİ TEPMESİ (PHYSICAL RECOIL - YENİ)
+        // Baktığı yönün tersine (negatif scale) itiyoruz.
+        // 0.1 değeri hafif bir itme sağlar, seri atışta birikir.
+        Vec3 lookDir = player.getLookAngle();
+        player.push(-lookDir.x * 0.1, -lookDir.y * 0.05, -lookDir.z * 0.1);
+        player.hurtMarked = true; // Hareketi güncelle
+
+        // 3. GÖRSEL RECOIL
         stack.getOrCreateTag().putInt("RecoilTicks", 4);
 
-        // Kamera Sarsıntısı (Client)
+        // 4. KAMERA SARSINTISI
         if (level.isClientSide) {
             float kick = isClean(stack) ? -1.2F : -0.6F;
             if (fireRate < 10) kick *= 0.7F;
@@ -164,47 +197,29 @@ public class AncientCrossbowItem extends Item {
         stack.getOrCreateTag().putInt("FireDelay", fireRate);
     }
 
-    // --- 3. CLIENT RENDER: SMOOTH ANIMATION (FIXED) ---
+    // --- 3. CLIENT RENDER: SMOOTH ANIMATION ---
     @Override
     public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         consumer.accept(new IClientItemExtensions() {
 
-            // Animasyonun akıcılığı için hafıza değişkeni
             private float currentRecoil = 0.0F;
 
             @Override
             public boolean applyForgeHandTransform(PoseStack poseStack, net.minecraft.client.player.LocalPlayer player, HumanoidArm arm, ItemStack itemInHand, float partialTick, float equipProcess, float swingProcess) {
 
-                // Ateşleniyor mu kontrolü
                 boolean isFiring = itemInHand.hasTag() && itemInHand.getTag().getInt("RecoilTicks") > 0;
-
-                // Hedef: Ateşleniyorsa 1.0, duruyorsa 0.0
                 float target = isFiring ? 1.0F : 0.0F;
-
-                // SMOOTH GEÇİŞ (LERP MANTIĞI)
-                // Ateş ederken çok hızlı kalksın (0.5F), inerken biraz daha yavaş insin (0.15F)
-                // Bu, silahın "ağır" hissettirmesini sağlar.
                 float speed = isFiring ? 0.5F : 0.15F;
                 currentRecoil += (target - currentRecoil) * speed;
 
-                // Eğer animasyon aktifse transform uygula
                 if (currentRecoil > 0.01F) {
-
-                    // Güç çarpanı (Animasyon eğrisi)
                     float kick = currentRecoil;
 
-                    // 1. CLIPPING FIX: Z Ekseninde (Geriye) çok az hareket ettiriyoruz.
-                    // 0.15 yerine 0.02 yaptık. Böylece yüzüne girip yok olmuyor.
+                    // Clipping fix + Hissiyat
                     poseStack.translate(0.0, 0.0, kick * 0.02);
-
-                    // 2. ŞAHLANMA (TOKLUK): Hissiyatı buradan veriyoruz.
-                    // Silahın ucu havaya kalkıyor (12 Derece)
                     poseStack.mulPose(Axis.XP.rotationDegrees(-kick * 12.0F));
-
-                    // 3. TILT (Yana Yatma): Daha doğal durması için
                     poseStack.mulPose(Axis.ZP.rotationDegrees(kick * 3.0F));
 
-                    // 4. TİTREŞİM: Sadece ateş anında
                     if (isFiring) {
                         float shake = (player.tickCount % 2 == 0) ? 0.5F : -0.5F;
                         poseStack.mulPose(Axis.YP.rotationDegrees(shake));

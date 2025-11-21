@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
@@ -23,98 +24,102 @@ public class GrassySpireFeature extends Feature<NoneFeatureConfiguration> {
         BlockPos pos = context.origin();
         RandomSource random = context.random();
 
-        // 1. TAVAN ARAMA LOGİĞİ (AKILLI ARAMA)
-        // Rastgele seçilen nokta (pos) havada da olabilir, taşın içinde de.
+        // 1. ZEMİNİ BUL (Dikitler yerden çıkar)
         BlockPos.MutableBlockPos cursor = pos.mutable();
-        boolean foundCeiling = false;
+        boolean foundFloor = false;
 
-        // Eğer taşın içindeysek -> Aşağı inip boşluğu bulalım
-        if (level.getBlockState(cursor).isSolid()) {
-            for (int i = 0; i < 20; i++) { // En fazla 20 blok aşağı bak
+        // Eğer havadaysak -> Aşağı inip zemini bul
+        if (level.isEmptyBlock(cursor)) {
+            for (int i = 0; i < 40; i++) {
                 cursor.move(Direction.DOWN);
-                if (level.isEmptyBlock(cursor)) {
-                    // Boşluğu bulduk, şimdi tekrar 1 yukarı çıkıp tavana yapışalım
-                    cursor.move(Direction.UP);
-                    foundCeiling = true;
+                if (level.getBlockState(cursor).isSolid()) {
+                    foundFloor = true;
                     break;
                 }
             }
         }
-        // Eğer havadaysak -> Yukarı çıkıp tavanı bulalım
+        // Eğer taşın içindeysek -> Yukarı çıkıp yüzeyi bul
         else {
-            for (int i = 0; i < 40; i++) { // En fazla 40 blok yukarı bak
+            for (int i = 0; i < 20; i++) {
                 cursor.move(Direction.UP);
-                if (level.getBlockState(cursor).isSolid()) {
-                    // Tavanı bulduk (cursor şu an taşın içinde), 1 aşağı inelim (havaya)
-                    cursor.move(Direction.DOWN);
-                    foundCeiling = true;
+                if (level.isEmptyBlock(cursor) && level.getBlockState(cursor.below()).isSolid()) {
+                    cursor.move(Direction.DOWN); // Zemine geri bas
+                    foundFloor = true;
                     break;
                 }
             }
         }
 
-        // Tavan bulunamadıysa veya uygun taş değilse iptal
-        if (!foundCeiling || !isValidRock(level.getBlockState(cursor.above()))) {
+        // Zemin uygun değilse (örn: su, lav veya havadaysa) iptal
+        if (!foundFloor || !isValidRock(level.getBlockState(cursor))) {
             return false;
         }
 
-        // 2. DİKİT OLUŞTURMA (PLATFORMLU)
-        // Başlangıç noktası: cursor (Tavanın altındaki hava bloğu)
-
-        int length = 15 + random.nextInt(20); // Çok daha uzun (15-35 blok)
+        // 2. DİKİTİ OLUŞTUR (Yerden Yukarı)
+        int length = 15 + random.nextInt(25); // 15-40 blok yüksekliğinde kuleler
 
         for (int i = 0; i < length; i++) {
-            // Yere çarparsak dur
-            if (!level.isEmptyBlock(cursor) && !level.getBlockState(cursor).getFluidState().isEmpty()) break;
+            // Yukarı çıkıyoruz
+            cursor.move(Direction.UP);
 
-            // Kalınlık: Üstte kalın, aşağı indikçe incelir
+            // Tavana çarparsak dur
+            if (!level.isEmptyBlock(cursor)) break;
+
+            // İlerleme oranı (0.0 = Dip, 1.0 = Tepe)
             float progress = (float) i / length;
-            int radius = (int) (3.5F * (1.0F - (progress * 0.8F))); // Ucu sivri, kökü kalın
+
+            // Kalınlık: Altta kalın, yukarı çıktıkça incelir
+            int radius = (int) (4.5F * (1.0F - (progress * 0.7F)));
 
             // --- GÖVDEYİ ÇİZ ---
-            fillCircle(level, cursor, radius, random, false);
+            fillCircle(level, cursor, radius, random, false, progress);
 
             // --- PLATFORM (YAPRAK KATMANI) ---
-            // Her 5-7 blokta bir, etrafa genişleyen yaprak platformları koy
-            if (i > 3 && i % (5 + random.nextInt(2)) == 0) {
-                // Yarıçapı +2 blok genişletip sadece yaprak çiziyoruz
-                fillCircle(level, cursor, radius + 2, random, true);
+            // Zıplama alanları için genişleyen yapraklar
+            if (i > 4 && i % (6 + random.nextInt(3)) == 0) {
+                fillCircle(level, cursor, radius + 2, random, true, progress);
             }
-
-            // Bir adım aşağı in
-            cursor.move(Direction.DOWN);
         }
 
-        // En uca sarmaşık sarkıt
-        placeVine(level, cursor);
+        // Tepesine biraz sarmaşık veya süs eklenebilir
+        if (random.nextBoolean()) {
+            level.setBlock(cursor, Blocks.AZALEA.defaultBlockState(), 3);
+        }
 
         return true;
     }
 
-    private void fillCircle(WorldGenLevel level, BlockPos center, int radius, RandomSource random, boolean isPlatform) {
+    private void fillCircle(WorldGenLevel level, BlockPos center, int radius, RandomSource random, boolean isPlatform, float progress) {
         for (int x = -radius; x <= radius; x++) {
             for (int z = -radius; z <= radius; z++) {
-                // Daire formülü (biraz rastgelelik ekle)
+                // Daire formülü (biraz gürültülü/doğal)
                 if (x*x + z*z <= radius*radius + random.nextInt(2)) {
                     BlockPos target = center.offset(x, 0, z);
 
-                    // Sadece hava varsa koy
-                    if (level.isEmptyBlock(target)) {
+                    if (level.isEmptyBlock(target) || level.getBlockState(target).canBeReplaced()) {
 
                         BlockState blockToPlace;
 
                         if (isPlatform) {
-                            // Platformsa sadece Yaprak (Olive Leaves veya Oak Leaves)
-                            // Kenarları ince olsun (Sadece %70 ihtimalle koy)
-                            if (random.nextFloat() > 0.7F) continue;
-                            blockToPlace = Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true);
+                            // Platformlar her zaman Yaprak (Parkur için)
+                            // Kenarları seyrek olsun
+                            if (random.nextFloat() > 0.8F) continue;
+                            blockToPlace = Blocks.AZALEA_LEAVES.defaultBlockState().setValue(LeavesBlock.PERSISTENT, true);
                         } else {
-                            // Gövdeyse Toprak/Çimen
-                            // Dış kabuk Çimen veya Yosun
-                            if (x*x + z*z >= (radius-1)*(radius-1)) {
-                                blockToPlace = random.nextBoolean() ? Blocks.GRASS_BLOCK.defaultBlockState() : Blocks.MOSS_BLOCK.defaultBlockState();
+                            // --- MATERYAL GEÇİŞİ (GRADIENT) ---
+                            // Dip (%0-20): Sert Taşlar (Deepslate, Tuff)
+                            // Orta (%20-60): Yosunlu Taş (Mossy Cobblestone)
+                            // Üst (%60-100): Toprak ve Yosun Bloğu
+
+                            if (progress < 0.2F) {
+                                blockToPlace = random.nextBoolean() ? Blocks.DEEPSLATE.defaultBlockState() : Blocks.TUFF.defaultBlockState();
+                            } else if (progress < 0.5F) {
+                                blockToPlace = Blocks.MOSSY_COBBLESTONE.defaultBlockState();
+                            } else if (progress < 0.8F) {
+                                blockToPlace = random.nextBoolean() ? Blocks.MOSS_BLOCK.defaultBlockState() : Blocks.DIRT.defaultBlockState();
                             } else {
-                                blockToPlace = Blocks.DIRT.defaultBlockState();
+                                // En tepeye çimen
+                                blockToPlace = Blocks.GRASS_BLOCK.defaultBlockState();
                             }
                         }
 
@@ -125,16 +130,8 @@ public class GrassySpireFeature extends Feature<NoneFeatureConfiguration> {
         }
     }
 
-    private void placeVine(WorldGenLevel level, BlockPos pos) {
-        for (int i = 0; i < 5; i++) { // 5 blok aşağı sarkıt
-            if (level.isEmptyBlock(pos)) {
-                level.setBlock(pos, Blocks.VINE.defaultBlockState(), 3);
-                pos = pos.below();
-            }
-        }
-    }
-
     private boolean isValidRock(BlockState state) {
-        return state.isSolidRender(null, null); // Basitçe "Katı blok mu?" diye bakıyoruz
+        // Üzerine dikit koyabileceğimiz sağlam bloklar
+        return state.isSolidRender(null, null) || state.is(Blocks.DEEPSLATE) || state.is(Blocks.TUFF) || state.is(net.eris.reverie.init.ReverieModBlocks.GOLDEN_GRAVEL.get());
     }
 }

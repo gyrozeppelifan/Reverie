@@ -9,7 +9,6 @@
       "predicate": { "reverie:clean": 0.0, "reverie:recoil": 1.0 },
       "model": "reverie:item/mossy_ancient_crossbow_firing"
     },
-
     {
       "predicate": { "reverie:clean": 1.0, "reverie:recoil": 0.0 },
       "model": "reverie:item/ancient_crossbow_clean_idle"

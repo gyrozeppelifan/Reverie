@@ -388,5 +388,78 @@
         "stream": false
       }
     ]
+  },
+  "ancient_crossbow_shoot_normal": {
+    "subtitle": "subtitles.ancient_crossbow_shoot",
+    "sounds": [
+      {
+        "name": "reverie:ancient_crossbow.shoot1",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.shoot2",
+        "stream": false
+      }
+    ]
+  },
+  "ancient_crossbow_shoot_fast": {
+    "subtitle": "subtitles.ancient_crossbow_shoot_fast",
+    "sounds": [
+      {
+        "name": "reverie:ancient_crossbow.shoot_fast1",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.shoot_fast2",
+        "stream": false
+      }
+    ]
+  },
+  "ancient_crossbow_shoot_rapid": {
+    "subtitle": "subtitles.ancient_crossbow_shoot_rapid",
+    "sounds": [
+      {
+        "name": "reverie:ancient_crossbow.shoot_rapid1",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.shoot_rapid2",
+        "stream": false
+      }
+    ]
+  },
+  "ancient_crossbow_cloak_shoot": {
+    "subtitle": "subtitles.ancient_crossbow_cloak_shoot",
+    "sounds": [
+      {
+        "name": "reverie:ancient_crossbow.cloak_shoot",
+        "stream": false
+      }
+    ]
+  },
+  "ancient_crossbow_load": {
+    "subtitle": "subtitles.ancient_crossbow_load",
+    "sounds": [
+      {
+        "name": "reverie:ancient_crossbow.load1",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.load2",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.load3",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.load4",
+        "stream": false
+      },
+      {
+        "name": "reverie:ancient_crossbow.load5",
+        "stream": false
+      }
+    ]
   }
 }

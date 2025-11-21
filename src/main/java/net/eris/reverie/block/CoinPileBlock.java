@@ -45,7 +45,7 @@ public class CoinPileBlock extends SnowLayerBlock {
                 // --- YENİ: IŞIK AYARI ---
                 // Katman sayısı kadar ışık verir (Max 8).
                 // 1 katman = 1 ışık, 8 katman = 8 ışık.
-                .lightLevel(state -> state.getValue(LAYERS))
+                .lightLevel(state -> 5)
         );
         this.registerDefaultState(this.stateDefinition.any().setValue(LAYERS, 1));
     }

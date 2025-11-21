@@ -1,8 +1,10 @@
 package net.eris.reverie.registry;
 
 import net.eris.reverie.ReverieMod;
+import net.eris.reverie.feature.GoldenGravelPileFeature;
 import net.eris.reverie.feature.GrassySpireFeature;
 import net.eris.reverie.feature.OliveTreeFeature;
+import net.eris.reverie.feature.SmartCoinPileFeature;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -21,6 +23,14 @@ public class ReverieFeatures {
             FEATURES.register("olive_tree",
                     () -> new OliveTreeFeature(NoneFeatureConfiguration.CODEC)
             );
+
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> SMART_COIN_PILE =
+            FEATURES.register("smart_coin_pile", () -> new SmartCoinPileFeature(NoneFeatureConfiguration.CODEC));
+
+    // ...
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> GOLDEN_GRAVEL_PILE =
+            FEATURES.register("golden_gravel_pile", () -> new GoldenGravelPileFeature(NoneFeatureConfiguration.CODEC));
+    // ...
 
     public static void register(IEventBus eventBus) {
         FEATURES.register(eventBus);

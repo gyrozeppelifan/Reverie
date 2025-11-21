@@ -1,9 +1,9 @@
 {
-  "feature": "reverie:coin_pile_patch",
+  "feature": "reverie:lava_replacement",
   "placement": [
     {
       "type": "minecraft:count",
-      "count": 45
+      "count": 40
     },
     {
       "type": "minecraft:in_square"
@@ -13,7 +13,7 @@
       "height": {
         "type": "minecraft:uniform",
         "min_inclusive": { "absolute": -64 },
-        "max_inclusive": { "absolute": -40 }
+        "max_inclusive": { "absolute": -50 }
       }
     },
     {

@@ -30,8 +30,7 @@
     "monster": [
       { "type": "reverie:goblin", "weight": 100, "minCount": 4, "maxCount": 4 },
       { "type": "reverie:shooter_goblin", "weight": 80, "minCount": 2, "maxCount": 4 },
-      { "type": "reverie:goblin_brute", "weight": 20, "minCount": 1, "maxCount": 1 },
-      { "type": "reverie:barrel_goblin", "weight": 10, "minCount": 1, "maxCount": 1 }
+      { "type": "reverie:goblin_brute", "weight": 20, "minCount": 1, "maxCount": 1 }
     ],
     "creature": [],
     "ambient": [
@@ -65,8 +64,9 @@
     ],
     [],
     [
+      "reverie:lava_replacement_placed",
+      "reverie:golden_gravel_pile_placed",
       "reverie:coin_pile_placed",
-      "reverie:olive_tree_placed",
       "reverie:grassy_spire_placed"
     ],
     []

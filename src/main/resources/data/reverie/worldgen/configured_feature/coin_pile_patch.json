@@ -1,32 +1,15 @@
 {
   "type": "minecraft:random_patch",
   "config": {
-    "tries": 64,
-    "xz_spread": 7,
-    "y_spread": 3,
+    "tries": 96,
+    "xz_spread": 8,
+    "y_spread": 2,
     "feature": {
       "feature": {
-        "type": "minecraft:simple_block",
-        "config": {
-          "to_place": {
-            "type": "minecraft:simple_state_provider",
-            "state": {
-              "Name": "reverie:coin_pile",
-              "Properties": {
-                "layers": "3"
-              }
-            }
-          }
-        }
+        "type": "reverie:smart_coin_pile",
+        "config": {}
       },
       "placement": [
-        {
-          "type": "minecraft:block_predicate_filter",
-          "predicate": {
-            "type": "minecraft:matching_blocks",
-            "blocks": "minecraft:air"
-          }
-        }
       ]
     }
   }
