@@ -1,0 +1,117 @@
+{
+  "has_precipitation": false,
+  "temperature": 0.8,
+  "downfall": 0.0,
+  "effects": {
+    "sky_color": 7907327,
+    "fog_color": 8953156,
+    "water_color": 4159204,
+    "water_fog_color": 329011,
+    "grass_color": 6857511,
+    "foliage_color": 6857511,
+    "mood_sound": {
+      "sound": "minecraft:ambient.cave",
+      "tick_delay": 6000,
+      "block_search_extent": 8,
+      "offset": 2.0
+    },
+    "music": {
+      "sound": "minecraft:music.nether.crimson_forest",
+      "min_delay": 12000,
+      "max_delay": 24000,
+      "replace_current_music": true
+    },
+    "particle": {
+      "options": {
+        "type": "minecraft:spore_blossom_air"
+      },
+      "probability": 0.02
+    }
+  },
+  "spawners": {
+    "monster": [
+      {
+        "type": "reverie:goblin",
+        "weight": 100,
+        "minCount": 4,
+        "maxCount": 4
+      },
+      {
+        "type": "reverie:shooter_goblin",
+        "weight": 80,
+        "minCount": 2,
+        "maxCount": 4
+      },
+      {
+        "type": "reverie:goblin_brute",
+        "weight": 20,
+        "minCount": 1,
+        "maxCount": 1
+      },
+      {
+        "type": "reverie:barrel_goblin",
+        "weight": 10,
+        "minCount": 1,
+        "maxCount": 1
+      }
+    ],
+    "creature": [],
+    "ambient": [
+      {
+        "type": "minecraft:bat",
+        "weight": 10,
+        "minCount": 8,
+        "maxCount": 8
+      }
+    ],
+    "underground_water_creature": [
+      {
+        "type": "minecraft:glow_squid",
+        "weight": 10,
+        "minCount": 4,
+        "maxCount": 6
+      }
+    ]
+  },
+  "spawn_costs": {
+    "reverie:goblin": {
+      "energy_budget": 0.12,
+      "charge": 1.0
+    },
+    "reverie:shooter_goblin": {
+      "energy_budget": 0.12,
+      "charge": 1.0
+    }
+  },
+  "carvers": {
+    "air": [
+      "minecraft:cave",
+      "reverie:goblin_canyon"
+    ]
+  },
+  "features": [
+    [],
+    [
+      "minecraft:lake_lava_underground"
+    ],
+    [
+      "minecraft:monster_room",
+      "minecraft:monster_room_deep"
+    ],
+    [],
+    [],
+    [],
+    [
+      "minecraft:ore_gold",
+      "minecraft:ore_gold_lower",
+      "minecraft:ore_iron_small",
+      "minecraft:ore_iron_middle"
+    ],
+    [],
+    [
+      "reverie:coin_pile_placed",
+      "reverie:grassy_spire_placed"
+    ],
+    []
+  ]
+}

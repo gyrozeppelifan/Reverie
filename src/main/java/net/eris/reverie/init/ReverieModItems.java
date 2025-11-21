@@ -28,6 +28,8 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> HAY_THATCH_STAIRS = block(ReverieModBlocks.HAY_THATCH_STAIRS);
 	public static final RegistryObject<Item> HAY_THATCH_SLAB = block(ReverieModBlocks.HAY_THATCH_SLAB);
 	public static final RegistryObject<Item> POINTY_BONE = block(ReverieModBlocks.POINTY_BONE);
+	public static final RegistryObject<Item> COIN_PILE = block(ReverieModBlocks.COIN_PILE);
+	public static final RegistryObject<Item> GOLDEN_GRAVEL = block(ReverieModBlocks.GOLDEN_GRAVEL);
 	public static final RegistryObject<Item> OLIVE_LEAVES = block(ReverieModBlocks.OLIVE_LEAVES);
 	public static final RegistryObject<Item> OLIVE_WOOD = block(ReverieModBlocks.OLIVE_WOOD);
 	public static final RegistryObject<Item> OLIVE_BRANCHES = block(ReverieModBlocks.OLIVE_BRANCHES);

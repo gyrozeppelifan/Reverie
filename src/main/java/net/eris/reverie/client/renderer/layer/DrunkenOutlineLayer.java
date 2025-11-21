@@ -3,6 +3,7 @@ package net.eris.reverie.client.renderer.layer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.eris.reverie.util.IAncientCloakData; // Arayüzü import et
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
@@ -11,9 +12,6 @@ import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.resources.ResourceLocation;
-
-// EKLENDİ: DRUNKEN_RAGE efekt kontrolü için gerekli import
-import net.eris.reverie.init.ReverieModMobEffects;
 
 public class DrunkenOutlineLayer<T extends LivingEntity, M extends EntityModel<T>>
         extends RenderLayer<T, M> {
@@ -43,8 +41,10 @@ public class DrunkenOutlineLayer<T extends LivingEntity, M extends EntityModel<T
                        float netHeadYaw,
                        float headPitch) {
 
-        // EKLENDİ: Sadece DRUNKEN_RAGE etkisi altındaysa devam et, yoksa çık
-        if (!entity.hasEffect(ReverieModMobEffects.DRUNKEN_RAGE.get())) {
+        // DÜZELTME: Artık Mixin verisine bakıyoruz (Garantili Senkronizasyon)
+        boolean hasRage = ((IAncientCloakData) entity).reverie$hasDrunkenRage();
+
+        if (!hasRage) {
             return;
         }
 

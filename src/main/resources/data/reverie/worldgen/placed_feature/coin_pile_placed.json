@@ -1,0 +1,12 @@
+{
+  "feature": "reverie:coin_pile_patch",
+  "placement": [
+    {
+      "type": "minecraft:count_on_every_layer",
+      "count": 10
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

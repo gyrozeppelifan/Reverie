@@ -3,7 +3,12 @@ package net.eris.reverie.client;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.renderer.layer.AncientCloakLayer;
+import net.eris.reverie.client.renderer.layer.DrunkenOutlineLayer;
+import net.eris.reverie.client.renderer.layer.DrunkenTrailLayer;
 import net.eris.reverie.init.ReverieModItems;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -25,10 +30,12 @@ public class ReverieClientEvents {
 
     public static ShaderInstance goblinFlagGlowShader;
     public static ShaderInstance ancientCloakShader;
+    public static ShaderInstance drunkenRageShader;
 
     // --- 1. SHADER KAYDI ---
     @SubscribeEvent
     public static void registerShaders(RegisterShadersEvent event) {
+        // Goblin Flag
         try {
             event.registerShader(new ShaderInstance(
                     event.getResourceProvider(),
@@ -39,12 +46,24 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
+        // Ancient Cloak
         try {
             event.registerShader(new ShaderInstance(
                     event.getResourceProvider(),
                     new ResourceLocation(ReverieMod.MODID, "ancient_cloak_aura"),
                     DefaultVertexFormat.POSITION_COLOR_TEX
             ), shaderInstance -> ancientCloakShader = shaderInstance);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Drunken Rage (GUI Shader)
+        try {
+            event.registerShader(new ShaderInstance(
+                    event.getResourceProvider(),
+                    new ResourceLocation(ReverieMod.MODID, "drunken_rage"),
+                    DefaultVertexFormat.POSITION_TEX
+            ), shaderInstance -> drunkenRageShader = shaderInstance);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,39 +85,49 @@ public class ReverieClientEvents {
         });
     }
 
-    // --- 3. KATMAN KAYDI (DÜZELTİLDİ) ---
+    // --- 3. KATMAN (LAYER) KAYDI ---
     @SubscribeEvent
     public static void registerLayers(EntityRenderersEvent.AddLayers event) {
 
         // A) OYUNCU SKINLERI
         for (String skinType : event.getSkins()) {
             var renderer = event.getSkin(skinType);
-
-            // HATA 1 ÇÖZÜMÜ: Pattern matching (instanceof X x) yerine klasik cast kullanıyoruz.
             if (renderer instanceof LivingEntityRenderer) {
-                LivingEntityRenderer livingRenderer = (LivingEntityRenderer) renderer;
-                livingRenderer.addLayer(new AncientCloakLayer(livingRenderer));
+                @SuppressWarnings("unchecked")
+                LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> livingRenderer =
+                        (LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>>) renderer;
+
+                // Ancient Cloak
+                livingRenderer.addLayer(new AncientCloakLayer<>(livingRenderer));
+                // Drunken Rage (Varsa)
+                livingRenderer.addLayer(new DrunkenOutlineLayer<>(livingRenderer));
+                livingRenderer.addLayer(new DrunkenTrailLayer<>(livingRenderer));
             }
         }
 
         // B) TÜM MOBLAR
         for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES) {
             try {
-                // HATA 2 ÇÖZÜMÜ: "Unchecked Cast" ile türü zorla LivingEntity yapıyoruz.
-                // Bu sayede getRenderer() metodu hata vermiyor.
+                // HATA ÇÖZÜMÜ: Unchecked Cast ile türü zorluyoruz.
+                // EntityType<?> --> EntityType<? extends LivingEntity>
                 @SuppressWarnings("unchecked")
-                EntityType<? extends LivingEntity> livingType = (EntityType<? extends LivingEntity>) entityType;
+                EntityType<? extends LivingEntity> livingEntityType = (EntityType<? extends LivingEntity>) entityType;
 
-                var renderer = event.getRenderer(livingType);
+                var renderer = event.getRenderer(livingEntityType);
 
                 if (renderer instanceof LivingEntityRenderer) {
                     @SuppressWarnings("unchecked")
-                    LivingEntityRenderer livingRenderer = (LivingEntityRenderer) renderer;
+                    LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>> livingRenderer =
+                            (LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>>) renderer;
 
-                    livingRenderer.addLayer(new AncientCloakLayer(livingRenderer));
+                    // Ancient Cloak
+                    livingRenderer.addLayer(new AncientCloakLayer<>(livingRenderer));
+                    // Drunken Rage (Varsa)
+                    livingRenderer.addLayer(new DrunkenOutlineLayer<>(livingRenderer));
+                    livingRenderer.addLayer(new DrunkenTrailLayer<>(livingRenderer));
                 }
             } catch (Exception e) {
-                // Ok, Tekne gibi LivingEntity olmayan şeyler buraya düşer, sorun yok.
+                // LivingEntity olmayan (Ok, Tekne vs.) rendererlar hata verebilir, önemsiz.
             }
         }
     }

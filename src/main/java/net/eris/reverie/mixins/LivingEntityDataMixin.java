@@ -22,41 +22,56 @@ public abstract class LivingEntityDataMixin extends Entity implements IAncientCl
         super(pEntityType, pLevel);
     }
 
-    // Yeni Veri Kanalı: Sadece Boolean taşır (True/False)
+    // Ancient Cloak Verisi
     @Unique
     private static final EntityDataAccessor<Boolean> HAS_ANCIENT_CLOAK = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
 
-    // 1. Veriyi Kaydet
+    // YENİ: Drunken Rage Verisi
+    @Unique
+    private static final EntityDataAccessor<Boolean> HAS_DRUNKEN_RAGE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
+
     @Inject(method = "defineSynchedData", at = @At("TAIL"))
     private void reverie_defineSynchedData(CallbackInfo ci) {
         this.entityData.define(HAS_ANCIENT_CLOAK, false);
+        this.entityData.define(HAS_DRUNKEN_RAGE, false); // Yeni veriyi tanımla
     }
 
-    // 2. Her Tick'te Kontrol Et (SADECE SERVER)
     @Inject(method = "tick", at = @At("TAIL"))
     private void reverie_tick(CallbackInfo ci) {
         if (!this.level().isClientSide) {
-            // Kendini LivingEntity olarak al
             LivingEntity self = (LivingEntity) (Object) this;
 
-            // Efekt var mı?
-            boolean hasEffect = self.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get());
+            // 1. Ancient Cloak Kontrolü
+            boolean hasCloak = self.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get());
+            if (this.entityData.get(HAS_ANCIENT_CLOAK) != hasCloak) {
+                this.entityData.set(HAS_ANCIENT_CLOAK, hasCloak);
+            }
 
-            // Veri şu anki durumdan farklıysa güncelle (Paket gönderir)
-            if (this.entityData.get(HAS_ANCIENT_CLOAK) != hasEffect) {
-                this.entityData.set(HAS_ANCIENT_CLOAK, hasEffect);
+            // 2. Drunken Rage Kontrolü (YENİ)
+            boolean hasRage = self.hasEffect(ReverieModMobEffects.DRUNKEN_RAGE.get());
+            if (this.entityData.get(HAS_DRUNKEN_RAGE) != hasRage) {
+                this.entityData.set(HAS_DRUNKEN_RAGE, hasRage);
             }
         }
     }
 
-    // 3. Erişim Metotları
+    // Erişim Metotları
     @Override
     public boolean reverie$hasAncientCloak() {
         return this.entityData.get(HAS_ANCIENT_CLOAK);
     }
-
     @Override
     public void reverie$setAncientCloak(boolean hasCloak) {
         this.entityData.set(HAS_ANCIENT_CLOAK, hasCloak);
+    }
+
+    // Yeni Erişim Metotları
+    @Override
+    public boolean reverie$hasDrunkenRage() {
+        return this.entityData.get(HAS_DRUNKEN_RAGE);
+    }
+    @Override
+    public void reverie$setDrunkenRage(boolean hasRage) {
+        this.entityData.set(HAS_DRUNKEN_RAGE, hasRage);
     }
 }

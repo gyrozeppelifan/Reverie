@@ -5,8 +5,6 @@ import com.mojang.blaze3d.vertex.*;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.util.IAncientCloakData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
@@ -14,58 +12,56 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+// BUS = FORGE olduğuna dikkat et!
 @Mod.EventBusSubscriber(modid = ReverieMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-public class ReverieForgeClientEvents {
+public class ReverieGuiEvents {
 
-    // Resmin yolu (textures/misc/drunken_rage_gui_overlay.png)
-    private static final ResourceLocation DRUNKEN_RAGE_OVERLAY =
-            new ResourceLocation(ReverieMod.MODID, "textures/misc/drunken_rage_gui_overlay.png");
-
+    // GUI'nin en son aşamasında çizim yapıyoruz ki her şeyin üstünde olsun.
     @SubscribeEvent
     public static void onRenderGuiOverlayPost(RenderGuiOverlayEvent.Post event) {
-        // Sadece HOTBAR çizildikten sonra çizelim (Her şeyin üstünde olsun)
+        // Sadece ana HUD çizildikten sonra çalış (Gereksiz yere çalışmasın)
         if (event.getOverlay() != VanillaGuiOverlay.HOTBAR.type()) return;
 
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
 
-        // Oyuncu yoksa veya veri kanalı (Mixin) yoksa çık
-        if (player == null || !(player instanceof IAncientCloakData)) return;
+        // Oyuncu yoksa veya hayatta değilse çizme
+        if (player == null || !player.isAlive()) return;
 
-        // --- KONTROL: DRUNKEN RAGE VAR MI? ---
-        // Potion Effect kontrolü yerine Mixin verisini (reverie$hasDrunkenRage) kullanıyoruz.
-        // Bu sayede senkronizasyon sorunu yaşamadan anında tepki verir.
-        if (((IAncientCloakData) player).reverie$hasDrunkenRage()) {
-            renderDrunkenOverlay(event.getWindow().getGuiScaledWidth(), event.getWindow().getGuiScaledHeight());
+        // --- KRİTİK NOKTA: MIXIN VERİSİ KONTROLÜ ---
+        // Potion effect yerine garantili veri kanalına bakıyoruz.
+        if (!((IAncientCloakData) player).reverie$hasDrunkenRage()) {
+            return;
         }
-    }
 
-    private static void renderDrunkenOverlay(int width, int height) {
+        // Shader yüklendi mi kontrol et
+        if (ReverieClientEvents.drunkenRageShader == null) return;
+
+        // --- ÇİZİM BAŞLIYOR ---
+        int width = event.getWindow().getGuiScaledWidth();
+        int height = event.getWindow().getGuiScaledHeight();
+
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // Resmi seç ve rengi beyaz (orijinal) yap
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F); // %100 Görünürlük
-        RenderSystem.setShaderTexture(0, DRUNKEN_RAGE_OVERLAY);
+        // Kendi shader'ımızı aktif et
+        RenderSystem.setShader(() -> ReverieClientEvents.drunkenRageShader);
 
-        // Ekranı kaplayan bir kare çiz (Tesselator ile)
+        // Shader zamanını güncelle (Animasyon için şart!)
+        ReverieClientEvents.drunkenRageShader.getUniform("GameTime").set((player.tickCount + event.getPartialTick()) / 20.0F);
+
+        // Tüm ekranı kaplayan bir dörtgen çiz
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferbuilder = tesselator.getBuilder();
-
         bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-        // Z: -90.0D (Arayüzün hemen arkasında ama dünyanın önünde olsun)
         bufferbuilder.vertex(0.0D, height, -90.0D).uv(0.0F, 1.0F).endVertex();
         bufferbuilder.vertex(width, height, -90.0D).uv(1.0F, 1.0F).endVertex();
         bufferbuilder.vertex(width, 0.0D, -90.0D).uv(1.0F, 0.0F).endVertex();
         bufferbuilder.vertex(0.0D, 0.0D, -90.0D).uv(0.0F, 0.0F).endVertex();
-
         tesselator.end();
 
-        // Ayarları geri al
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

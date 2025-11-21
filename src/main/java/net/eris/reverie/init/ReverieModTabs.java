@@ -68,7 +68,9 @@ public class ReverieModTabs {
 								ReverieModBlocks.BLACK_OLIVE_BLOCK.get().asItem(),
 								ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK.get().asItem(),
 								ReverieModBlocks.CARVED_GREEN_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.CARVED_BLACK_OLIVE_BLOCK.get().asItem()
+								ReverieModBlocks.CARVED_BLACK_OLIVE_BLOCK.get().asItem(),
+								ReverieModBlocks.COIN_PILE.get().asItem(),
+								ReverieModBlocks.GOLDEN_GRAVEL.get().asItem()
 						);
 						oliveBlocks.forEach(item -> output.accept(new ItemStack(item)));
 
