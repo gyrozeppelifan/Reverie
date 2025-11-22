@@ -14,10 +14,10 @@ public class ReverieModBlocks {
 	public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, ReverieMod.MODID);
 	public static final RegistryObject<Block> GOLDEN_GRAVEL = REGISTRY.register("coin_pile_block",
 			() -> new GoldenGravelBlock());
-
 	public static final RegistryObject<Block> COIN_PILE = REGISTRY.register("coin_pile",
 			() -> new CoinPileBlock());
 	public static final RegistryObject<Block> HAY_THATCH = REGISTRY.register("hay_thatch", () -> new HayThatchBlock());
+	public static final RegistryObject<Block> WILD_TORCH = REGISTRY.register("wild_torch", () -> new WildTorchBlock());
 	public static final RegistryObject<Block> HAY_THATCH_STAIRS = REGISTRY.register("hay_thatch_stairs", () -> new HayThatchStairsBlock());
 	public static final RegistryObject<Block> HAY_THATCH_SLAB = REGISTRY.register("hay_thatch_slab", () -> new HayThatchSlabBlock());
 	public static final RegistryObject<Block> POINTY_BONE = REGISTRY.register("pointy_bone", () -> new PointyBoneBlock());

@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "reverie:block/wild_torch_bottom",
+      "textures": {
+        "0": "reverie:block/wild_torch_bottom"
+      }
+    },
+    "half=upper": {
+      "model": "reverie:block/wild_torch_top",
+      "textures": {
+        "0": "reverie:block/wild_torch_top",
+        "1": "reverie:block/flame"
+      }
+    }
+  }
+}
