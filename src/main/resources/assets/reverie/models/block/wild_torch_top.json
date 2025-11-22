@@ -1,10 +1,11 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
+	"render_type": "cutout",
 	"textures": {
-		"0": "wild_torch_top",
-		"2": "flame",
-		"particle": "wild_torch_top"
+		"0": "reverie:block/wild_torch_top",
+		"2": "reverie:block/flame",
+		"particle": "reverie:block/wild_torch_top"
 	},
 	"elements": [
 		{
@@ -37,6 +38,7 @@
 			"from": [6, 5, 6],
 			"to": [10, 10, 10],
 			"rotation": {"angle": 0, "axis": "y", "origin": [8, 5, 8]},
+			"shade": false,
 			"faces": {
 				"north": {"uv": [6, 0, 8, 2.5], "texture": "#0"},
 				"east": {"uv": [6, 2.5, 8, 5], "texture": "#0"},
@@ -50,6 +52,7 @@
 			"from": [6, 10, 6],
 			"to": [10, 15, 10],
 			"rotation": {"angle": 0, "axis": "y", "origin": [7, 10, 7]},
+			"shade": false,
 			"faces": {
 				"north": {"uv": [0, 0, 4, 5], "texture": "#2"},
 				"east": {"uv": [0, 0, 4, 5], "texture": "#2"},

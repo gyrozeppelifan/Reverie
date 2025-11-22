@@ -13,6 +13,7 @@ public class ReverieModParticles {
 	public static void registerParticles(RegisterParticleProvidersEvent event) {
 		event.registerSpriteSet(ReverieModParticleTypes.BLOOD.get(), BloodParticle::provider);
 		event.registerSpriteSet(ReverieModParticleTypes.BOOZE_BUBBLES.get(), BoozeBubblesParticle::provider);
+		event.registerSpriteSet(ReverieModParticleTypes.WILD_FIRE.get(), WildFireParticle::provider);
 		event.registerSpriteSet(ReverieModParticleTypes.GLASS_SHARDS.get(), GlassShardsParticle::provider);
 		event.registerSpriteSet(ReverieModParticleTypes.BARREL_SHARD_1.get(), BarrelShard1Particle::provider);
 		event.registerSpriteSet(ReverieModParticleTypes.BARREL_SHARD_2.get(), BarrelShard2Particle::provider);

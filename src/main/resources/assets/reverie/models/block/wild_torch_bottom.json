@@ -1,9 +1,11 @@
 {
 	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
+	"shade": false,
+	"render_type": "cutout",
 	"textures": {
-		"0": "wild_torch_bottom",
-		"particle": "wild_torch_bottom"
+		"0": "reverie:block/wild_torch_bottom",
+		"particle": "reverie:block/wild_torch_bottom"
 	},
 	"elements": [
 		{

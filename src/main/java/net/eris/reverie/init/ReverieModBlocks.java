@@ -17,6 +17,7 @@ public class ReverieModBlocks {
 	public static final RegistryObject<Block> COIN_PILE = REGISTRY.register("coin_pile",
 			() -> new CoinPileBlock());
 	public static final RegistryObject<Block> HAY_THATCH = REGISTRY.register("hay_thatch", () -> new HayThatchBlock());
+	public static final RegistryObject<Block> COINS = REGISTRY.register("coins", () -> new CoinsBlock());
 	public static final RegistryObject<Block> WILD_TORCH = REGISTRY.register("wild_torch", () -> new WildTorchBlock());
 	public static final RegistryObject<Block> HAY_THATCH_STAIRS = REGISTRY.register("hay_thatch_stairs", () -> new HayThatchStairsBlock());
 	public static final RegistryObject<Block> HAY_THATCH_SLAB = REGISTRY.register("hay_thatch_slab", () -> new HayThatchSlabBlock());

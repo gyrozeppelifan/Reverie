@@ -10,7 +10,7 @@
       "model": "reverie:block/wild_torch_top",
       "textures": {
         "0": "reverie:block/wild_torch_top",
-        "1": "reverie:block/flame"
+        "2": "reverie:block/flame"
       }
     }
   }
