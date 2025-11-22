@@ -1,4 +1,3 @@
-
 package net.eris.reverie.init;
 
 import net.minecraftforge.registries.RegistryObject;
@@ -36,10 +35,8 @@ public class ReverieModTabs {
 						output.accept(new ItemStack(ReverieModItems.GOBLIN_FLAG.get()));
 						output.accept(new ItemStack(ReverieModItems.ANCIENT_CROSSBOW.get()));
 
-
-
-						// Hay Thatch & Bone
-						List<Item> hayItems = List.of(
+						// Hay Thatch & Bone & Copper
+						List<Item> miscBlocks = List.of(
 								ReverieModBlocks.COPPER_CONDUIT.get().asItem(),
 								ReverieModBlocks.COPPER_JUNCTION.get().asItem(),
 								ReverieModBlocks.HAY_THATCH.get().asItem(),
@@ -47,45 +44,17 @@ public class ReverieModTabs {
 								ReverieModBlocks.HAY_THATCH_SLAB.get().asItem(),
 								ReverieModBlocks.POINTY_BONE.get().asItem()
 						);
-						hayItems.forEach(item -> output.accept(new ItemStack(item)));
+						miscBlocks.forEach(item -> output.accept(new ItemStack(item)));
 
-						// Olive Blocks & Sapling
-						List<Item> oliveBlocks = List.of(
-								ReverieModBlocks.OLIVE_LEAVES.get().asItem(),
-								ReverieModBlocks.OLIVE_LOG.get().asItem(),
-								ReverieModBlocks.OLIVE_WOOD.get().asItem(),
-								ReverieModBlocks.STRIPPED_OLIVE_LOG.get().asItem(),
-								ReverieModBlocks.STRIPPED_OLIVE_WOOD.get().asItem(),
-								ReverieModBlocks.OLIVE_TRAPDOOR.get().asItem(),
-								ReverieModBlocks.OLIVE_DOOR.get().asItem(),
-								ReverieModBlocks.OLIVE_PLANKS.get().asItem(),
-								ReverieModBlocks.OLIVE_SAPLING.get().asItem(),
-								ReverieModBlocks.ELDER_OLIVE_LEAVES.get().asItem(),
-								ReverieModBlocks.ELDER_OLIVE_LOG.get().asItem(),
-								ReverieModBlocks.SHINY_ELDER_OLIVE_LOG.get().asItem(),
-								ReverieModBlocks.ELDER_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.GREEN_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.BLACK_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.CARVED_GREEN_OLIVE_BLOCK.get().asItem(),
-								ReverieModBlocks.CARVED_BLACK_OLIVE_BLOCK.get().asItem(),
+						// Treasure & Decoration (Olive related blocks removed)
+						List<Item> treasureAndDecor = List.of(
 								ReverieModBlocks.COIN_PILE.get().asItem(),
 								ReverieModBlocks.GOLDEN_GRAVEL.get().asItem()
 						);
-						oliveBlocks.forEach(item -> output.accept(new ItemStack(item)));
+						treasureAndDecor.forEach(item -> output.accept(new ItemStack(item)));
 
-						// Olive Items & Derived Blocks
-						output.accept(new ItemStack(ReverieModItems.GREEN_OLIVE_BRANCH.get()));
-						output.accept(new ItemStack(ReverieModItems.BLACK_OLIVE_BRANCH.get()));
-						List<Item> oliveDerived = List.of(
-								ReverieModBlocks.OLIVE_FENCE.get().asItem(),
-								ReverieModBlocks.OLIVE_SLAB.get().asItem(),
-								ReverieModBlocks.OLIVE_STAIRS.get().asItem(),
-								ReverieModBlocks.OLIVE_PRESSURE_PLATE.get().asItem(),
-								ReverieModBlocks.OLIVE_BUTTON.get().asItem(),
-								ReverieModBlocks.OLIVE_FENCE_GATE.get().asItem(),
-								ReverieModBlocks.OLIVE_PILE.get().asItem(),
-								ReverieModBlocks.MASHED_OLIVE.get().asItem(),
+						// Leather & Hides (Olive derived blocks removed)
+						List<Item> hideBlocks = List.of(
 								ReverieModBlocks.LEATHER_BLOCK.get().asItem(),
 								ReverieModBlocks.LEATHER_PATCH_BLOCK.get().asItem(),
 								ReverieModBlocks.RABBIT_HIDE_BLOCK.get().asItem(),
@@ -93,20 +62,16 @@ public class ReverieModTabs {
 								ReverieModBlocks.STITCHED_LEATHER_TILES.get().asItem(),
 								ReverieModBlocks.PATCHED_LEATHER_TILES.get().asItem(),
 								ReverieModBlocks.HANGING_HIDE.get().asItem()
-
 						);
-						oliveDerived.forEach(item -> output.accept(new ItemStack(item)));
-						output.accept(new ItemStack(ReverieModItems.OLIVE_OIL_BOTTLE.get()));
-						output.accept(new ItemStack(ReverieModItems.OLIVE_PASTE.get()));
-						output.accept(new ItemStack(ReverieModItems.OLIVE_BAGEL.get()));
+						hideBlocks.forEach(item -> output.accept(new ItemStack(item)));
+
+						// Weapons & Tools (Olive Staff removed)
 						output.accept(new ItemStack(ReverieModItems.SPIKED_LOG_ITEM.get()));
 						output.accept(new ItemStack(ReverieModItems.BONE_SPEAR.get()));
-						output.accept(new ItemStack(ReverieModItems.ELDER_OLIVE_STAFF.get()));
 						output.accept(new ItemStack(ReverieModItems.GOBLIN_SYMBOL_BANNER_PATTERN.get()));
 
 						// Spawn Eggs
 						List<Item> spawnEggs = List.of(
-								ReverieModItems.BRAWLER_SPAWN_EGG.get(),
 								ReverieModItems.DRUNKARD_SPAWN_EGG.get(),
 								ReverieModItems.GOBLIN_SPAWN_EGG.get(),
 								ReverieModItems.SHOOTER_GOBLIN_SPAWN_EGG.get(),

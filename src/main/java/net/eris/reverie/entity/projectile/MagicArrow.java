@@ -3,10 +3,16 @@ package net.eris.reverie.entity.projectile;
 import net.eris.reverie.init.ReverieModEntities;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkHooks;
 
 public class MagicArrow extends Arrow {
@@ -26,16 +32,14 @@ public class MagicArrow extends Arrow {
         configureMagicArrow();
     }
 
-    // Ortak ayarlar
     private void configureMagicArrow() {
-        // 1. DELME ÖZELLİĞİ (PIERCING)
-        // 5 varlığın içinden hasar vererek geçer.
-        // (Sonsuz yapmak istersen 127 yapabilirsin ama 5 dengelidir)
-        this.setPierceLevel((byte) 5);
-
-        // 2. YERÇEKİMİ YOK
-        // Büyülü ok olduğu için aşağı düşmez, lazer gibi dümdüz gider.
         this.setNoGravity(true);
+        this.setPierceLevel((byte) 127);
+        this.noPhysics = true;
+
+        // DÜZELTME: OKUN ALINMASINI ENGELLE (Disallowed)
+        // Bu sayede doğduğu an oyuncu onu "yerden alamaz".
+        this.pickup = Pickup.DISALLOWED;
     }
 
     @Override
@@ -50,18 +54,54 @@ public class MagicArrow extends Arrow {
 
     @Override
     public void tick() {
-        super.tick();
-
-        // 3. ÖMÜR KISITLAMASI
-        // Yerçekimi olmadığı için sonsuza kadar gitmesin.
-        // 60 tick (3 saniye) sonra yok olsun. Zaten çok hızlı olduğu için menzili yeterli olur.
-        if (this.tickCount > 60 && !this.level().isClientSide) {
-            this.discard();
+        if (this.level().isClientSide) {
+            Vec3 nextPos = this.position().add(this.getDeltaMovement());
+            this.setPos(nextPos.x, nextPos.y, nextPos.z);
+            return;
         }
 
-        // İstersen uçarken arkasından partikül de bırakabilir (Renderer zaten trail yapıyor ama bu ekstra olur)
-        // if (this.level().isClientSide) {
-        //     this.level().addParticle(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
-        // }
+        // Ömür (40 tick = 2 sn)
+        if (this.tickCount > 40) {
+            this.discard();
+            return;
+        }
+
+        HitResult hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+
+        if (hitResult.getType() == HitResult.Type.ENTITY) {
+            this.onHit(hitResult);
+        }
+
+        Vec3 nextPos = this.position().add(this.getDeltaMovement());
+        this.setPos(nextPos.x, nextPos.y, nextPos.z);
+
+        this.checkInsideBlocks();
+        this.tickCount++;
+    }
+
+    @Override
+    protected void onHitEntity(EntityHitResult result) {
+        Entity target = result.getEntity();
+
+        if (target.is(this.getOwner()) && this.tickCount < 5) return;
+
+        float damage = (float) (this.getBaseDamage() * this.getDeltaMovement().length());
+        if (this.isCritArrow()) {
+            damage += this.random.nextInt((int) (damage / 2 + 2));
+        }
+
+        target.hurt(this.damageSources().arrow(this, this.getOwner()), damage);
+    }
+
+    @Override
+    protected void onHitBlock(BlockHitResult result) {
+        // Blok içinden geç
+    }
+
+    @Override
+    protected boolean canHitEntity(Entity entity) {
+        if (entity.isSpectator()) return false;
+        if (entity.is(this.getOwner()) && this.tickCount < 5) return false;
+        return super.canHitEntity(entity);
     }
 }

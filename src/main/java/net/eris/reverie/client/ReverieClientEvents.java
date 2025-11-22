@@ -31,6 +31,7 @@ public class ReverieClientEvents {
     public static ShaderInstance goblinFlagGlowShader;
     public static ShaderInstance ancientCloakShader;
     public static ShaderInstance drunkenRageShader;
+    public static ShaderInstance magicArrowShader;
 
     // --- 1. SHADER KAYDI ---
     @SubscribeEvent
@@ -46,6 +47,16 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
+        try {
+            event.registerShader(new ShaderInstance(
+                    event.getResourceProvider(),
+                    new ResourceLocation(ReverieMod.MODID, "magic_arrow_beam"),
+                    DefaultVertexFormat.POSITION_COLOR_TEX
+            ), shaderInstance -> magicArrowShader = shaderInstance);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Ancient Cloak
         try {
             event.registerShader(new ShaderInstance(
@@ -57,6 +68,8 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
+
+
         // Drunken Rage (GUI Shader)
         try {
             event.registerShader(new ShaderInstance(
@@ -67,6 +80,8 @@ public class ReverieClientEvents {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
     }
 
     // --- 2. ITEM ANİMASYONLARI ---

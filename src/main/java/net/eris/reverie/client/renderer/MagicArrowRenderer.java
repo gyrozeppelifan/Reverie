@@ -1,11 +1,8 @@
 package net.eris.reverie.client.renderer;
 
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
-import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.ReverieClientEvents;
 import net.eris.reverie.entity.projectile.MagicArrow;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -16,6 +13,8 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
 public class MagicArrowRenderer extends ArrowRenderer<MagicArrow> {
 
@@ -33,104 +32,78 @@ public class MagicArrowRenderer extends ArrowRenderer<MagicArrow> {
     @Override
     public void render(MagicArrow entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
 
-        // 1. NORMAL OK ÇİZİMİ
-        super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
-
-        // 2. SHADER ZAMANI GÜNCELLEME
         if (ReverieClientEvents.ancientCloakShader != null) {
             float time = (entity.tickCount + partialTicks) / 20.0F;
             ReverieClientEvents.ancientCloakShader.getUniform("GameTime").set(time);
         }
 
-        // Ortak Dönüş Hesaplamaları (Okun gidiş yönü)
         float yRot = Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()) - 90.0F;
         float xRot = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
 
-        // --- 3. AURA KATMANI (SHELL) ---
+        // --- ANA OK ---
         poseStack.pushPose();
         poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
         poseStack.mulPose(Axis.ZP.rotationDegrees(xRot));
 
-        // Oku biraz şişiriyoruz
-        float scale = 1.2F;
-        poseStack.scale(scale, scale, scale);
+        // DÜZELTME: İNCECİK SCALE
+        // Uzunluk (X): 2.0F (Daha uzun ışın)
+        // Kalınlık (Y, Z): 0.15F (Çok ince)
+        poseStack.scale(1.0F, 0.15F, 0.15F);
 
         VertexConsumer auraBuffer = buffer.getBuffer(MagicRenderType.getAquaAura(ARROW_LOCATION));
-
-        // Ok modelini manuel çizmek zor olduğu için basit bir "Işık Hüzmesi" hilesi yapıyoruz
-        // Veya ArrowRenderer'ın içindeki vertex çizimini kopyalayabiliriz ama
-        // şimdilik basitçe aynı oku tekrar çizelim:
-        this.renderArrowModel(poseStack, auraBuffer);
+        this.drawArrowVertex(poseStack, auraBuffer, 255);
 
         poseStack.popPose();
 
-        // --- 4. TRAIL (HAYALET İZLER) ---
-        // Ok çok hızlı olduğu için arkasına 3 tane kopya koyuyoruz
-        for (int i = 1; i <= 3; i++) {
+        // --- TRAIL (İZLER) ---
+        for (int i = 1; i <= 4; i++) {
             poseStack.pushPose();
 
-            // Oku geriye ötele (Hızına göre değil, sabit mesafe ile)
-            // Okun kendi local Z ekseni zaten gidiş yönüdür.
-            // Geriye doğru (X ekseni ok modelinde ileri/geridir) kaydırıyoruz.
-            float trailDist = i * 0.8F;
-
-            // Dönüşleri uygula
             poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
             poseStack.mulPose(Axis.ZP.rotationDegrees(xRot));
 
-            // Geriye çek
-            poseStack.translate(-trailDist, 0, 0); // Ok modelinde X ekseni uzunluktur
+            // İz mesafesi (Boyut uzadığı için biraz açtık)
+            float trailDist = i * 0.5F;
+            poseStack.translate(-trailDist, 0, 0);
 
-            // Küçült
-            float trailScale = 1.0F - (i * 0.2F);
-            poseStack.scale(trailScale, trailScale, trailScale);
+            float trailScale = 1.0F - (i * 0.15F);
+            // İzler de ince olsun
+            poseStack.scale(2.0F * trailScale, 0.15F * trailScale, 0.15F * trailScale);
 
-            // Şeffaf çiz
             VertexConsumer trailBuffer = buffer.getBuffer(MagicRenderType.getAquaAura(ARROW_LOCATION));
-            this.renderArrowModel(poseStack, trailBuffer);
+
+            int alpha = Math.max(0, 120 - (i * 30));
+
+            this.drawArrowVertex(poseStack, trailBuffer, alpha);
 
             poseStack.popPose();
         }
     }
 
-    // Ok modelinin vertex çizimi (Vanilla kodundan basitleştirildi)
-    private void renderArrowModel(PoseStack poseStack, VertexConsumer consumer) {
+    private void drawArrowVertex(PoseStack poseStack, VertexConsumer consumer, int alpha) {
         PoseStack.Pose pose = poseStack.last();
-        // Kuyruk
-        this.vertex(pose, consumer, -7, -2, -2, 0.0F, 0.15625F, -1, 0, 0);
-        this.vertex(pose, consumer, -7, -2, 2, 0.15625F, 0.15625F, -1, 0, 0);
-        this.vertex(pose, consumer, -7, 2, 2, 0.15625F, 0.3125F, -1, 0, 0);
-        this.vertex(pose, consumer, -7, 2, -2, 0.0F, 0.3125F, -1, 0, 0);
-        // Gövde 1
-        this.vertex(pose, consumer, -7, 2, -2, 0.0F, 0.15625F, 1, 0, 0);
-        this.vertex(pose, consumer, 8, 2, -2, 0.5F, 0.15625F, 1, 0, 0);
-        this.vertex(pose, consumer, 8, 2, 2, 0.5F, 0.3125F, 1, 0, 0);
-        this.vertex(pose, consumer, -7, 2, 2, 0.0F, 0.3125F, 1, 0, 0);
-        // Gövde 2
-        this.vertex(pose, consumer, -7, -2, 2, 0.0F, 0.15625F, 1, 0, 0);
-        this.vertex(pose, consumer, 8, -2, 2, 0.5F, 0.15625F, 1, 0, 0);
-        this.vertex(pose, consumer, 8, -2, -2, 0.5F, 0.3125F, 1, 0, 0);
-        this.vertex(pose, consumer, -7, -2, -2, 0.0F, 0.3125F, 1, 0, 0);
+
+        for(int j = 0; j < 4; ++j) {
+            poseStack.mulPose(Axis.XP.rotationDegrees(90.0F));
+
+            consumer.vertex(pose.pose(), -8, -2, 0).color(100, 255, 255, alpha)
+                    .uv(0.0F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0).normal(pose.normal(), 0, 0, 0).endVertex();
+            consumer.vertex(pose.pose(), 8, -2, 0).color(100, 255, 255, alpha)
+                    .uv(0.5F, 0.0F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0).normal(pose.normal(), 0, 0, 0).endVertex();
+            consumer.vertex(pose.pose(), 8, 2, 0).color(100, 255, 255, alpha)
+                    .uv(0.5F, 0.15625F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0).normal(pose.normal(), 0, 0, 0).endVertex();
+            consumer.vertex(pose.pose(), -8, 2, 0).color(100, 255, 255, alpha)
+                    .uv(0.0F, 0.15625F).overlayCoords(OverlayTexture.NO_OVERLAY).uv2(0xF000F0).normal(pose.normal(), 0, 0, 0).endVertex();
+        }
     }
 
-    public void vertex(PoseStack.Pose pose, VertexConsumer consumer, int x, int y, int z, float u, float v, int normalX, int normalZ, int normalY) {
-        consumer.vertex(pose.pose(), (float)x, (float)y, (float)z)
-                .color(0, 255, 255, 255) // Aqua Renk Zorlaması
-                .uv(u, v)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(0xF000F0) // Full Bright
-                .normal(pose.normal(), (float)normalX, (float)normalY, (float)normalZ)
-                .endVertex();
-    }
-
-    // Render Type (Aynı Aqua Shader)
     private static class MagicRenderType extends RenderType {
         public MagicRenderType(String s, VertexFormat v, VertexFormat.Mode m, int i, boolean b, boolean b1, Runnable r, Runnable r1) {
             super(s, v, m, i, b, b1, r, r1);
         }
         public static RenderType getAquaAura(ResourceLocation texture) {
             return create("ancient_cloak_aura",
-                    DefaultVertexFormat.POSITION_COLOR_TEX, // Normal verisini shader kullanmadığı için bu yeterli
+                    DefaultVertexFormat.POSITION_COLOR_TEX,
                     VertexFormat.Mode.QUADS,
                     256,
                     false,

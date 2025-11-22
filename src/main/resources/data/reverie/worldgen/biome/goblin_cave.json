@@ -28,9 +28,9 @@
   },
   "spawners": {
     "monster": [
-      { "type": "reverie:goblin", "weight": 100, "minCount": 4, "maxCount": 4 },
-      { "type": "reverie:shooter_goblin", "weight": 80, "minCount": 2, "maxCount": 4 },
-      { "type": "reverie:goblin_brute", "weight": 20, "minCount": 1, "maxCount": 1 }
+      { "type": "reverie:goblin", "weight": 40, "minCount": 4, "maxCount": 4 },
+      { "type": "reverie:shooter_goblin", "weight": 30, "minCount": 2, "maxCount": 4 },
+      { "type": "reverie:goblin_brute", "weight": 5, "minCount": 1, "maxCount": 1 }
     ],
     "creature": [],
     "ambient": [
@@ -42,7 +42,8 @@
   },
   "spawn_costs": {
     "reverie:goblin": { "energy_budget": 0.12, "charge": 1.0 },
-    "reverie:shooter_goblin": { "energy_budget": 0.12, "charge": 1.0 }
+    "reverie:shooter_goblin": { "energy_budget": 0.12, "charge": 1.0 },
+    "reverie:goblin_brute": { "energy_budget": 0.12, "charge": 1.0 }
   },
   "carvers": {
     "air": [
