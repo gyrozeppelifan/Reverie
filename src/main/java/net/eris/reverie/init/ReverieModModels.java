@@ -22,6 +22,7 @@ public class ReverieModModels {
 		event.registerLayerDefinition(ModelGoblet.LAYER_LOCATION, ModelGoblet::createBodyLayer);
 		event.registerLayerDefinition(ModelGoblinBrute.LAYER_LOCATION, ModelGoblinBrute::createBodyLayer);
 		event.registerLayerDefinition(ModelGoblinFlag.LAYER_LOCATION, ModelGoblinFlag::createBodyLayer);
+		event.registerLayerDefinition(Stitched.LAYER_LOCATION, Stitched::createBodyLayer);
 
 	}
 }

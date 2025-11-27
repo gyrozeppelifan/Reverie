@@ -1,9 +1,10 @@
 package net.eris.reverie.block;
 
-import net.eris.reverie.init.ReverieModParticles;
+// IMPORT DEĞİŞİKLİĞİ: Vanilla ParticleTypes yerine kendi kayıt dosyamızı alıyoruz.
+import net.eris.reverie.init.ReverieModParticleTypes;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -21,30 +22,24 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WildTorchBlock extends DoublePlantBlock {
 
-    // Vuruş Kutusu (Hitbox)
     protected static final VoxelShape SHAPE = Block.box(6.0D, 0.0D, 6.0D, 10.0D, 16.0D, 10.0D);
 
     public WildTorchBlock() {
         super(BlockBehaviour.Properties.of()
-                .mapColor(MapColor.WOOD)       // DÜZELTİLDİ: Harita rengi Odun oldu.
+                .mapColor(MapColor.WOOD)
                 .noOcclusion()
                 .strength(0.2F)
-                .sound(SoundType.WOOD)         // DÜZELTİLDİ: Kemik sesi yerine ODUN sesi.
+                .sound(SoundType.WOOD)
                 .lightLevel(state -> 14)
         );
     }
 
-    // --- ÖNEMLİ DÜZELTME: YERLEŞTİRME KURALI ---
-    // DoublePlantBlock normalde sadece toprağa konur. Bunu değiştiriyoruz.
     @Override
     public boolean canSurvive(BlockState pState, LevelReader pLevel, BlockPos pPos) {
-        // Eğer bu bloğun ALT yarısıysa:
         if (pState.getValue(HALF) == DoubleBlockHalf.LOWER) {
             BlockPos blockpos = pPos.below();
-            // Altındaki bloğun üst yüzeyi sağlam (sturdy) mı? (Taş, odun, demir bloğu vs. olur)
             return pLevel.getBlockState(blockpos).isFaceSturdy(pLevel, blockpos, Direction.UP);
         } else {
-            // Eğer ÜST yarıysa, normal bitki mantığı devam etsin (altında alt yarısı olmalı)
             return super.canSurvive(pState, pLevel, pPos);
         }
     }
@@ -59,17 +54,30 @@ public class WildTorchBlock extends DoublePlantBlock {
         return Shapes.empty();
     }
 
+    // --- PARTİKÜL METODU ---
     @Override
     public void animateTick(BlockState pState, Level pLevel, BlockPos pPos, RandomSource pRandom) {
+        // Sadece üst yarıdan partikül çıksın
         if (pState.getValue(HALF) == DoubleBlockHalf.UPPER) {
-            double d0 = (double)pPos.getX() + 0.5D;
-            double d1 = (double)pPos.getY() + 0.8D;
-            double d2 = (double)pPos.getZ() + 0.5D;
+            // Bloğun merkez koordinatları
+            double x = (double)pPos.getX() + 0.5D;
+            // Yükseklik: Bloğun üst kısmına yakın bir yerden çıksın (0.7 iyi bir nokta)
+            double y = (double)pPos.getY() + 0.7D;
+            double z = (double)pPos.getZ() + 0.5D;
 
-            double offsetX = (pRandom.nextDouble() - 0.5D) * 0.2D;
-            double offsetZ = (pRandom.nextDouble() - 0.5D) * 0.2D;
+            // Rastgelelik: Hep aynı noktadan çıkmasın, hafif sağa sola dağılsın.
+            // (pRandom.nextDouble() - 0.5D) bize -0.5 ile +0.5 arası bir sayı verir.
+            // Bunu 0.2 ile çarparak dağılma alanını daraltıyoruz.
+            double randomOffset = 0.2D;
+            double offsetX = (pRandom.nextDouble() - 0.5D) * randomOffset;
+            double offsetZ = (pRandom.nextDouble() - 0.5D) * randomOffset;
 
-            pLevel.addParticle(ParticleTypes.FLAME, d0, d1, d2, 0.0D, 0.0D, 0.0D);
+            // --- BİZİM ÖZEL PARTİKÜLÜMÜZÜ EKLEME ---
+            pLevel.addParticle(
+                    ReverieModParticleTypes.WILD_FIRE.get(), // Hangi partikül?
+                    x + offsetX, y, z + offsetZ,             // Nerede? (Hafif dağılmış pozisyon)
+                    0.0D, 0.015D, 0.0D                       // Hız vektörü? (Çok hafif yukarı doğru süzülsün)
+            );
         }
     }
 }

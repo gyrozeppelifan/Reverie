@@ -5,7 +5,10 @@ import net.eris.reverie.init.ReverieModSounds;
 import net.eris.reverie.entity.projectile.MagicArrow;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -31,7 +34,10 @@ import java.util.function.Consumer;
 public class AncientCrossbowItem extends Item {
 
     public static final int CLEANING_THRESHOLD = 50;
-    public static final int ABILITY_COOLDOWN_TICKS = 400; // 20 Saniye
+    // COOLDOWN GÜNCELLENDİ: 60 Saniye (1200 Tick)
+    public static final int ABILITY_COOLDOWN_TICKS = 1200;
+    // YENİ SABİT: Yetenek Süresi 10 Saniye (200 Tick)
+    public static final int ABILITY_DURATION_TICKS = 200;
     private static final int STARTUP_DELAY = 8; // İlk atış için gecikme
 
     public AncientCrossbowItem() {
@@ -43,8 +49,9 @@ public class AncientCrossbowItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
 
-        // A) GİZLİLİK MODU
+        // A) GİZLİLİK MODU (Shift + Sağ Tık)
         if (player.isCrouching()) {
+            // 1. Temizlik Kontrolü
             if (!isClean(stack)) {
                 if (!level.isClientSide) {
                     player.displayClientMessage(Component.literal("§7Mekanizma yosunlu, çalışmıyor..."), true);
@@ -54,33 +61,60 @@ public class AncientCrossbowItem extends Item {
             }
 
             long gameTime = level.getGameTime();
-            long nextUse = stack.getOrCreateTag().getLong("NextAbilityTime");
-            long timeLeft = nextUse - gameTime;
+            CompoundTag tag = stack.getOrCreateTag();
 
-            if (timeLeft > 0) {
+            // 2. Cooldown Kontrolü
+            long cooldownEndsAt = tag.getLong("CooldownEndsAt");
+            if (gameTime < cooldownEndsAt) {
                 if (!level.isClientSide) {
-                    int seconds = (int) (timeLeft / 20);
-                    player.displayClientMessage(Component.literal("§cAncient Cloak is filling up: " + seconds + "s"), true);
+                    // Kalan süreyi hesapla
+                    int seconds = (int) ((cooldownEndsAt - gameTime) / 20);
+                    player.displayClientMessage(Component.literal("§cAncient Cloak cooldown: " + seconds + "s"), true);
                 }
                 return InteractionResultHolder.fail(stack);
             }
 
+            // 3. Aktiflik Kontrolü (İptal Edilemezlik)
+            long abilityEndsAt = tag.getLong("AbilityEndsAt");
+            if (gameTime < abilityEndsAt) {
+                // Yetenek şu an aktif ve bitmemiş. İptal edilemez.
+                // Pas geçiyoruz, böylece tekrar çalışmıyor ama hata mesajı da vermiyor.
+                return InteractionResultHolder.pass(stack);
+            }
+
+            // 4. Aktivasyon (Cooldown bitmiş ve yetenek aktif değilse)
             if (!level.isClientSide) {
-                if (player.hasEffect(ReverieModMobEffects.ANCIENT_CLOAK.get())) {
-                    player.removeEffect(ReverieModMobEffects.ANCIENT_CLOAK.get());
-                    player.displayClientMessage(Component.literal("§cAbility Deactivated"), true);
-                    level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, 0.8F);
-                    stack.getOrCreateTag().putLong("NextAbilityTime", gameTime + ABILITY_COOLDOWN_TICKS);
-                } else {
-                    player.addEffect(new MobEffectInstance(ReverieModMobEffects.ANCIENT_CLOAK.get(), 200000, 0, false, false, true));
-                    player.displayClientMessage(Component.literal("§aAbility Activated"), true);
-                    level.playSound(null, player.getX(), player.getY(), player.getZ(), ReverieModSounds.ANCIENT_CLOAK.get(), SoundSource.PLAYERS, 1.0F, 1.5F);
+                // Efekti 10 saniye (200 tick) ver
+                player.addEffect(new MobEffectInstance(ReverieModMobEffects.ANCIENT_CLOAK.get(), ABILITY_DURATION_TICKS, 0, false, false, true));
+
+                // NBT Zamanlayıcılarını ayarla
+                // Yetenek ne zaman bitecek? (Şimdi + 10sn)
+                tag.putLong("AbilityEndsAt", gameTime + ABILITY_DURATION_TICKS);
+                // Cooldown ne zaman bitecek? (Yetenek bittikten + 60sn sonra)
+                tag.putLong("CooldownEndsAt", gameTime + ABILITY_DURATION_TICKS + ABILITY_COOLDOWN_TICKS);
+
+                player.displayClientMessage(Component.literal("§aAbility Activated"), true);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), ReverieModSounds.ANCIENT_CLOAK.get(), SoundSource.PLAYERS, 1.0F, 1.5F);
+
+                // --- MAVİ DUMAN PARTİKÜL EFEKTİ ---
+                if (level instanceof ServerLevel serverLevel) {
+                    // Oyuncunun etrafında çember oluştur
+                    for (int i = 0; i < 360; i += 15) { // 15 derecelik açılarla
+                        double angle = Math.toRadians(i);
+                        double radius = 1.0D; // Yarıçap
+                        double x = player.getX() + radius * Math.cos(angle);
+                        double z = player.getZ() + radius * Math.sin(angle);
+                        // ENTITY_EFFECT partikülü kullanıyoruz.
+                        // Hız parametreleri (dX, dY, dZ) aslında RGB renklerini belirler (0.0 - 1.0 arası).
+                        // Mavi tonu için: R=0.1, G=0.3, B=0.9 ayarladım. Sondaki 1.0D hız çarpanıdır.
+                        serverLevel.sendParticles(ParticleTypes.ENTITY_EFFECT, x, player.getY() + 0.3D, z, 0, 0.1D, 0.3D, 0.9D, 1.0D);
+                    }
                 }
             }
             return InteractionResultHolder.success(stack);
         }
 
-        // B) ATEŞLEME BAŞLANGICI
+        // B) ATEŞLEME BAŞLANGICI (Normal Sağ Tık)
         if (!player.getAbilities().instabuild && findAmmo(player).isEmpty()) {
             return InteractionResultHolder.fail(stack);
         }
@@ -311,14 +345,23 @@ public class AncientCrossbowItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flag) {
         if (!isClean(stack)) {
             tooltip.add(Component.literal("§2Mossy & Rusty"));
-            tooltip.add(Component.literal("§7Mekanizmayı temizlemek için kullan."));
+            tooltip.add(Component.literal("§7Shoot it for cleaning the mechanism."));
         } else {
             tooltip.add(Component.literal("§6Special Ability: Ancient Cloak"));
             if (stack.hasTag()) {
-                long timeLeft = stack.getTag().getLong("NextAbilityTime") - (level != null ? level.getGameTime() : 0);
-                if (timeLeft > 0) {
-                    tooltip.add(Component.literal("§c(Filling: " + (timeLeft / 20) + "s)"));
+                long gameTime = level != null ? level.getGameTime() : 0;
+                long cooldownEndsAt = stack.getTag().getLong("CooldownEndsAt");
+                long abilityEndsAt = stack.getTag().getLong("AbilityEndsAt");
+
+                if (gameTime < abilityEndsAt) {
+                    // Yetenek şu an aktif
+                    tooltip.add(Component.literal("§b(Active!)"));
+                } else if (gameTime < cooldownEndsAt) {
+                    // Cooldown'da
+                    long timeLeft = cooldownEndsAt - gameTime;
+                    tooltip.add(Component.literal("§c(Cooldown: " + (timeLeft / 20) + "s)"));
                 } else {
+                    // Hazır
                     tooltip.add(Component.literal("§a(Ready)"));
                 }
             }

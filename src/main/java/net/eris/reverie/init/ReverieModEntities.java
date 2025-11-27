@@ -52,6 +52,9 @@ public class ReverieModEntities {
 	public static final RegistryObject<EntityType<GoblinBruteEntity>> GOBLIN_BRUTE = register("goblin_brute",
 			EntityType.Builder.<GoblinBruteEntity>of(GoblinBruteEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinBruteEntity::new)
 					.sized(1.2f, 3.1f));
+	public static final RegistryObject<EntityType<StitchedEntity>> STITCHED = register("stitched",
+			EntityType.Builder.<StitchedEntity>of(StitchedEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(StitchedEntity::new)
+					.sized(1.2f, 3.1f));
 	public static final RegistryObject<EntityType<GoblinFlagEntity>> GOBLIN_FLAG = register("goblin_flag",
 			EntityType.Builder.<GoblinFlagEntity>of(GoblinFlagEntity::new, MobCategory.MISC).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinFlagEntity::new)
 					.sized(1.2f, 3.1f));
@@ -69,6 +72,8 @@ public class ReverieModEntities {
 					.setCustomClientFactory(PossessionPuppetEntity::new)
 					.sized(0.6f, 1.8f)          // oyuncu ölçüsü → doğru path
 					.noSummon()                 // yumurta vb. ile çağrılmasın
+
+
 	);
 
 
@@ -91,6 +96,7 @@ public class ReverieModEntities {
 			GoblinBruteEntity.init();
 			GoblinFlagEntity.init();
 			PossessionPuppetEntity.init();
+
 		});
 	}
 
@@ -105,6 +111,7 @@ public class ReverieModEntities {
 		event.put(GOBLIN_BARREL.get(), GoblinBarrelEntity.createAttributes().build());
 		event.put(GOBLET.get(), GobletEntity.createAttributes().build());
 		event.put(GOBLIN_BRUTE.get(),  GoblinBruteEntity.createAttributes().build());
+		event.put(STITCHED.get(),  GoblinBruteEntity.createAttributes().build());
 		event.put(POSSESSION_PUPPET.get(), PossessionPuppetEntity.createAttributes().build());
 	}
 }

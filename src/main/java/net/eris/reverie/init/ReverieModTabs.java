@@ -49,7 +49,10 @@ public class ReverieModTabs {
 						// Treasure & Decoration (Olive related blocks removed)
 						List<Item> treasureAndDecor = List.of(
 								ReverieModBlocks.COIN_PILE.get().asItem(),
-								ReverieModBlocks.GOLDEN_GRAVEL.get().asItem()
+								ReverieModBlocks.GOLDEN_GRAVEL.get().asItem(),
+								ReverieModBlocks.COINS.get().asItem(),
+								ReverieModBlocks.WILD_TORCH.get().asItem()
+
 						);
 						treasureAndDecor.forEach(item -> output.accept(new ItemStack(item)));
 
@@ -57,7 +60,6 @@ public class ReverieModTabs {
 						List<Item> hideBlocks = List.of(
 								ReverieModBlocks.LEATHER_BLOCK.get().asItem(),
 								ReverieModBlocks.LEATHER_PATCH_BLOCK.get().asItem(),
-								ReverieModBlocks.RABBIT_HIDE_BLOCK.get().asItem(),
 								ReverieModBlocks.LAYERED_PELT_BLOCK.get().asItem(),
 								ReverieModBlocks.STITCHED_LEATHER_TILES.get().asItem(),
 								ReverieModBlocks.PATCHED_LEATHER_TILES.get().asItem(),
