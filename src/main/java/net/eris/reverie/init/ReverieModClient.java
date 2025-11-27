@@ -2,6 +2,7 @@ package net.eris.reverie.init;
 
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -25,4 +26,11 @@ public class ReverieModClient {
             );
         });
     }
+
+    @SubscribeEvent
+    public static void registerShaders(RegisterShadersEvent event) {
+        // Handler'daki metodu çağır
+        net.eris.reverie.client.ElectricOutlineHandler.onRegisterShaders(event);
+    }
+
 }

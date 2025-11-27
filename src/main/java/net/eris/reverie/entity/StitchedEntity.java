@@ -9,10 +9,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AnimationState;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -22,9 +19,10 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.PlayMessages; // <-- BU IMPORT EKSİKTİ
+import net.minecraftforge.network.PlayMessages;
 
 public class StitchedEntity extends Monster {
+    // States: 0=PASSIVE, 1=ELECTROCUTED, 2=STANDUP, 3=ALIVE, 4=WAITING (Ara geçiş)
     private static final EntityDataAccessor<Integer> DATA_STATE = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.INT);
 
     public final AnimationState passiveState = new AnimationState();
@@ -42,17 +40,35 @@ public class StitchedEntity extends Monster {
         this(ReverieModEntities.STITCHED.get(), level);
     }
 
-    // --- İŞTE EKSİK OLAN CONSTRUCTOR BU ---
-    // Bu constructor olmazsa "Invalid constructor reference" hatası alırsın.
     public StitchedEntity(PlayMessages.SpawnEntity packet, Level level) {
         this(ReverieModEntities.STITCHED.get(), level);
     }
-    // ----------------------------------------
 
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_STATE, 0);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        // State değiştiğinde hitbox'ı güncelle (Client & Server)
+        if (DATA_STATE.equals(key)) {
+            this.refreshDimensions();
+        }
+        super.onSyncedDataUpdated(key);
+    }
+
+    // --- HITBOX AYARLAMASI ---
+    @Override
+    public EntityDimensions getDimensions(Pose pose) {
+        int state = this.getState();
+        // Yatıyor (0), Çarpılıyor (1) veya Bekliyor (4) ise YATAY hitbox kullan
+        if (state == 0 || state == 1 || state == 4) {
+            return EntityDimensions.fixed(0.8f, 0.5f);
+        }
+        // Diğer durumlarda (Standup, Alive) normal boyuta dön
+        return super.getDimensions(pose);
     }
 
     @Override
@@ -83,8 +99,8 @@ public class StitchedEntity extends Monster {
     @Override
     public void thunderHit(ServerLevel level, LightningBolt lightning) {
         if (getState() == 0) {
-            this.setState(1);
-            this.animationTimer = 20;
+            this.setState(1); // ELECTROCUTED
+            this.animationTimer = 60; // 3 Saniye boyunca çarpılma (önceki 20'ydi)
             this.playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 2.0F, 1.0F);
         } else {
             super.thunderHit(level, lightning);
@@ -93,6 +109,10 @@ public class StitchedEntity extends Monster {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
+        // Yanma hasarını engelle
+        if (source.is(net.minecraft.world.damagesource.DamageTypes.IN_FIRE) || source.is(net.minecraft.world.damagesource.DamageTypes.ON_FIRE)) {
+            return false;
+        }
         if (getState() < 3 && !source.isCreativePlayer()) {
             return false;
         }
@@ -102,6 +122,12 @@ public class StitchedEntity extends Monster {
     @Override
     public void tick() {
         super.tick();
+
+        // --- GÖRSEL YANMAYI ENGELLE ---
+        if (this.isOnFire()) {
+            this.clearFire(); // Söndür (Visual fire overlay'i kaldırır)
+        }
+
         if (this.level().isClientSide) {
             setupAnimationStates();
         } else {
@@ -111,19 +137,28 @@ public class StitchedEntity extends Monster {
 
     private void handleStateLogic() {
         int currentState = getState();
-        if (currentState == 1) {
+
+        if (currentState == 1) { // AŞAMA 1: ELECTROCUTED (3 sn)
             if (--animationTimer <= 0) {
-                setState(2);
-                animationTimer = 48;
+                setState(4); // WAITING (Ara geçişe git)
+                animationTimer = 20; // 1 Saniye bekle
             }
-        } else if (currentState == 2) {
+        }
+        else if (currentState == 4) { // AŞAMA 2: BEKLEME (1 sn)
             if (--animationTimer <= 0) {
-                setState(3);
+                setState(2); // STANDUP (Kalkmaya başla)
+                animationTimer = 48; // ~2.4 sn animasyon süresi
+            }
+        }
+        else if (currentState == 2) { // AŞAMA 3: STANDUP
+            if (--animationTimer <= 0) {
+                setState(3); // ALIVE (Tamamlandı)
                 this.goalSelector.removeAllGoals(goal -> true);
                 this.registerGoals();
             }
         }
 
+        // Canlanana kadar hareket etme
         if (currentState < 3) {
             this.getNavigation().stop();
             this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
@@ -132,20 +167,25 @@ public class StitchedEntity extends Monster {
 
     private void setupAnimationStates() {
         int state = getState();
-        if (state == 0) {
+
+        // 0 (Passive) veya 4 (Waiting) -> Passive Animasyon
+        if (state == 0 || state == 4) {
             passiveState.startIfStopped(this.tickCount);
             electrocutedState.stop();
             standupState.stop();
             walkState.stop();
-        } else if (state == 1) {
+        }
+        else if (state == 1) { // Electrocuted
             passiveState.stop();
             electrocutedState.startIfStopped(this.tickCount);
             standupState.stop();
-        } else if (state == 2) {
+        }
+        else if (state == 2) { // Standup
             passiveState.stop();
             electrocutedState.stop();
             standupState.startIfStopped(this.tickCount);
-        } else if (state == 3) {
+        }
+        else if (state == 3) { // Alive
             standupState.stop();
             if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6) {
                 walkState.startIfStopped(this.tickCount);
