@@ -1,41 +1,41 @@
 #version 150
 
 uniform sampler2D DiffuseSampler;
-uniform vec2 OutSize;
 uniform float Time;
 
 in vec2 texCoord;
 out vec4 fragColor;
 
 void main() {
-    vec4 center = texture(DiffuseSampler, texCoord);
+    // 1. Otomatik Boyut Hesaplama (Java'dan beklemeye gerek yok!)
+    ivec2 texSize = textureSize(DiffuseSampler, 0);
+    vec2 oneTexel = 1.0 / vec2(texSize);
 
-    // 1. İÇİNİ BOŞALT: Eğer piksel doluysa (Entity'nin kendisi) SİL!
-    if (center.a > 0.1) {
-        discard; // Burası şeffaf olacak
+    // 2. İçini Boşalt
+    float centerAlpha = texture(DiffuseSampler, texCoord).a;
+    if (centerAlpha > 0.1) {
+        discard;
     }
 
-    // 2. KENAR BUL: Etrafta dolu piksel var mı?
-    vec2 oneTexel = 1.0 / OutSize;
+    // 3. Kenar Bul
     float alphaSum = 0.0;
-
-    // 2 piksellik genişlikte tara
+    // 2 piksellik tarama
     for(int x = -1; x <= 1; x++) {
         for(int y = -1; y <= 1; y++) {
-            if(x==0 && y==0) continue;
+            if(x == 0 && y == 0) continue;
             alphaSum += texture(DiffuseSampler, texCoord + vec2(x, y) * oneTexel).a;
         }
     }
 
-    // Biz boşuz ama komşu dolu -> KENAR!
+    // 4. Boya
     if (alphaSum > 0.0) {
         // Titreme
-        float flicker = sin(Time * 25.0) * 0.5 + 0.5;
+        float flicker = sin(Time * 30.0) * 0.5 + 0.5;
         if (flicker < 0.15) discard;
 
         // RENK: Neon Turkuaz
         fragColor = vec4(0.2, 1.0, 1.0, 1.0);
     } else {
-        discard; // Dışarıdaki boşluk
+        discard;
     }
 }

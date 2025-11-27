@@ -22,7 +22,8 @@ public class ElectricPostProcessor {
 
     private static PostChain electricChain;
     // DÜZELTME: Artık redglow değil, kendi dosyamızı çağırıyoruz
-    private static final ResourceLocation POST_CHAIN_LOCATION = new ResourceLocation(ReverieMod.MODID, "entity_outline_electric");
+    // TAM YOL: shaders/post/ klasörünü ve .json uzantısını ekliyoruz!
+    private static final ResourceLocation POST_CHAIN_LOCATION = new ResourceLocation(ReverieMod.MODID, "shaders/post/entity_outline_electric.json");
 
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {

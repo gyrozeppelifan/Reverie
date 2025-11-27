@@ -5,12 +5,30 @@
   ],
   "passes": [
     {
-      "name": "electric_outline",
+      "name": "reverie:electric_outline",
       "intarget": "final",
       "outtarget": "swap",
       "program": "reverie:electric_outline",
       "uniforms": [
         { "name": "Time", "values": [ 0.0 ] }
+      ]
+    },
+    {
+      "name": "blur",
+      "intarget": "swap",
+      "outtarget": "final",
+      "uniforms": [
+        { "name": "BlurDir", "values": [ 1.0, 0.0 ] },
+        { "name": "Radius", "values": [ 10.0 ] }
+      ]
+    },
+    {
+      "name": "blur",
+      "intarget": "final",
+      "outtarget": "swap",
+      "uniforms": [
+        { "name": "BlurDir", "values": [ 0.0, 1.0 ] },
+        { "name": "Radius", "values": [ 10.0 ] }
       ]
     },
     {
