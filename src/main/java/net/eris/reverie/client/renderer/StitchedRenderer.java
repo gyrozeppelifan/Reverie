@@ -1,32 +1,21 @@
 package net.eris.reverie.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.model.Stitched;
 import net.eris.reverie.client.model.animations.StitchedAnimation;
 import net.eris.reverie.entity.StitchedEntity;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<StitchedEntity>> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(ReverieMod.MODID, "textures/entities/stitched.png");
     private static final ResourceLocation TEXTURE_SKELETON = new ResourceLocation(ReverieMod.MODID, "textures/entities/stitched_skeleton.png");
-
-    // Liste burada kalsın, buna erişeceğiz
-    public static final Set<StitchedEntity> electricEntitiesOnScreen = new HashSet<>();
 
     public StitchedRenderer(EntityRendererProvider.Context context) {
         super(context, new AnimatedModel(context.bakeLayer(Stitched.LAYER_LOCATION)), 0.5f);
@@ -35,38 +24,6 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
     @Override
     public void render(StitchedEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
-        // Listeye ekleme mantığı aynı
-        if (entity.getState() == 1) {
-            electricEntitiesOnScreen.add(entity);
-        }
-    }
-
-    // --- YENİ RENDER METODU (Alex's Caves Mantığı - DÜZELTİLDİ) ---
-    public void renderModelDirectly(StitchedEntity entity, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        // Animasyon ve duruş ayarlarını yap (SetupAnim)
-        // Interpolasyon (titremeyi önler)
-        float lerpBodyRot = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
-        float lerpHeadRot = Mth.rotLerp(partialTicks, entity.yHeadRotO, entity.yHeadRot);
-        float netHeadYaw = lerpHeadRot - lerpBodyRot;
-        float headPitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
-
-        // --- DÜZELTME BURADA ---
-        // Manuel hesaplama yerine hazır metodları kullanıyoruz
-        float limbSwing = entity.walkAnimation.position(partialTicks);
-        float limbSwingAmount = entity.walkAnimation.speed(partialTicks);
-        // -----------------------
-
-        float ageInTicks = entity.tickCount + partialTicks;
-
-        // Modeli hazırla
-        this.model.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTicks);
-        this.model.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-
-        // Modeli RenderType ile buffer'a bas
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(this.getTextureLocation(entity)));
-
-        // Çizimi yap
-        this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
@@ -79,7 +36,6 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
         return TEXTURE;
     }
 
-    // --- ANIMASYON YÖNETİCİSİ (Aynen Kalıyor) ---
     private static final class AnimatedModel extends Stitched<StitchedEntity> {
         private final ModelPart root;
         private final HierarchicalModel<StitchedEntity> animator = new HierarchicalModel<StitchedEntity>() {
