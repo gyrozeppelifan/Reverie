@@ -1,18 +1,21 @@
 package net.eris.reverie.client.renderer;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.model.Stitched;
 import net.eris.reverie.client.model.animations.StitchedAnimation;
 import net.eris.reverie.entity.StitchedEntity;
-import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HierarchicalModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -22,9 +25,8 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
     private static final ResourceLocation TEXTURE = new ResourceLocation(ReverieMod.MODID, "textures/entities/stitched.png");
     private static final ResourceLocation TEXTURE_SKELETON = new ResourceLocation(ReverieMod.MODID, "textures/entities/stitched_skeleton.png");
 
-    // --- ALEX'S CAVES MANTIĞI: SHADER VE LİSTE BURADA ---
-    public static final ResourceLocation ELECTRIC_CHAIN_LOCATION = new ResourceLocation(ReverieMod.MODID, "shaders/post/entity_outline_electric.json");
-    private static final Set<StitchedEntity> electricEntitiesOnScreen = new HashSet<>();
+    // Liste burada kalsın, buna erişeceğiz
+    public static final Set<StitchedEntity> electricEntitiesOnScreen = new HashSet<>();
 
     public StitchedRenderer(EntityRendererProvider.Context context) {
         super(context, new AnimatedModel(context.bakeLayer(Stitched.LAYER_LOCATION)), 0.5f);
@@ -33,37 +35,36 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
     @Override
     public void render(StitchedEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
-
-        // Eğer çarpılıyorsa (State 1), bu karede outline çizilecekler listesine ekle
+        // Listeye ekleme mantığı aynı
         if (entity.getState() == 1) {
             electricEntitiesOnScreen.add(entity);
         }
     }
 
-    // --- BATCH RENDER (TOPLU ÇİZİM) ---
-    // Bu metodu ElectricPostProcessor çağıracak
-    public static void renderElectricBatch(PoseStack poseStack, MultiBufferSource bufferSource, float partialTick, Camera camera) {
-        if (electricEntitiesOnScreen.isEmpty()) return;
+    // --- YENİ RENDER METODU (Alex's Caves Mantığı) ---
+    // Bu metod sadece modeli çizer, gereksiz hesaplamaları atlar.
+    public void renderModelDirectly(StitchedEntity entity, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        // Animasyon ve duruş ayarlarını yap (SetupAnim)
+        // Interpolasyon (titremeyi önler)
+        float lerpBodyRot = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);
+        float lerpHeadRot = Mth.rotLerp(partialTicks, entity.yHeadRotO, entity.yHeadRot);
+        float netHeadYaw = lerpHeadRot - lerpBodyRot;
+        float headPitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
 
-        Minecraft mc = Minecraft.getInstance();
+        float limbSwing = Mth.lerp(partialTicks, entity.walkAnimation.position() - entity.walkAnimation.speed(), entity.walkAnimation.position());
+        float limbSwingAmount = Mth.lerp(partialTicks, entity.walkAnimation.speedO, entity.walkAnimation.speed());
+        float ageInTicks = entity.tickCount + partialTicks;
 
-        for (StitchedEntity entity : electricEntitiesOnScreen) {
-            // Kameraya göre pozisyonu ayarla (Buffer içine doğru yere çizmek için)
-            double x = entity.getX() - camera.getPosition().x;
-            double y = entity.getY() - camera.getPosition().y;
-            double z = entity.getZ() - camera.getPosition().z;
+        // Modeli hazırla
+        this.model.prepareMobModel(entity, limbSwing, limbSwingAmount, partialTicks);
+        this.model.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
-            poseStack.pushPose();
-            poseStack.translate(x, y, z);
+        // Modeli RenderType ile buffer'a bas
+        // Alex's Caves burada özel RenderType kullanıyor ama biz standart translucent kullanalım şimdilik
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity)));
 
-            // Entity'i çiz (Full Işık ile)
-            mc.getEntityRenderDispatcher().render(entity, 0, 0, 0, 0, partialTick, poseStack, bufferSource, 15728640);
-
-            poseStack.popPose();
-        }
-
-        // Listeyi temizle ki sonraki karede tekrar dolsun
-        electricEntitiesOnScreen.clear();
+        // Çizimi yap
+        this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
