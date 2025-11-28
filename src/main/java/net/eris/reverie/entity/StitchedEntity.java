@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.network.PlayMessages;
 
 public class StitchedEntity extends Monster {
-    // States: 0=PASSIVE, 1=ELECTROCUTED, 2=STANDUP, 3=ALIVE, 4=WAITING (Ara geçiş)
+    // States: 0=PASSIVE, 1=ELECTROCUTED, 2=STANDUP, 3=ALIVE, 4=WAITING
     private static final EntityDataAccessor<Integer> DATA_STATE = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.INT);
 
     public final AnimationState passiveState = new AnimationState();
@@ -34,6 +34,10 @@ public class StitchedEntity extends Monster {
 
     public StitchedEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
+        // --- ÇÖZÜM BURADA ---
+        // Mob doğduğu an boyutunu hesaplasın.
+        // Bunu yapmazsak varsayılan (ayakta) boyutla doğar ve F3+B yaptığında büyük hitbox görürsün.
+        this.refreshDimensions();
     }
 
     public StitchedEntity(Level level) {
@@ -50,29 +54,41 @@ public class StitchedEntity extends Monster {
         this.entityData.define(DATA_STATE, 0);
     }
 
+    // State değiştiğinde (örneğin yıldırım çarptığında) hitbox'ı güncelle
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
-        // State değiştiğinde hitbox'ı güncelle (Client & Server)
         if (DATA_STATE.equals(key)) {
             this.refreshDimensions();
         }
         super.onSyncedDataUpdated(key);
     }
 
-    // --- HITBOX AYARLAMASI ---
+    // --- DİNAMİK HITBOX AYARI ---
     @Override
     public EntityDimensions getDimensions(Pose pose) {
         int state = this.getState();
-        // Yatıyor (0), Çarpılıyor (1) veya Bekliyor (4) ise YATAY hitbox kullan
+        // Yatıyor (0), Çarpılıyor (1) veya Bekliyor (4) ise
+        // 1.5 genişlik, 0.5 yükseklik (Tam yatay hitbox)
         if (state == 0 || state == 1 || state == 4) {
-            return EntityDimensions.fixed(0.8f, 0.5f);
+            return EntityDimensions.fixed(1.5f, 0.5f);
         }
-        // Diğer durumlarda (Standup, Alive) normal boyuta dön
+        // Diğer durumlarda (Ayağa kalkınca) normal boyuta dön
         return super.getDimensions(pose);
     }
 
     @Override
+    public void refreshDimensions() {
+        // Hitbox değişince mobun konumunu (ayaklarını) yere sabitlemek için
+        double d0 = this.getX();
+        double d1 = this.getY();
+        double d2 = this.getZ();
+        super.refreshDimensions();
+        this.setPos(d0, d1, d2);
+    }
+
+    @Override
     protected void registerGoals() {
+        // Sadece canlıyken (State 3) hareket etsin
         if (getState() == 3) {
             this.goalSelector.addGoal(1, new WaterAvoidingRandomStrollGoal(this, 1.0D));
             this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 8.0F));
@@ -100,32 +116,57 @@ public class StitchedEntity extends Monster {
     public void thunderHit(ServerLevel level, LightningBolt lightning) {
         if (getState() == 0) {
             this.setState(1); // ELECTROCUTED
-            this.animationTimer = 60; // 3 Saniye boyunca çarpılma (önceki 20'ydi)
+            this.animationTimer = 60; // 3 saniye sürsün
             this.playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 2.0F, 1.0F);
         } else {
             super.thunderHit(level, lightning);
         }
     }
 
+    // --- GOD MODE & HASAR ENGELLEME ---
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // Yanma hasarını engelle
+        // Ateş hasarını engelle (Görsel bozulmasın)
         if (source.is(net.minecraft.world.damagesource.DamageTypes.IN_FIRE) || source.is(net.minecraft.world.damagesource.DamageTypes.ON_FIRE)) {
             return false;
         }
+        // Tam canlanmadıysa (State < 3) ve vuran Yaratıcı Mod değilse hasar alma
         if (getState() < 3 && !source.isCreativePlayer()) {
             return false;
         }
         return super.hurt(source, amount);
     }
 
+    // --- İTİLMEZLİK ---
+    @Override
+    public boolean isPushable() {
+        // Sadece tam canlıysa itilebilir
+        return getState() == 3 && super.isPushable();
+    }
+
+    @Override
+    public void push(Entity entity) {
+        // Canlı değilse kimseyi itemez
+        if (getState() == 3) {
+            super.push(entity);
+        }
+    }
+
+    @Override
+    protected void doPush(Entity entity) {
+        // Canlı değilse itilme işlemi yapma
+        if (getState() == 3) {
+            super.doPush(entity);
+        }
+    }
+
     @Override
     public void tick() {
         super.tick();
 
-        // --- GÖRSEL YANMAYI ENGELLE ---
+        // Yanma efektini temizle
         if (this.isOnFire()) {
-            this.clearFire(); // Söndür (Visual fire overlay'i kaldırır)
+            this.clearFire();
         }
 
         if (this.level().isClientSide) {
@@ -138,27 +179,27 @@ public class StitchedEntity extends Monster {
     private void handleStateLogic() {
         int currentState = getState();
 
-        if (currentState == 1) { // AŞAMA 1: ELECTROCUTED (3 sn)
+        if (currentState == 1) { // AŞAMA 1: ELECTROCUTED
             if (--animationTimer <= 0) {
-                setState(4); // WAITING (Ara geçişe git)
-                animationTimer = 20; // 1 Saniye bekle
+                setState(4); // WAITING
+                animationTimer = 20;
             }
         }
-        else if (currentState == 4) { // AŞAMA 2: BEKLEME (1 sn)
+        else if (currentState == 4) { // AŞAMA 2: BEKLEME
             if (--animationTimer <= 0) {
-                setState(2); // STANDUP (Kalkmaya başla)
-                animationTimer = 48; // ~2.4 sn animasyon süresi
+                setState(2); // STANDUP
+                animationTimer = 70; // 0.7f hız için ayarlandı
             }
         }
         else if (currentState == 2) { // AŞAMA 3: STANDUP
             if (--animationTimer <= 0) {
-                setState(3); // ALIVE (Tamamlandı)
+                setState(3); // ALIVE
                 this.goalSelector.removeAllGoals(goal -> true);
                 this.registerGoals();
             }
         }
 
-        // Canlanana kadar hareket etme
+        // Canlanana kadar fiziksel hareketi durdur
         if (currentState < 3) {
             this.getNavigation().stop();
             this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
@@ -168,24 +209,23 @@ public class StitchedEntity extends Monster {
     private void setupAnimationStates() {
         int state = getState();
 
-        // 0 (Passive) veya 4 (Waiting) -> Passive Animasyon
         if (state == 0 || state == 4) {
             passiveState.startIfStopped(this.tickCount);
             electrocutedState.stop();
             standupState.stop();
             walkState.stop();
         }
-        else if (state == 1) { // Electrocuted
+        else if (state == 1) {
             passiveState.stop();
             electrocutedState.startIfStopped(this.tickCount);
             standupState.stop();
         }
-        else if (state == 2) { // Standup
+        else if (state == 2) {
             passiveState.stop();
             electrocutedState.stop();
             standupState.startIfStopped(this.tickCount);
         }
-        else if (state == 3) { // Alive
+        else if (state == 3) {
             standupState.stop();
             if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6) {
                 walkState.startIfStopped(this.tickCount);

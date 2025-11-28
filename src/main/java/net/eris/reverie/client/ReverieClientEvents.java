@@ -32,6 +32,8 @@ public class ReverieClientEvents {
     public static ShaderInstance ancientCloakShader;
     public static ShaderInstance drunkenRageShader;
     public static ShaderInstance magicArrowShader;
+    // YENİ EKLENEN: Stitched Flash Shader
+    public static ShaderInstance stitchedFlashShader;
 
     // --- 1. SHADER KAYDI ---
     @SubscribeEvent
@@ -47,6 +49,7 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
+        // Magic Arrow
         try {
             event.registerShader(new ShaderInstance(
                     event.getResourceProvider(),
@@ -68,8 +71,6 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
-
-
         // Drunken Rage (GUI Shader)
         try {
             event.registerShader(new ShaderInstance(
@@ -81,7 +82,16 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
-
+        // --- YENİ EKLENEN: Stitched Flash ---
+        try {
+            event.registerShader(new ShaderInstance(
+                    event.getResourceProvider(),
+                    new ResourceLocation(ReverieMod.MODID, "stitched_flash"),
+                    DefaultVertexFormat.NEW_ENTITY
+            ), shaderInstance -> stitchedFlashShader = shaderInstance);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // --- 2. ITEM ANİMASYONLARI ---
@@ -114,7 +124,7 @@ public class ReverieClientEvents {
 
                 // Ancient Cloak
                 livingRenderer.addLayer(new AncientCloakLayer<>(livingRenderer));
-                // Drunken Rage (Varsa)
+                // Drunken Rage
                 livingRenderer.addLayer(new DrunkenOutlineLayer<>(livingRenderer));
                 livingRenderer.addLayer(new DrunkenTrailLayer<>(livingRenderer));
             }
@@ -123,8 +133,6 @@ public class ReverieClientEvents {
         // B) TÜM MOBLAR
         for (EntityType<?> entityType : ForgeRegistries.ENTITY_TYPES) {
             try {
-                // HATA ÇÖZÜMÜ: Unchecked Cast ile türü zorluyoruz.
-                // EntityType<?> --> EntityType<? extends LivingEntity>
                 @SuppressWarnings("unchecked")
                 EntityType<? extends LivingEntity> livingEntityType = (EntityType<? extends LivingEntity>) entityType;
 
@@ -137,12 +145,12 @@ public class ReverieClientEvents {
 
                     // Ancient Cloak
                     livingRenderer.addLayer(new AncientCloakLayer<>(livingRenderer));
-                    // Drunken Rage (Varsa)
+                    // Drunken Rage
                     livingRenderer.addLayer(new DrunkenOutlineLayer<>(livingRenderer));
                     livingRenderer.addLayer(new DrunkenTrailLayer<>(livingRenderer));
                 }
             } catch (Exception e) {
-                // LivingEntity olmayan (Ok, Tekne vs.) rendererlar hata verebilir, önemsiz.
+                // Hata yoksay
             }
         }
     }
