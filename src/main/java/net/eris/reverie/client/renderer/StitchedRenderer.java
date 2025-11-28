@@ -41,8 +41,7 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
         }
     }
 
-    // --- YENİ RENDER METODU (Alex's Caves Mantığı) ---
-    // Bu metod sadece modeli çizer, gereksiz hesaplamaları atlar.
+    // --- YENİ RENDER METODU (Alex's Caves Mantığı - DÜZELTİLDİ) ---
     public void renderModelDirectly(StitchedEntity entity, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         // Animasyon ve duruş ayarlarını yap (SetupAnim)
         // Interpolasyon (titremeyi önler)
@@ -51,8 +50,12 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
         float netHeadYaw = lerpHeadRot - lerpBodyRot;
         float headPitch = Mth.lerp(partialTicks, entity.xRotO, entity.getXRot());
 
-        float limbSwing = Mth.lerp(partialTicks, entity.walkAnimation.position() - entity.walkAnimation.speed(), entity.walkAnimation.position());
-        float limbSwingAmount = Mth.lerp(partialTicks, entity.walkAnimation.speedO, entity.walkAnimation.speed());
+        // --- DÜZELTME BURADA ---
+        // Manuel hesaplama yerine hazır metodları kullanıyoruz
+        float limbSwing = entity.walkAnimation.position(partialTicks);
+        float limbSwingAmount = entity.walkAnimation.speed(partialTicks);
+        // -----------------------
+
         float ageInTicks = entity.tickCount + partialTicks;
 
         // Modeli hazırla
@@ -60,8 +63,7 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
         this.model.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
 
         // Modeli RenderType ile buffer'a bas
-        // Alex's Caves burada özel RenderType kullanıyor ama biz standart translucent kullanalım şimdilik
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(this.getTextureLocation(entity)));
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityCutoutNoCull(this.getTextureLocation(entity)));
 
         // Çizimi yap
         this.model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
