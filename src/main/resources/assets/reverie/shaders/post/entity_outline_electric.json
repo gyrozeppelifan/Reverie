@@ -1,12 +1,13 @@
 {
   "targets": [
     "swap",
-    "final"
+    "final",
+    "reverie:entity_mask"
   ],
   "passes": [
     {
       "name": "reverie:electric_outline",
-      "intarget": "final",
+      "intarget": "reverie:entity_mask",
       "outtarget": "swap",
       "program": "reverie:electric_outline",
       "uniforms": [

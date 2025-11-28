@@ -45,50 +45,50 @@ public class ElectricPostProcessor {
             }
         }
 
+        // Ekran boyutu değiştiyse zinciri güncelle
         if (electricChain.getTempTarget("final").width != mc.getWindow().getWidth()) {
             electricChain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
         }
 
-        // 2. Hazırlık: Gizli Tuvali Temizle
-        RenderTarget target = electricChain.getTempTarget("final");
-        target.clear(Minecraft.ON_OSX); // Eski çizimleri sil
-        target.setClearColor(0F, 0F, 0F, 0F); // Şeffaf yap
-        target.bindWrite(false); // Tuvali aktif et
+        // 2. Hazırlık: Gizli Tuvali (entity_mask) Temizle ve Bağla
+        // DİKKAT: Artık "final" değil, JSON'da tanımladığımız "reverie:entity_mask" hedefi!
+        RenderTarget target = electricChain.getTempTarget("reverie:entity_mask");
+        if (target == null) {
+            ReverieMod.LOGGER.error("Shader hedefi 'reverie:entity_mask' bulunamadı! JSON dosyasını kontrol et.");
+            return;
+        }
+
+        target.clear(Minecraft.ON_OSX); // Renk ve Derinlik temizle
+        target.setClearColor(0F, 0F, 0F, 0F); // Arka planı şeffaf yap
+        target.bindWrite(false); // Yazma moduna geç
 
         // 3. Çizim: Entity'leri Tuvale Bas
-        // DİKKAT: Depth Test'i kapatıyoruz ki duvar arkasındaki entityler de tuvale çizilsin (X-Ray için şart)
-        RenderSystem.disableDepthTest();
-
         PoseStack poseStack = event.getPoseStack();
 
-        // --- KRİTİK DÜZELTME: IMMEDIATE BUFFER ---
-        // Standart buffer yerine bunu kullanıyoruz ki tuvale anında yazılsın.
+        // Immediate Buffer kullanıyoruz
         MultiBufferSource.BufferSource immediateBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 
         // Renderer'a çiz emrini veriyoruz
         StitchedRenderer.renderElectricBatch(poseStack, immediateBuffer, event.getPartialTick(), event.getCamera());
 
-        // Çizimi bitir ve tuvale işle
+        // Çizimi bitir (GPU'ya gönder)
         immediateBuffer.endBatch();
 
-        // Ayarları geri al
-        RenderSystem.enableDepthTest();
-
         // 4. İşle (Zinciri Çalıştır)
-        mc.getMainRenderTarget().bindWrite(false); // Ana ekrana dön
-        electricChain.process(event.getPartialTick()); // Shader efektini uygula
+        mc.getMainRenderTarget().bindWrite(false); // Ana ekrana (Main Target) geri dön
+        electricChain.process(event.getPartialTick()); // Zinciri çalıştır, maskeden alıp final'a işleyecek
 
         // 5. Sonucu Ekrana Bas (Blit)
+        // Zincirin son çıktısı "final" veya "swap" target'ında birikmiş olmalı (JSON'a göre en son "final"a blit yapılıyor)
         RenderTarget output = electricChain.getTempTarget("final");
         if (output != null) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            // Burada da Depth Test kapalı olmalı ki efekt blokların üzerine (önüne) çizilsin
-            RenderSystem.disableDepthTest();
+            RenderSystem.disableDepthTest(); // Blokların üzerine çizilmesi için depth test KAPALI
 
             output.blitToScreen(mc.getWindow().getWidth(), mc.getWindow().getHeight(), false);
 
-            RenderSystem.enableDepthTest();
+            RenderSystem.enableDepthTest(); // Normale döndür
         }
     }
 }
