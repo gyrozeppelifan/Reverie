@@ -7,20 +7,30 @@ in vec2 texCoord;
 out vec4 fragColor;
 
 void main() {
-    // Time değişkenini boşuna kullanıyormuş gibi yapalım ki uyarı vermesin
-    float t = Time * 0.00001;
+    // Time kullanımı (Optimizer silmesin diye)
+    float activeTime = Time * 0.0001;
 
-    // O anki pikseli al
-    vec4 sampleColor = texture(DiffuseSampler, texCoord);
+    // Dinamik Boyut Hesaplama
+    ivec2 texSize = textureSize(DiffuseSampler, 0);
+    vec2 oneTexel = 1.0 / vec2(texSize);
 
-    // Eğer burada bir Entity çizilmişse (Alpha 0'dan büyükse)
-    if (sampleColor.a > 0.01) {
-        // Entity'i KIRMIZI yap
-        fragColor = vec4(1.0, 0.0, 0.0, 1.0 + t);
+    vec4 centerColor = texture(DiffuseSampler, texCoord);
+    float alphaSum = 0.0;
+
+    // 3x3 Kenar Tarama
+    for(int x = -1; x <= 1; x++) {
+        for(int y = -1; y <= 1; y++) {
+            if(x == 0 && y == 0) continue;
+            alphaSum += texture(DiffuseSampler, texCoord + vec2(x, y) * oneTexel).a;
+        }
     }
-    else {
-        // Entity yoksa arka planı yarı saydam MAVİ yap
-        // EKRAN MAVİ OLURSA SHADER ÇALIŞIYOR DEMEKTİR!
-        fragColor = vec4(0.0, 0.0, 1.0, 0.4 + t);
+
+    // Mantık: Merkez boş ama etraf doluysa -> Kenar
+    if (centerColor.a < 0.1 && alphaSum > 0.0) {
+        // Neon Turkuaz
+        fragColor = vec4(0.0, 1.0, 1.0, 1.0);
+    } else {
+        // Arka planı veya içini çizme (0 Alpha)
+        fragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
 }
