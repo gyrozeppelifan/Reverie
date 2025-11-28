@@ -4,12 +4,13 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.eris.reverie.ReverieMod;
-import net.eris.reverie.entity.StitchedEntity;
+import net.eris.reverie.client.renderer.StitchedRenderer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.PostChain;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.Entity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -21,8 +22,6 @@ import java.io.IOException;
 public class ElectricPostProcessor {
 
     private static PostChain electricChain;
-    // DÜZELTME: Artık redglow değil, kendi dosyamızı çağırıyoruz
-    // TAM YOL: shaders/post/ klasörünü ve .json uzantısını ekliyoruz!
     private static final ResourceLocation POST_CHAIN_LOCATION = new ResourceLocation(ReverieMod.MODID, "shaders/post/entity_outline_electric.json");
 
     @SubscribeEvent
@@ -32,15 +31,15 @@ public class ElectricPostProcessor {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        // 1. Zinciri (Chain) Yükle
+        // 1. Zinciri Yükle
         if (electricChain == null) {
             try {
                 electricChain = new PostChain(mc.getTextureManager(), mc.getResourceManager(), mc.getMainRenderTarget(), POST_CHAIN_LOCATION);
                 electricChain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
+                ReverieMod.LOGGER.info("Elektrik Shader Zinciri YÜKLENDİ!");
             } catch (IOException | JsonSyntaxException e) {
-                // Sadece 10 saniyede bir hata yazsın (Spam engelleme)
                 if (mc.player.tickCount % 200 == 0) {
-                    ReverieMod.LOGGER.error("Shader Yüklenemedi:", e);
+                    ReverieMod.LOGGER.error("Shader Hatası:", e);
                 }
                 return;
             }
@@ -50,50 +49,45 @@ public class ElectricPostProcessor {
             electricChain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
         }
 
-        // 2. Entity Kontrolü
-        boolean hasEntity = false;
-        for (Entity e : mc.level.entitiesForRendering()) {
-            if (e instanceof StitchedEntity stitched && stitched.getState() == 1) {
-                hasEntity = true;
-                break;
-            }
-        }
-        if (!hasEntity) return;
-
-        // 3. Entity Çizimi (Gizli Buffer)
+        // 2. Hazırlık: Gizli Tuvali Temizle
         RenderTarget target = electricChain.getTempTarget("final");
-        target.clear(Minecraft.ON_OSX);
-        target.bindWrite(false);
+        target.clear(Minecraft.ON_OSX); // Eski çizimleri sil
+        target.setClearColor(0F, 0F, 0F, 0F); // Şeffaf yap
+        target.bindWrite(false); // Tuvali aktif et
+
+        // 3. Çizim: Entity'leri Tuvale Bas
+        // DİKKAT: Depth Test'i kapatıyoruz ki duvar arkasındaki entityler de tuvale çizilsin (X-Ray için şart)
+        RenderSystem.disableDepthTest();
 
         PoseStack poseStack = event.getPoseStack();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
 
-        for (Entity e : mc.level.entitiesForRendering()) {
-            if (e instanceof StitchedEntity stitched && stitched.getState() == 1) {
-                double x = stitched.getX() - event.getCamera().getPosition().x;
-                double y = stitched.getY() - event.getCamera().getPosition().y;
-                double z = stitched.getZ() - event.getCamera().getPosition().z;
+        // --- KRİTİK DÜZELTME: IMMEDIATE BUFFER ---
+        // Standart buffer yerine bunu kullanıyoruz ki tuvale anında yazılsın.
+        MultiBufferSource.BufferSource immediateBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
 
-                poseStack.pushPose();
-                poseStack.translate(x, y, z);
-                mc.getEntityRenderDispatcher().render(stitched, 0, 0, 0, 0, event.getPartialTick(), poseStack, mc.renderBuffers().bufferSource(), 15728640);
-                poseStack.popPose();
-            }
-        }
-        mc.renderBuffers().bufferSource().endBatch();
+        // Renderer'a çiz emrini veriyoruz
+        StitchedRenderer.renderElectricBatch(poseStack, immediateBuffer, event.getPartialTick(), event.getCamera());
 
-        // 4. İşle
-        mc.getMainRenderTarget().bindWrite(false);
-        electricChain.process(event.getPartialTick());
+        // Çizimi bitir ve tuvale işle
+        immediateBuffer.endBatch();
 
-        // 5. Ekrana Bas (Blit)
+        // Ayarları geri al
+        RenderSystem.enableDepthTest();
+
+        // 4. İşle (Zinciri Çalıştır)
+        mc.getMainRenderTarget().bindWrite(false); // Ana ekrana dön
+        electricChain.process(event.getPartialTick()); // Shader efektini uygula
+
+        // 5. Sonucu Ekrana Bas (Blit)
         RenderTarget output = electricChain.getTempTarget("final");
         if (output != null) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
+            // Burada da Depth Test kapalı olmalı ki efekt blokların üzerine (önüne) çizilsin
             RenderSystem.disableDepthTest();
+
             output.blitToScreen(mc.getWindow().getWidth(), mc.getWindow().getHeight(), false);
+
             RenderSystem.enableDepthTest();
         }
     }
