@@ -23,6 +23,7 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
+import com.mojang.blaze3d.platform.GlStateManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -125,10 +126,10 @@ public class ElectricPostProcessor {
             // Blending ayarları (Siyah kısımları şeffaf yapmak için)
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(
-                    RenderSystem.SourceFactor.SRC_ALPHA,
-                    RenderSystem.DestFactor.ONE_MINUS_SRC_ALPHA,
-                    RenderSystem.SourceFactor.ONE,
-                    RenderSystem.DestFactor.ONE_MINUS_SRC_ALPHA
+                    GlStateManager.SourceFactor.SRC_ALPHA,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                    GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
             RenderSystem.disableDepthTest(); // Arayüzün/Blokların önüne çiz
 
