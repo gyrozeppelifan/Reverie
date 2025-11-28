@@ -4,7 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.renderer.StitchedRenderer;
@@ -12,7 +12,9 @@ import net.eris.reverie.entity.StitchedEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
@@ -20,6 +22,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import org.joml.Matrix4f;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,26 +34,24 @@ public class ElectricPostProcessor {
     private static PostChain electricChain;
     private static final ResourceLocation POST_CHAIN_LOCATION = new ResourceLocation(ReverieMod.MODID, "shaders/post/entity_outline_electric.json");
 
-    // --- DEBUG MODU ---
-    // Bunu 'true' yaparsan direkt çizilen maskeyi görürsün (Beyaz/Renkli entity).
-    // Eğer bunu görünce entity varsa, shader kodunda sorun var demektir.
-    // Entity yoksa, çizim kodunda sorun var demektir.
-    private static final boolean DEBUG_SHOW_MASK = true;
-
     @SubscribeEvent
     public static void renderLevelStage(RenderLevelStageEvent event) {
-        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
+        // AFTER_WEATHER daha güvenli bir stage, her şey çizildikten sonra çalışır.
+        if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_WEATHER) return;
+
+        // Liste boşsa işlemciyi yorma
         if (StitchedRenderer.electricEntitiesOnScreen.isEmpty()) return;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.player == null) return;
 
-        // 1. Zinciri Yükle
+        // 1. Zinciri Yükle veya Yenile
         if (electricChain == null) {
             try {
                 electricChain = new PostChain(mc.getTextureManager(), mc.getResourceManager(), mc.getMainRenderTarget(), POST_CHAIN_LOCATION);
                 electricChain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
             } catch (IOException | JsonSyntaxException e) {
+                ReverieMod.LOGGER.error("Shader Zinciri Yüklenemedi: ", e);
                 return;
             }
         }
@@ -59,29 +60,33 @@ public class ElectricPostProcessor {
             electricChain.resize(mc.getWindow().getWidth(), mc.getWindow().getHeight());
         }
 
-        // 2. Hazırlık: Maske Bufferını Ayarla
-        RenderTarget target = electricChain.getTempTarget("reverie:entity_mask");
-        if (target == null) return;
+        // 2. Maske Bufferını Temizle
+        RenderTarget maskTarget = electricChain.getTempTarget("reverie:entity_mask");
+        if (maskTarget == null) return;
 
-        // Derinlik testini temizlemiyoruz, sadece rengi temizliyoruz (şeffaf yapıyoruz)
-        target.clear(Minecraft.ON_OSX);
-        target.setClearColor(0F, 0F, 0F, 0F);
-        target.bindWrite(false);
+        maskTarget.clear(Minecraft.ON_OSX); // Sadece rengi temizle, derinliği koru
+        maskTarget.bindWrite(false);
 
-        // 3. Çizim Başlıyor
+        // 3. Entityleri Maske Bufferına Çiz
         PoseStack poseStack = event.getPoseStack();
         poseStack.pushPose();
 
+        // Kamera pozisyonunu sıfırla ki entityleri doğru yere koyabilelim
         Vec3 cameraPos = event.getCamera().getPosition();
-        MultiBufferSource.BufferSource immediateBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-        List<StitchedEntity> entitiesToRender = new ArrayList<>(StitchedRenderer.electricEntitiesOnScreen);
 
-        // Duvar arkasından görmek için Depth Test KAPALI
+        // Buffer Kaynağı
+        MultiBufferSource.BufferSource bufferSource = mc.renderBuffers().bufferSource();
+
+        // Listeyi kopyala (Hata önlemi)
+        List<StitchedEntity> entities = new ArrayList<>(StitchedRenderer.electricEntitiesOnScreen);
+
+        // X-Ray Efekti için Depth Testi Kapatıyoruz (Duvar arkası)
         RenderSystem.disableDepthTest();
 
-        for (StitchedEntity entity : entitiesToRender) {
+        for (StitchedEntity entity : entities) {
             EntityRenderer<? super StitchedEntity> renderer = mc.getEntityRenderDispatcher().getRenderer(entity);
             if (renderer instanceof StitchedRenderer stitchedRenderer) {
+                // Pozisyonu ayarla
                 double x = Mth.lerp(event.getPartialTick(), entity.xo, entity.getX()) - cameraPos.x;
                 double y = Mth.lerp(event.getPartialTick(), entity.yo, entity.getY()) - cameraPos.y;
                 double z = Mth.lerp(event.getPartialTick(), entity.zo, entity.getZ()) - cameraPos.z;
@@ -89,35 +94,48 @@ public class ElectricPostProcessor {
                 poseStack.pushPose();
                 poseStack.translate(x, y, z);
 
+                // Gövde dönüşü
                 float bodyRot = Mth.rotLerp(event.getPartialTick(), entity.yBodyRotO, entity.yBodyRot);
                 poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyRot));
 
-                stitchedRenderer.renderModelDirectly(entity, event.getPartialTick(), poseStack, immediateBuffer, 15728640);
+                // Özel Render Metodunu Çağır
+                // Shader için düz beyaz/kırmızı renk kullanmak yerine texture kullanıyoruz ama shader onu zaten ezecek.
+                stitchedRenderer.renderModelDirectly(entity, event.getPartialTick(), poseStack, bufferSource, 15728640);
 
                 poseStack.popPose();
             }
         }
 
-        immediateBuffer.endBatch();
+        // Çizimi GPU'ya gönder
+        bufferSource.endBatch();
+
         RenderSystem.enableDepthTest();
         poseStack.popPose();
+
+        // Listeyi temizle
         StitchedRenderer.electricEntitiesOnScreen.clear();
 
-        // 4. İşle
+        // 4. Shader Zincirini Çalıştır
         mc.getMainRenderTarget().bindWrite(false);
         electricChain.process(event.getPartialTick());
 
-        // 5. Ekrana Bas (DEBUG KONTROLÜ)
-        // Eğer DEBUG_SHOW_MASK true ise, direkt maskeyi basar. Entity'i düz olarak görmen lazım.
-        // False ise shaderlı sonucu (final) basar.
-        RenderTarget output = DEBUG_SHOW_MASK ? electricChain.getTempTarget("reverie:entity_mask") : electricChain.getTempTarget("final");
-
+        // 5. Sonucu Ekrana Bas
+        RenderTarget output = electricChain.getTempTarget("final");
         if (output != null) {
+            // Blending ayarları (Siyah kısımları şeffaf yapmak için)
             RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableDepthTest();
+            RenderSystem.blendFuncSeparate(
+                    RenderSystem.SourceFactor.SRC_ALPHA,
+                    RenderSystem.DestFactor.ONE_MINUS_SRC_ALPHA,
+                    RenderSystem.SourceFactor.ONE,
+                    RenderSystem.DestFactor.ONE_MINUS_SRC_ALPHA
+            );
+            RenderSystem.disableDepthTest(); // Arayüzün/Blokların önüne çiz
+
             output.blitToScreen(mc.getWindow().getWidth(), mc.getWindow().getHeight(), false);
+
             RenderSystem.enableDepthTest();
+            RenderSystem.defaultBlendFunc();
         }
     }
 }
