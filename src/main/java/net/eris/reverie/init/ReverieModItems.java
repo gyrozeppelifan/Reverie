@@ -87,6 +87,7 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> LAYERED_PELT_BLOCK = block(ReverieModBlocks.LAYERED_PELT_BLOCK);
 	public static final RegistryObject<Item> STITCHED_LEATHER_TILES = block(ReverieModBlocks.STITCHED_LEATHER_TILES);
 	public static final RegistryObject<Item> PATCHED_LEATHER_TILES = block(ReverieModBlocks.PATCHED_LEATHER_TILES);
+	public static final RegistryObject<Item> STITCHED_CONTROLLER = REGISTRY.register("stitched_controller", () -> new StitchedControllerItem());
 
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {

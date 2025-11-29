@@ -25,6 +25,7 @@ public class ReverieModEntityRenderers {
 		event.registerEntityRenderer(ReverieModEntities.GOBLIN_FLAG.get(), GoblinFlagRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.MAGIC_ARROW.get(), MagicArrowRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.STITCHED.get(), StitchedRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.MUTAGEN_BLOB.get(), net.minecraft.client.renderer.entity.ThrownItemRenderer::new);
 
 	}
 }
