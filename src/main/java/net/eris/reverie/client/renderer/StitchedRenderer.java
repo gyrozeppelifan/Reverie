@@ -90,7 +90,7 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
 
                 this.animate(entity.idleState, StitchedAnimation.idle, ageInTicks, 0.3f);
                 this.animate(entity.passiveState, StitchedAnimation.passive, ageInTicks, 1f);
-                this.animate(entity.electrocutedState, StitchedAnimation.electricity, ageInTicks, 1.4f);
+                this.animate(entity.electrocutedState, StitchedAnimation.electrocuted, ageInTicks, 1.4f);
                 this.animate(entity.standupState, StitchedAnimation.standup, ageInTicks, 0.7f);
                 float walkSpeed = Math.min(limbSwingAmount * 1.5F, 1.0F);
                 this.animate(entity.walkState, StitchedAnimation.walking, ageInTicks, walkSpeed);

@@ -2,6 +2,7 @@ package net.eris.reverie;
 
 import net.eris.reverie.events.GoblinRepPersistEvent;
 import net.eris.reverie.init.*;
+import net.eris.reverie.network.packet.ServerboundNameStitchedPacket;
 import net.eris.reverie.registry.ReverieBannerPatterns;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -65,6 +66,8 @@ public class ReverieMod {
 		ReverieModMobEffects.REGISTRY.register(bus);
 		ReverieModParticleTypes.REGISTRY.register(bus);
 		ReverieModPaintings.PAINTINGS.register(bus);
+		ReverieModMenus.MENUS.register(bus);
+
 
 
 	}
@@ -87,8 +90,17 @@ public class ReverieMod {
 					net.eris.reverie.client.network.ScreenShakeS2CPacket::decode,
 					net.eris.reverie.client.network.ScreenShakeS2CPacket::handle
 			);
+
+			// 2. Stitched İsim Değiştirme Paketi (EKSİK OLAN BUYDU!)
+			addNetworkMessage(
+					ServerboundNameStitchedPacket.class,
+					ServerboundNameStitchedPacket::toBytes,
+					ServerboundNameStitchedPacket::new,
+					ServerboundNameStitchedPacket::handle
+			);
 		});
 	}
+
 
 	private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
 

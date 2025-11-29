@@ -3,16 +3,21 @@ package net.eris.reverie.entity;
 import net.eris.reverie.entity.stitched_abilities.AbilityLightning;
 import net.eris.reverie.entity.stitched_abilities.AbilityRoar;
 import net.eris.reverie.entity.stitched_abilities.StitchedAbility;
+import net.eris.reverie.gui.StitchedMenu;
 import net.eris.reverie.init.ReverieModEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -24,24 +29,41 @@ import net.minecraft.world.entity.ai.goal.target.OwnerHurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PlayMessages;
-
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class StitchedEntity extends TamableAnimal implements Enemy {
+public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider {
 
-    // States: 0=PASSIVE, 1=ELECTROCUTED, 2=STANDUP, 5=SIT_ROARING, 3=ALIVE
+    // States
     private static final EntityDataAccessor<Integer> DATA_STATE = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.INT);
 
     // Parçalar
     private static final EntityDataAccessor<ItemStack> DATA_HEAD_ITEM = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.ITEM_STACK);
-    private static final EntityDataAccessor<ItemStack> DATA_BODY_ITEM = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.ITEM_STACK);
-    private static final EntityDataAccessor<ItemStack> DATA_ARM_ITEM = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.ITEM_STACK);
+
+    // --- ENVANTER SİSTEMİ ---
+    // 4 Slot: 0=Kafa, 1=Gövde, 2=Kol1, 3=Kol2
+    public final ItemStackHandler inventory = new ItemStackHandler(4) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            if (slot == 0) {
+                StitchedEntity.this.setHeadItem(this.getStackInSlot(0));
+            }
+        }
+    };
+    private final LazyOptional<ItemStackHandler> inventoryOptional = LazyOptional.of(() -> inventory);
 
     // Animasyonlar
     public final AnimationState idleState = new AnimationState();
@@ -55,13 +77,11 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
     public final AnimationState sitRoaringState = new AnimationState();
 
     private int animationTimer = 0;
-
-    // DÜZELTME: Saldırı animasyon süresini uzattık (Yarıda kesilmemesi için)
-    // Eğer hala kısa gelirse 40 yap.
     private int attackAnimationTick = 0;
     private static final int ATTACK_DURATION = 35;
+    private int roarAnimationTick = 0;
+    private static final int ROAR_DURATION = 80;
 
-    // Yetenek
     private StitchedAbility currentAbility = null;
     public int abilityTick = 0;
     private int abilityCooldown = 0;
@@ -80,42 +100,46 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         this(ReverieModEntities.STITCHED.get(), level);
     }
 
+    // --- FORGE CAPABILITY ---
+    @Override
+    public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        if (cap == ForgeCapabilities.ITEM_HANDLER) {
+            return inventoryOptional.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+
+    @Override
+    public void invalidateCaps() {
+        super.invalidateCaps();
+        inventoryOptional.invalidate();
+    }
+
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_STATE, 0);
         this.entityData.define(DATA_HEAD_ITEM, ItemStack.EMPTY);
-        this.entityData.define(DATA_BODY_ITEM, ItemStack.EMPTY);
-        this.entityData.define(DATA_ARM_ITEM, ItemStack.EMPTY);
     }
 
     public ItemStack getHeadItem() { return this.entityData.get(DATA_HEAD_ITEM); }
     public void setHeadItem(ItemStack stack) { this.entityData.set(DATA_HEAD_ITEM, stack); }
-    public ItemStack getBodyItem() { return this.entityData.get(DATA_BODY_ITEM); }
-    public void setBodyItem(ItemStack stack) { this.entityData.set(DATA_BODY_ITEM, stack); }
-    public ItemStack getArmItem() { return this.entityData.get(DATA_ARM_ITEM); }
-    public void setArmItem(ItemStack stack) { this.entityData.set(DATA_ARM_ITEM, stack); }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putInt("State", this.getState());
-        tag.put("HeadItem", getHeadItem().save(new CompoundTag()));
-        tag.put("BodyItem", this.entityData.get(DATA_BODY_ITEM).save(new CompoundTag()));
-        tag.put("ArmItem", this.entityData.get(DATA_ARM_ITEM).save(new CompoundTag()));
+        tag.put("Inventory", this.inventory.serializeNBT());
     }
 
-    // --- KRİTİK DÜZELTME: NO AI BUG FIX ---
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         this.setState(tag.getInt("State"));
-        if (tag.contains("HeadItem")) this.setHeadItem(ItemStack.of(tag.getCompound("HeadItem")));
-        if (tag.contains("BodyItem")) this.entityData.set(DATA_BODY_ITEM, ItemStack.of(tag.getCompound("BodyItem")));
-        if (tag.contains("ArmItem")) this.entityData.set(DATA_ARM_ITEM, ItemStack.of(tag.getCompound("ArmItem")));
-
-        // OYUNA GİRİNCE BEYNİ YÜKLE
-        // Eğer mob canlıysa (State 3), hedeflerini tekrar hesapla.
+        if (tag.contains("Inventory")) {
+            this.inventory.deserializeNBT(tag.getCompound("Inventory"));
+            this.setHeadItem(this.inventory.getStackInSlot(0));
+        }
         if (this.getState() == 3) {
             this.reassessTameGoals();
         }
@@ -130,32 +154,41 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
                 if (!player.getAbilities().instabuild) {
                     itemstack.shrink(1);
                 }
-
                 if (!this.level().isClientSide) {
                     this.tame(player);
                     this.navigation.stop();
                     this.setTarget(null);
                     this.level().broadcastEntityEvent(this, (byte) 7);
-                    player.sendSystemMessage(net.minecraft.network.chat.Component.literal("§aStitched artık dostun!"));
+                    player.sendSystemMessage(Component.literal("§aStitched artık dostun!"));
                     this.reassessTameGoals();
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
 
             if (this.isTame() && this.isOwnedBy(player) && player.isShiftKeyDown()) {
-                if (!this.level().isClientSide) {
-                    if (itemstack.is(Items.LIGHTNING_ROD)) {
-                        this.spawnAtLocation(this.getHeadItem());
-                        this.setHeadItem(itemstack.split(1));
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Mod: Tesla Bobini Takıldı"));
-                    } else {
-                        player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Envanter sistemi yakında..."));
-                    }
+                if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+                    NetworkHooks.openScreen(serverPlayer, this, buf -> buf.writeInt(this.getId()));
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
         }
         return super.mobInteract(player, hand);
+    }
+
+    // --- MENU PROVIDER ---
+    // DİKKAT: getDisplayName metodunu SİLDİM.
+    // Artık Entity sınıfının varsayılan metodunu kullanacak ve özel ismi varsa onu gösterecek.
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+        return new StitchedMenu(containerId, playerInventory, this);
+    }
+
+    @Override
+    public void setCustomName(@Nullable Component name) {
+        super.setCustomName(name);
+        this.setPersistenceRequired();
     }
 
     public void reassessTameGoals() {
@@ -174,10 +207,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
     @Override
     public EntityDimensions getDimensions(Pose pose) {
-        int state = this.getState();
-        if (state != 3) {
-            return EntityDimensions.fixed(1.8f, 1.0f);
-        }
+        if (this.getState() != 3) return EntityDimensions.fixed(1.8f, 1.0f);
         return super.getDimensions(pose);
     }
 
@@ -192,15 +222,12 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
     @Override
     protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
-        if (this.getState() < 3) {
-            return 0.5f;
-        }
+        if (this.getState() < 3) return 0.5f;
         return super.getStandingEyeHeight(pose, dimensions);
     }
 
     @Override
     protected void registerGoals() {
-        // AI Beyni sadece State 3 (Alive) ise çalışsın
         if (getState() != 3) return;
 
         this.goalSelector.addGoal(0, new FloatGoal(this));
@@ -277,13 +304,16 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
     @Override
     public void tick() {
         super.tick();
+        if (this.attackAnimationTick > 0) this.attackAnimationTick--;
+        if (this.roarAnimationTick > 0) this.roarAnimationTick--;
 
-        if (this.attackAnimationTick > 0) {
-            this.attackAnimationTick--;
-        }
-        // Eğer süre bittiyse ve animasyon hala oynuyorsa durdur
-        if (this.attackAnimationTick <= 0 && this.attackState.isStarted()) {
-            this.attackState.stop();
+        if (this.level().isClientSide) {
+            if (this.attackAnimationTick <= 0 && this.attackState.isStarted()) {
+                this.attackState.stop();
+            }
+            if (this.roarAnimationTick <= 0 && this.roaringState.isStarted()) {
+                this.roaringState.stop();
+            }
         }
 
         if (abilityCooldown > 0) abilityCooldown--;
@@ -299,6 +329,11 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
         if (!this.level().isClientSide) {
             if (currentAbility != null) {
+                this.getNavigation().stop();
+                this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
+                this.yBodyRot = this.yRotO;
+                this.yHeadRot = this.yRotO;
+
                 abilityTick++;
                 if (!currentAbility.tick(this)) {
                     currentAbility.stop(this);
@@ -325,9 +360,14 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
     @Override
     public void handleEntityEvent(byte id) {
         if (id == 4) {
-            // DÜZELTME: Saldırı süresi 35 tick oldu.
             this.attackAnimationTick = ATTACK_DURATION;
             this.attackState.start(this.tickCount);
+        } else if (id == 8) {
+            this.roarAnimationTick = ROAR_DURATION;
+            this.roaringState.start(this.tickCount);
+            this.attackState.stop();
+            this.walkState.stop();
+            this.idleState.stop();
         } else {
             super.handleEntityEvent(id);
         }
@@ -335,7 +375,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
     public void triggerAbility() {
         if (currentAbility != null || abilityCooldown > 0) return;
-        ItemStack headItem = this.getHeadItem();
+        ItemStack headItem = this.inventory.getStackInSlot(0);
         StitchedAbility abilityToUse = null;
 
         if (headItem.is(Items.LIGHTNING_ROD)) {
@@ -348,8 +388,10 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
             this.currentAbility = abilityToUse;
             this.abilityTick = 0;
             this.currentAbility.start(this);
+
             if (abilityToUse instanceof AbilityRoar) {
-                this.roaringState.start(this.tickCount);
+                this.level().broadcastEntityEvent(this, (byte) 8);
+                this.roarAnimationTick = ROAR_DURATION;
             }
             this.abilityCooldown = abilityToUse.getDuration() + 100;
         }
@@ -371,7 +413,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
     private void setupAnimationStates() {
         int state = getState();
-
         if (state != 0 && state != 4) passiveState.stop();
         if (state != 1) electrocutedState.stop();
         if (state != 2) standupState.stop();
@@ -390,7 +431,16 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
             sitRoaringState.startIfStopped(this.tickCount);
         }
         else if (state == 3) {
-            // ALIVE STATE
+            if (this.roarAnimationTick > 0) {
+                if (!roaringState.isStarted()) roaringState.start(this.tickCount);
+                walkState.stop();
+                walkNoArmsState.stop();
+                idleState.stop();
+                attackState.stop();
+                return;
+            } else {
+                roaringState.stop();
+            }
 
             if (this.attackAnimationTick > 0) {
                 walkState.stop();
@@ -398,8 +448,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
                 idleState.stop();
             }
             else {
-                // DÜZELTME: Smooth geçiş için eşiği 0.005'e çıkardık.
-                // 1.0E-6 çok hassastı, en ufak itilmede yürüme animasyonuna geçip titriyordu.
                 boolean isMoving = this.getDeltaMovement().horizontalDistanceSqr() > 0.005;
                 if (isMoving) {
                     walkState.startIfStopped(this.tickCount);
@@ -409,8 +457,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
                     walkState.stop();
                 }
             }
-
-            if (roaringState.isStarted()) roaringState.startIfStopped(this.tickCount);
         }
     }
 

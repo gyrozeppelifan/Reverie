@@ -31,19 +31,24 @@ public class StitchedControllerItem extends Item {
     @Override
     public InteractionResult interactLivingEntity(ItemStack stack, Player player, LivingEntity interactionTarget, InteractionHand usedHand) {
         if (interactionTarget instanceof StitchedEntity stitched) {
-            // KRİTİK DÜZELTME: NBT Kaydını HEM Client HEM Server tarafında yapıyoruz!
-            // Böylece Creative modda item silinmiyor ve tooltip anında güncelleniyor.
-            CompoundTag tag = stack.getOrCreateTag();
-            tag.putUUID("LinkedStitched", stitched.getUUID());
-            stack.setTag(tag);
+            // 1. Eldeki GERÇEK item referansını al (Parametre olarak gelen 'stack' bazen kopya olabiliyor)
+            ItemStack handStack = player.getItemInHand(usedHand);
 
-            // Sadece Server tarafında mesaj ve ses verelim (Spam olmasın)
+            // 2. NBT Etiketini bas
+            CompoundTag tag = handStack.getOrCreateTag();
+            tag.putUUID("LinkedStitched", stitched.getUUID());
+            handStack.setTag(tag);
+
+            // 3. KRİTİK HAMLE: Değişikliği zorla kaydet (Creative Sync Fix)
+            player.setItemInHand(usedHand, handStack);
+
+            // 4. Mesaj ve Ses (Sadece Server)
             if (!player.level().isClientSide) {
                 player.sendSystemMessage(Component.literal("§a[Reverie] Kumanda bağlandı: " + stitched.getName().getString()));
                 player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f);
             }
 
-            // İşlem başarılı, el sallama animasyonunu oynat
+            // 5. Başarılı dön (Animasyon oynasın)
             return InteractionResult.sidedSuccess(player.level().isClientSide);
         }
         return super.interactLivingEntity(stack, player, interactionTarget, usedHand);
@@ -54,7 +59,7 @@ public class StitchedControllerItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
         ItemStack stack = player.getItemInHand(usedHand);
 
-        // Client tarafında da "Success" dönelim ki item kullanıldığı belli olsun (animasyon vs.)
+        // Client tarafında da success dön ki animasyon oynasın
         if (level.isClientSide) {
             return InteractionResultHolder.success(stack);
         }
@@ -92,8 +97,6 @@ public class StitchedControllerItem extends Item {
     public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
         if (stack.hasTag() && stack.getTag().hasUUID("LinkedStitched")) {
             tooltipComponents.add(Component.literal("§7Durum: §aBağlı (Tetiklemek için Sağ Tık)"));
-            // Debug için ID görmek istersen şu satırı aç:
-            // tooltipComponents.add(Component.literal("§8ID: " + stack.getTag().getUUID("LinkedStitched").toString().substring(0, 8) + "..."));
         } else {
             tooltipComponents.add(Component.literal("§7Durum: §cBağlantı Yok"));
             tooltipComponents.add(Component.literal("§8(Bağlamak için Stitched'e sağ tıkla)"));
