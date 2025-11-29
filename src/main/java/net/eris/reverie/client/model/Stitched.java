@@ -1,10 +1,9 @@
-package net.eris.reverie.client.model;// Made with Blockbench 5.0.4
-// Exported for Minecraft version 1.17 or later with Mojang mappings
-// Paste this class into your mod and generate all required imports
-
+package net.eris.reverie.client.model;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.eris.reverie.ReverieMod;
+import net.eris.reverie.entity.StitchedEntity;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.model.geom.ModelPart;
@@ -12,10 +11,12 @@ import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Items;
 
-public class Stitched<T extends Entity> extends EntityModel<T> {
-	// This layer location should be baked with EntityRendererProvider.Context in the entity renderer and passed into this model's constructor
-	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation("modid", "mamma"), "main");
+// Generic <T> kaldırıldı, direkt StitchedEntity
+public class Stitched extends EntityModel<StitchedEntity> {
+
+	public static final ModelLayerLocation LAYER_LOCATION = new ModelLayerLocation(new ResourceLocation(ReverieMod.MODID, "stitched"), "main");
 	private final ModelPart creature;
 	private final ModelPart body;
 	private final ModelPart head;
@@ -40,6 +41,7 @@ public class Stitched<T extends Entity> extends EntityModel<T> {
 		this.left_leg = this.creature.getChild("left_leg");
 	}
 
+	// SENİN VERDİĞİN KOORDİNATLAR (HİÇ DOKUNULMADI)
 	public static LayerDefinition createBodyLayer() {
 		MeshDefinition meshdefinition = new MeshDefinition();
 		PartDefinition partdefinition = meshdefinition.getRoot();
@@ -77,12 +79,19 @@ public class Stitched<T extends Entity> extends EntityModel<T> {
 	}
 
 	@Override
-	public void setupAnim(Entity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-
+	public void setupAnim(StitchedEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+		// Animasyonlar Renderer'da yönetiliyor
 	}
 
 	@Override
 	public void renderToBuffer(PoseStack poseStack, VertexConsumer vertexConsumer, int packedLight, int packedOverlay, float red, float green, float blue, float alpha) {
 		creature.render(poseStack, vertexConsumer, packedLight, packedOverlay, red, green, blue, alpha);
+	}
+
+	// --- GÖRÜNÜRLÜK KONTROLÜ (YENİDEN EKLENDİ) ---
+	public void setupVisibility(boolean hasLightningRod) {
+		// Bu metod renderer'dan çağrılacak
+		this.basehead.visible = !hasLightningRod;
+		this.lightning.visible = hasLightningRod;
 	}
 }
