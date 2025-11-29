@@ -1,6 +1,5 @@
 package net.eris.reverie.entity;
 
-import net.eris.reverie.client.model.animations.StitchedAnimation;
 import net.eris.reverie.entity.stitched_abilities.AbilityLightning;
 import net.eris.reverie.entity.stitched_abilities.AbilityRoar;
 import net.eris.reverie.entity.stitched_abilities.StitchedAbility;
@@ -33,27 +32,31 @@ public class StitchedEntity extends Monster {
     // States: 0=PASSIVE, 1=ELECTROCUTED, 2=STANDUP, 3=ALIVE, 4=WAITING
     private static final EntityDataAccessor<Integer> DATA_STATE = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.INT);
 
-    // --- YENİ: MODÜLER PARÇA SLOTLARI (Senkronize Veri) ---
-    // Bu değişkenler Stitched'in üzerinde ne takılı olduğunu tutar
+    // Parça Slotları
     private static final EntityDataAccessor<ItemStack> DATA_HEAD_ITEM = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.ITEM_STACK);
     private static final EntityDataAccessor<ItemStack> DATA_BODY_ITEM = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.ITEM_STACK);
     private static final EntityDataAccessor<ItemStack> DATA_ARM_ITEM = SynchedEntityData.defineId(StitchedEntity.class, EntityDataSerializers.ITEM_STACK);
 
-    public final AnimationState passiveState = new AnimationState();
-    public final AnimationState electrocutedState = new AnimationState();
+    // --- ANİMASYON DURUMLARI (States) ---
+    public final AnimationState idleState = new AnimationState();
+    public final AnimationState passiveState = new AnimationState(); // Yerde yatış (Sit Idle)
+    public final AnimationState electrocutedState = new AnimationState(); // Electricity
     public final AnimationState standupState = new AnimationState();
     public final AnimationState walkState = new AnimationState();
+    public final AnimationState walkNoArmsState = new AnimationState();
+    public final AnimationState attackState = new AnimationState();
+    public final AnimationState roaringState = new AnimationState();
+    public final AnimationState sitRoaringState = new AnimationState(); // Yerde kükreme
 
     private int animationTimer = 0;
 
-    // --- YENİ: YETENEK SİSTEMİ DEĞİŞKENLERİ ---
+    // Yetenek Sistemi
     private StitchedAbility currentAbility = null;
-    public int abilityTick = 0; // Helperlar okusun diye public
-    private int abilityCooldown = 0; // Spam engellemek için
+    public int abilityTick = 0;
+    private int abilityCooldown = 0;
 
     public StitchedEntity(EntityType<? extends Monster> type, Level level) {
         super(type, level);
-        // Mob doğduğu an boyutunu hesaplasın (Hitbox fix)
         this.refreshDimensions();
     }
 
@@ -69,23 +72,19 @@ public class StitchedEntity extends Monster {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_STATE, 0);
-        // Yeni slotları tanımla (Boş item ile başlar)
         this.entityData.define(DATA_HEAD_ITEM, ItemStack.EMPTY);
         this.entityData.define(DATA_BODY_ITEM, ItemStack.EMPTY);
         this.entityData.define(DATA_ARM_ITEM, ItemStack.EMPTY);
     }
 
-    // --- YENİ: PARÇA YÖNETİMİ (GETTER/SETTER) ---
+    // Getter - Setter
     public ItemStack getHeadItem() { return this.entityData.get(DATA_HEAD_ITEM); }
     public void setHeadItem(ItemStack stack) { this.entityData.set(DATA_HEAD_ITEM, stack); }
-
     public ItemStack getBodyItem() { return this.entityData.get(DATA_BODY_ITEM); }
     public void setBodyItem(ItemStack stack) { this.entityData.set(DATA_BODY_ITEM, stack); }
-
     public ItemStack getArmItem() { return this.entityData.get(DATA_ARM_ITEM); }
     public void setArmItem(ItemStack stack) { this.entityData.set(DATA_ARM_ITEM, stack); }
 
-    // --- YENİ: KAYIT SİSTEMİ (NBT) ---
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -104,17 +103,14 @@ public class StitchedEntity extends Monster {
         if (tag.contains("ArmItem")) this.setArmItem(ItemStack.of(tag.getCompound("ArmItem")));
     }
 
-    // --- YENİ: ETKİLEŞİM (GUI TESTİ İÇİN) ---
     @Override
     protected InteractionResult mobInteract(Player player, InteractionHand hand) {
-        // Shift+Sağ tık ile envanter açma (İleride GUI kodunu buraya bağlayacağız)
         if (player.isShiftKeyDown() && this.getState() == 3) {
             if (!this.level().isClientSide) {
-                // Geçici test kodu: Elindeki itemi kafasına takar (Test etmek istersen)
                 ItemStack handItem = player.getItemInHand(hand);
                 if (!handItem.isEmpty()) {
-                    this.spawnAtLocation(this.getHeadItem()); // Eskiyi düşür
-                    this.setHeadItem(handItem.split(1)); // Yeniyi tak
+                    this.spawnAtLocation(this.getHeadItem());
+                    this.setHeadItem(handItem.split(1));
                     player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Kafa Modu Değişti!"));
                     return InteractionResult.SUCCESS;
                 }
@@ -124,7 +120,6 @@ public class StitchedEntity extends Monster {
         return super.mobInteract(player, hand);
     }
 
-    // State değiştiğinde hitbox'ı güncelle
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         if (DATA_STATE.equals(key)) {
@@ -133,11 +128,9 @@ public class StitchedEntity extends Monster {
         super.onSyncedDataUpdated(key);
     }
 
-    // --- DİNAMİK HITBOX AYARI ---
     @Override
     public EntityDimensions getDimensions(Pose pose) {
         int state = this.getState();
-        // Yatıyor (0), Çarpılıyor (1) veya Bekliyor (4) ise yatay hitbox
         if (state == 0 || state == 1 || state == 4) {
             return EntityDimensions.fixed(1.5f, 0.5f);
         }
@@ -159,6 +152,7 @@ public class StitchedEntity extends Monster {
             this.goalSelector.addGoal(1, new WaterAvoidingRandomStrollGoal(this, 1.0D));
             this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 8.0F));
             this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+            // TODO: MeleeAttackGoal ekle (attackState için)
         }
     }
 
@@ -170,13 +164,8 @@ public class StitchedEntity extends Monster {
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.5D);
     }
 
-    public int getState() {
-        return this.entityData.get(DATA_STATE);
-    }
-
-    public void setState(int state) {
-        this.entityData.set(DATA_STATE, state);
-    }
+    public int getState() { return this.entityData.get(DATA_STATE); }
+    public void setState(int state) { this.entityData.set(DATA_STATE, state); }
 
     @Override
     public void thunderHit(ServerLevel level, LightningBolt lightning) {
@@ -189,7 +178,6 @@ public class StitchedEntity extends Monster {
         }
     }
 
-    // --- GOD MODE & HASAR ENGELLEME ---
     @Override
     public boolean hurt(DamageSource source, float amount) {
         if (source.is(net.minecraft.world.damagesource.DamageTypes.IN_FIRE) || source.is(net.minecraft.world.damagesource.DamageTypes.ON_FIRE)) {
@@ -201,42 +189,25 @@ public class StitchedEntity extends Monster {
         return super.hurt(source, amount);
     }
 
-    // --- İTİLMEZLİK ---
     @Override
-    public boolean isPushable() {
-        return getState() == 3 && super.isPushable();
-    }
+    public boolean isPushable() { return getState() == 3 && super.isPushable(); }
 
     @Override
-    public void push(Entity entity) {
-        if (getState() == 3) {
-            super.push(entity);
-        }
-    }
+    public void push(Entity entity) { if (getState() == 3) super.push(entity); }
 
     @Override
-    protected void doPush(Entity entity) {
-        if (getState() == 3) {
-            super.doPush(entity);
-        }
-    }
+    protected void doPush(Entity entity) { if (getState() == 3) super.doPush(entity); }
 
     @Override
     public void tick() {
         super.tick();
-
-        // Cooldown sayacı
         if (abilityCooldown > 0) abilityCooldown--;
+        if (this.isOnFire()) this.clearFire();
 
-        if (this.isOnFire()) {
-            this.clearFire();
-        }
-
-        // --- YENİ: YETENEK SİSTEMİ MANTIĞI (Sadece Server) ---
         if (!this.level().isClientSide) {
+            // Yetenek Mantığı
             if (currentAbility != null) {
                 abilityTick++;
-                // Helper Class'ın tick metodunu çalıştır
                 if (!currentAbility.tick(this)) {
                     currentAbility.stop(this);
                     currentAbility = null;
@@ -246,94 +217,95 @@ public class StitchedEntity extends Monster {
                 handleStateLogic();
             }
         } else {
+            // Animasyon Mantığı (Client Sadece)
             setupAnimationStates();
         }
     }
 
-    // --- YENİ: KUMANDA (ITEM) TETİKLEYİCİSİ ---
     public void triggerAbility() {
-        // Eğer zaten bir yetenek kullanıyorsa veya cooldown varsa yapma
         if (currentAbility != null || abilityCooldown > 0) return;
-
-        // 1. Kafadaki itemi kontrol et
         ItemStack headItem = this.getHeadItem();
         StitchedAbility abilityToUse = null;
 
-        // 2. İteme göre yeteneği seç (Strategy Pattern)
         if (headItem.is(Items.LIGHTNING_ROD)) {
             abilityToUse = new AbilityLightning();
-        }
-        // else if (headItem.is(Items.SPYGLASS)) { abilityToUse = new AbilityLaser(); }
-        else {
-            // Hiçbir şey yoksa veya tanımlı olmayan bir şeyse -> BAZ YETENEK
+        } else {
             abilityToUse = new AbilityRoar();
         }
 
-        // 3. Yeteneği Başlat
         if (abilityToUse != null && abilityToUse.canUse(this)) {
             this.currentAbility = abilityToUse;
             this.abilityTick = 0;
             this.currentAbility.start(this);
 
-            // Yetenek bitince cooldown koy (Süre + 5 saniye)
+            // Eğer yetenek ROAR ise, animasyon state'ini tetikle
+            if (abilityToUse instanceof AbilityRoar) {
+                this.roaringState.start(this.tickCount);
+            }
+
             this.abilityCooldown = abilityToUse.getDuration() + 100;
         }
     }
 
     private void handleStateLogic() {
         int currentState = getState();
-
-        if (currentState == 1) { // AŞAMA 1: ELECTROCUTED
+        if (currentState == 1) {
+            if (--animationTimer <= 0) { setState(4); animationTimer = 20; }
+        } else if (currentState == 4) {
+            if (--animationTimer <= 0) { setState(2); animationTimer = 70; }
+        } else if (currentState == 2) {
             if (--animationTimer <= 0) {
-                setState(4); // WAITING
-                animationTimer = 20;
-            }
-        }
-        else if (currentState == 4) { // AŞAMA 2: BEKLEME
-            if (--animationTimer <= 0) {
-                setState(2); // STANDUP
-                animationTimer = 70;
-            }
-        }
-        else if (currentState == 2) { // AŞAMA 3: STANDUP
-            if (--animationTimer <= 0) {
-                setState(3); // ALIVE
+                setState(3);
                 this.goalSelector.removeAllGoals(goal -> true);
                 this.registerGoals();
             }
         }
-
         if (currentState < 3) {
             this.getNavigation().stop();
             this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
         }
     }
 
+    // --- ANİMASYON MANTIĞI (YENİLENDİ) ---
     private void setupAnimationStates() {
         int state = getState();
 
-        if (state == 0 || state == 4) {
+        // Tüm animasyonları durdurmaya gerek yok, startIfStopped zaten kontrol eder
+        // Ama temiz geçiş için bazen gerekebilir.
+
+        if (state == 0 || state == 4) { // Pasif (Yatıyor)
             passiveState.startIfStopped(this.tickCount);
             electrocutedState.stop();
             standupState.stop();
+            idleState.stop();
             walkState.stop();
         }
-        else if (state == 1) {
-            passiveState.stop();
+        else if (state == 1) { // Electrocuted
             electrocutedState.startIfStopped(this.tickCount);
-            standupState.stop();
-        }
-        else if (state == 2) {
             passiveState.stop();
-            electrocutedState.stop();
-            standupState.startIfStopped(this.tickCount);
-        }
-        else if (state == 3) {
             standupState.stop();
+        }
+        else if (state == 2) { // Standup (Kalkıyor)
+            standupState.startIfStopped(this.tickCount);
+            electrocutedState.stop();
+            passiveState.stop();
+        }
+        else if (state == 3) { // Alive (Canlı)
+            standupState.stop();
+
+            // Hareket halindeyse Yürüme, değilse Idle
             if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6) {
+                // İleride "Kolsuz Yürüme" için buraya 'if (hasNoArms) walkNoArms.start' ekleyebiliriz
                 walkState.startIfStopped(this.tickCount);
+                idleState.stop();
             } else {
+                idleState.startIfStopped(this.tickCount);
                 walkState.stop();
+            }
+
+            // Saldırı animasyonu (Swing animasyonuna bağlayabiliriz)
+            if (this.swinging) {
+                attackState.startIfStopped(this.tickCount);
             }
         }
     }

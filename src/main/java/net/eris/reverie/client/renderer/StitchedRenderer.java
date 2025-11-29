@@ -20,7 +20,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items; // EKLENDI
+import net.minecraft.world.item.Items;
 
 public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<StitchedEntity>> {
 
@@ -30,7 +30,7 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
     public StitchedRenderer(EntityRendererProvider.Context context) {
         super(context, new AnimatedModel(context.bakeLayer(Stitched.LAYER_LOCATION)), 0.5f);
 
-        // --- OUTLINE LAYER (Inverted Hull & Flash) ---
+        // --- OUTLINE LAYER ---
         this.addLayer(new RenderLayer<StitchedEntity, Stitched<StitchedEntity>>(this) {
             @Override
             public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, StitchedEntity entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
@@ -38,54 +38,37 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
                     if (ReverieClientEvents.stitchedFlashShader != null) {
                         ReverieClientEvents.stitchedFlashShader.safeGetUniform("FlashColor").set(0.0F, 1.0F, 1.0F, 1.0F);
                     }
-
                     RenderType flashType = ReverieRenderTypes.getStitchedFlash(getTextureLocation(entity));
                     VertexConsumer vertexConsumer = buffer.getBuffer(flashType);
-
-                    // Görünürlük ayarını burada da yapmalıyız ki outline doğru modelde çıksın
                     this.getParentModel().setupVisibility(entity.getHeadItem().is(Items.LIGHTNING_ROD));
-
                     this.getParentModel().renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
                 }
             }
         });
     }
 
-    // --- ANA RENDER METODU (GÖRÜNÜRLÜK AYARI BURADA) ---
     @Override
     public void render(StitchedEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        // 1. Modeli al
         Stitched<StitchedEntity> model = this.getModel();
-
-        // 2. Kafa itemini kontrol et
-        boolean hasRod = entity.getHeadItem().is(Items.LIGHTNING_ROD);
-
-        // 3. Görünürlüğü ayarla
-        model.setupVisibility(hasRod);
-
-        // 4. Çiz
+        model.setupVisibility(entity.getHeadItem().is(Items.LIGHTNING_ROD));
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 
-    // --- KARANLIKTA PARLAMA ---
     @Override
     protected int getBlockLightLevel(StitchedEntity entity, BlockPos pos) {
-        if (entity.getState() == 1) {
-            return 15;
-        }
+        if (entity.getState() == 1) return 15;
         return super.getBlockLightLevel(entity, pos);
     }
 
     @Override
     public ResourceLocation getTextureLocation(StitchedEntity entity) {
-        if (entity.getState() == 1) {
-            if (entity.tickCount % 2 == 0) {
-                return TEXTURE_SKELETON;
-            }
+        if (entity.getState() == 1 && entity.tickCount % 2 == 0) {
+            return TEXTURE_SKELETON; // İstersen burada yanıp sönme efekti de yapabilirsin
         }
         return TEXTURE;
     }
 
+    // --- YENİ ANİMASYON YÖNETİCİSİ ---
     private static final class AnimatedModel extends Stitched<StitchedEntity> {
         private final ModelPart root;
         private final HierarchicalModel<StitchedEntity> animator = new HierarchicalModel<StitchedEntity>() {
@@ -93,18 +76,38 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
             @Override public void setupAnim(StitchedEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
                 this.root().getAllParts().forEach(ModelPart::resetPose);
 
-                if (entity.getState() == 0 || entity.getState() == 4) {
-                    this.animate(entity.passiveState, StitchedAnimation.passive, ageInTicks, 1f);
-                } else {
-                    this.animate(entity.passiveState, StitchedAnimation.passive, ageInTicks, 1f);
-                }
+                // 1. IDLE (Ayakta Durma)
+                this.animate(entity.idleState, StitchedAnimation.idle, ageInTicks, 1f);
 
-                this.animate(entity.electrocutedState, StitchedAnimation.electrocuted, ageInTicks, 1.4f);
+                // 2. PASSIVE (Yerde Yatış)
+                // Eğer 'sitroaring' varsa passive yerine onu oynatabilirsin
+                this.animate(entity.passiveState, StitchedAnimation.idle, ageInTicks, 1f); // Şimdilik idle verdik, yatış animasyonu varsa değiştir.
+
+                // 3. ELECTRICITY (Çarpılma)
+                this.animate(entity.electrocutedState, StitchedAnimation.electricity, ageInTicks, 1.4f);
+
+                // 4. STANDUP (Ayağa Kalkma)
                 this.animate(entity.standupState, StitchedAnimation.standup, ageInTicks, 0.7f);
+
+                // 5. WALKING (Yürüme)
+                // Burada normal yürüyüş veya kolsuz yürüyüş seçimi yapılabilir
+                this.animate(entity.walkState, StitchedAnimation.walking, ageInTicks, 1.0f);
+                this.animate(entity.walkNoArmsState, StitchedAnimation.walkingwithoutarms, ageInTicks, 1.0f);
+
+                // 6. AKSİYONLAR
+                this.animate(entity.attackState, StitchedAnimation.attackingbase, ageInTicks, 1.0f);
+                this.animate(entity.roaringState, StitchedAnimation.roaring, ageInTicks, 1.0f);
+                this.animate(entity.sitRoaringState, StitchedAnimation.sitroaring, ageInTicks, 1.0f);
             }
         };
-        public AnimatedModel(ModelPart root) { super(root); this.root = root; }
-        @Override public void setupAnim(StitchedEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+
+        public AnimatedModel(ModelPart root) {
+            super(root);
+            this.root = root;
+        }
+
+        @Override
+        public void setupAnim(StitchedEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
             animator.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
             super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         }
