@@ -88,11 +88,11 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
                 // --- ANIMASYONLAR ---
                 // Bu isimlerin StitchedAnimation dosyanla aynı olduğundan emin ol
 
-                this.animate(entity.idleState, StitchedAnimation.idle, ageInTicks, 1f);
+                this.animate(entity.idleState, StitchedAnimation.idle, ageInTicks, 0.3f);
                 this.animate(entity.passiveState, StitchedAnimation.passive, ageInTicks, 1f);
                 this.animate(entity.electrocutedState, StitchedAnimation.electricity, ageInTicks, 1.4f);
                 this.animate(entity.standupState, StitchedAnimation.standup, ageInTicks, 0.7f);
-                float walkSpeed = Math.min(limbSwingAmount * 2.5F, 1.5F);
+                float walkSpeed = Math.min(limbSwingAmount * 1.5F, 1.0F);
                 this.animate(entity.walkState, StitchedAnimation.walking, ageInTicks, walkSpeed);
                 this.animate(entity.walkNoArmsState, StitchedAnimation.walkingwithoutarms, ageInTicks, 1.0f);
                 this.animate(entity.attackState, StitchedAnimation.attackingbase, ageInTicks, 1.0f);
