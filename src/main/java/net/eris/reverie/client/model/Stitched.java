@@ -28,6 +28,11 @@ public class Stitched extends EntityModel<StitchedEntity> {
 	private final ModelPart right_leg;
 	private final ModelPart left_leg;
 
+	// Stitched.java içine ekle:
+	public void setLightningVisible(boolean visible) {
+		this.lightning.visible = visible;
+	}
+
 	public Stitched(ModelPart root) {
 		this.creature = root.getChild("creature");
 		this.body = this.creature.getChild("body");

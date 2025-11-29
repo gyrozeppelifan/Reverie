@@ -56,8 +56,10 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
     private int animationTimer = 0;
 
-    // YENİ: Saldırı animasyonunun karışmaması için sayaç
+    // DÜZELTME: Saldırı animasyon süresini uzattık (Yarıda kesilmemesi için)
+    // Eğer hala kısa gelirse 40 yap.
     private int attackAnimationTick = 0;
+    private static final int ATTACK_DURATION = 35;
 
     // Yetenek
     private StitchedAbility currentAbility = null;
@@ -87,7 +89,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         this.entityData.define(DATA_ARM_ITEM, ItemStack.EMPTY);
     }
 
-    // --- PARÇA YÖNETİMİ ---
     public ItemStack getHeadItem() { return this.entityData.get(DATA_HEAD_ITEM); }
     public void setHeadItem(ItemStack stack) { this.entityData.set(DATA_HEAD_ITEM, stack); }
     public ItemStack getBodyItem() { return this.entityData.get(DATA_BODY_ITEM); }
@@ -95,7 +96,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
     public ItemStack getArmItem() { return this.entityData.get(DATA_ARM_ITEM); }
     public void setArmItem(ItemStack stack) { this.entityData.set(DATA_ARM_ITEM, stack); }
 
-    // --- SAVE / LOAD ---
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
@@ -105,6 +105,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         tag.put("ArmItem", this.entityData.get(DATA_ARM_ITEM).save(new CompoundTag()));
     }
 
+    // --- KRİTİK DÜZELTME: NO AI BUG FIX ---
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
@@ -112,16 +113,19 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         if (tag.contains("HeadItem")) this.setHeadItem(ItemStack.of(tag.getCompound("HeadItem")));
         if (tag.contains("BodyItem")) this.entityData.set(DATA_BODY_ITEM, ItemStack.of(tag.getCompound("BodyItem")));
         if (tag.contains("ArmItem")) this.entityData.set(DATA_ARM_ITEM, ItemStack.of(tag.getCompound("ArmItem")));
+
+        // OYUNA GİRİNCE BEYNİ YÜKLE
+        // Eğer mob canlıysa (State 3), hedeflerini tekrar hesapla.
+        if (this.getState() == 3) {
+            this.reassessTameGoals();
+        }
     }
 
-    // --- ETKİLEŞİM ---
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
 
-        // Sadece CANLIYKEN (State 3) etkileşime gir
         if (this.getState() == 3) {
-            // 1. EVCİLLEŞTİRME (Vahşiyse ve Elmas varsa)
             if (!this.isTame() && itemstack.is(Items.DIAMOND)) {
                 if (!player.getAbilities().instabuild) {
                     itemstack.shrink(1);
@@ -138,7 +142,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
 
-            // 2. MENÜ AÇMA / KAFA DEĞİŞTİRME
             if (this.isTame() && this.isOwnedBy(player) && player.isShiftKeyDown()) {
                 if (!this.level().isClientSide) {
                     if (itemstack.is(Items.LIGHTNING_ROD)) {
@@ -146,7 +149,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
                         this.setHeadItem(itemstack.split(1));
                         player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Mod: Tesla Bobini Takıldı"));
                     } else {
-                        // Boş elle sağ tık vs.
                         player.sendSystemMessage(net.minecraft.network.chat.Component.literal("Envanter sistemi yakında..."));
                     }
                 }
@@ -198,7 +200,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
 
     @Override
     protected void registerGoals() {
-        // Canlanmadıysa beyin çalışmasın (RETURN IMPORTANT)
+        // AI Beyni sadece State 3 (Alive) ise çalışsın
         if (getState() != 3) return;
 
         this.goalSelector.addGoal(0, new FloatGoal(this));
@@ -276,11 +278,10 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
     public void tick() {
         super.tick();
 
-        // YENİ: Saldırı animasyonu sayacı
         if (this.attackAnimationTick > 0) {
             this.attackAnimationTick--;
         }
-        // Eğer sayaç bittiyse ve animasyon hala açıksa zorla kapat
+        // Eğer süre bittiyse ve animasyon hala oynuyorsa durdur
         if (this.attackAnimationTick <= 0 && this.attackState.isStarted()) {
             this.attackState.stop();
         }
@@ -288,12 +289,11 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         if (abilityCooldown > 0) abilityCooldown--;
         if (this.isOnFire()) this.clearFire();
 
-        // YENİ: Pasif modda tamamen felç etme
         if (getState() < 3) {
             this.setTarget(null);
             this.getNavigation().stop();
             this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
-            this.yBodyRot = this.yRotO; // Kafa dönmesini engelle
+            this.yBodyRot = this.yRotO;
             this.yHeadRot = this.yRotO;
         }
 
@@ -313,21 +313,20 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         }
     }
 
-    // YENİ: Saldırı tetikleyicisi
     @Override
     public boolean doHurtTarget(Entity entity) {
         boolean result = super.doHurtTarget(entity);
         if (result) {
-            this.level().broadcastEntityEvent(this, (byte) 4); // Client'a haber ver
+            this.level().broadcastEntityEvent(this, (byte) 4);
         }
         return result;
     }
 
-    // YENİ: Client tarafı animasyon başlatıcı
     @Override
     public void handleEntityEvent(byte id) {
         if (id == 4) {
-            this.attackAnimationTick = 20; // 1 saniye sürsün
+            // DÜZELTME: Saldırı süresi 35 tick oldu.
+            this.attackAnimationTick = ATTACK_DURATION;
             this.attackState.start(this.tickCount);
         } else {
             super.handleEntityEvent(id);
@@ -365,7 +364,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         } else if (currentState == 5) {
             if (--animationTimer <= 0) {
                 setState(3);
-                this.reassessTameGoals(); // Canlanınca beyin yükle
+                this.reassessTameGoals();
             }
         }
     }
@@ -373,13 +372,11 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
     private void setupAnimationStates() {
         int state = getState();
 
-        // 1. Önce eski durumları temizle
         if (state != 0 && state != 4) passiveState.stop();
         if (state != 1) electrocutedState.stop();
         if (state != 2) standupState.stop();
         if (state != 5) sitRoaringState.stop();
 
-        // 2. Duruma göre animasyon oynat
         if (state == 0 || state == 4) {
             passiveState.startIfStopped(this.tickCount);
         }
@@ -395,17 +392,15 @@ public class StitchedEntity extends TamableAnimal implements Enemy {
         else if (state == 3) {
             // ALIVE STATE
 
-            // Eğer saldırı animasyonu oynuyorsa diğerlerini durdur (Kilitlenme olmasın diye)
             if (this.attackAnimationTick > 0) {
-                // attackState handleEntityEvent ile başladı zaten
                 walkState.stop();
                 walkNoArmsState.stop();
                 idleState.stop();
-                // Kolsuz yürüme istenirse buraya eklenebilir ama şimdilik sade tutuyoruz
             }
             else {
-                // Saldırmıyorsa Yürüme/Idle mantığı
-                boolean isMoving = this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6;
+                // DÜZELTME: Smooth geçiş için eşiği 0.005'e çıkardık.
+                // 1.0E-6 çok hassastı, en ufak itilmede yürüme animasyonuna geçip titriyordu.
+                boolean isMoving = this.getDeltaMovement().horizontalDistanceSqr() > 0.005;
                 if (isMoving) {
                     walkState.startIfStopped(this.tickCount);
                     idleState.stop();
