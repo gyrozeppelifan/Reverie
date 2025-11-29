@@ -20,6 +20,7 @@ import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Items; // EKLENDI
 
 public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<StitchedEntity>> {
 
@@ -41,26 +42,38 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched<Stitc
                     RenderType flashType = ReverieRenderTypes.getStitchedFlash(getTextureLocation(entity));
                     VertexConsumer vertexConsumer = buffer.getBuffer(flashType);
 
+                    // Görünürlük ayarını burada da yapmalıyız ki outline doğru modelde çıksın
+                    this.getParentModel().setupVisibility(entity.getHeadItem().is(Items.LIGHTNING_ROD));
+
                     this.getParentModel().renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
                 }
             }
         });
     }
 
-    // --- YENİ: KARANLIKTA PARLAMA ---
+    // --- ANA RENDER METODU (GÖRÜNÜRLÜK AYARI BURADA) ---
+    @Override
+    public void render(StitchedEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+        // 1. Modeli al
+        Stitched<StitchedEntity> model = this.getModel();
+
+        // 2. Kafa itemini kontrol et
+        boolean hasRod = entity.getHeadItem().is(Items.LIGHTNING_ROD);
+
+        // 3. Görünürlüğü ayarla
+        model.setupVisibility(hasRod);
+
+        // 4. Çiz
+        super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
+    }
+
+    // --- KARANLIKTA PARLAMA ---
     @Override
     protected int getBlockLightLevel(StitchedEntity entity, BlockPos pos) {
-        // Eğer çarpılıyorsa (State 1) her zaman maksimum ışıkta (15) renderla.
-        // Bu sayede gece veya karanlık mağarada bile parlar.
         if (entity.getState() == 1) {
             return 15;
         }
         return super.getBlockLightLevel(entity, pos);
-    }
-
-    @Override
-    public void render(StitchedEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 
     @Override
