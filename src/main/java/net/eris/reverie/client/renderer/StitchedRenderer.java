@@ -19,7 +19,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 
-// DİKKAT: Artık generic değil, doğrudan 'Stitched' sınıfını kullanıyoruz.
 public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
 
     private static final ResourceLocation TEXTURE = new ResourceLocation(ReverieMod.MODID, "textures/entities/stitched.png");
@@ -32,7 +31,8 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
         this.addLayer(new RenderLayer<StitchedEntity, Stitched>(this) {
             @Override
             public void render(PoseStack poseStack, MultiBufferSource buffer, int packedLight, StitchedEntity entity, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-                if (entity.getState() == 1) { // Sadece State 1 (Electrocuted) ise
+                // DÜZELTME: Hem State 1 (Dirilme) hem State 6 (Yetenek) iken iskelet çıksın
+                if (entity.getState() == 1 || entity.getState() == 6) {
                     if (ReverieClientEvents.stitchedFlashShader != null) {
                         ReverieClientEvents.stitchedFlashShader.safeGetUniform("FlashColor").set(0.0F, 1.0F, 1.0F, 1.0F);
                     }
@@ -40,8 +40,8 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
                     RenderType flashType = ReverieRenderTypes.getStitchedFlash(getTextureLocation(entity));
                     VertexConsumer vertexConsumer = buffer.getBuffer(flashType);
 
-                    // Model görünürlük ayarını çağırıyoruz (Senin eklediğin metod)
                     Stitched model = this.getParentModel();
+                    // Kafa itemi kontrolü (Entity'deki method ile senkronize)
                     model.setupVisibility(entity.getHeadItem().is(Items.LIGHTNING_ROD));
 
                     model.renderToBuffer(poseStack, vertexConsumer, packedLight, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
@@ -53,31 +53,29 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
     @Override
     public void render(StitchedEntity entity, float entityYaw, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         Stitched model = this.getModel();
-        // Görünürlük ayarını ana render döngüsünde de yapıyoruz
         model.setupVisibility(entity.getHeadItem().is(Items.LIGHTNING_ROD));
         super.render(entity, entityYaw, partialTicks, poseStack, buffer, packedLight);
     }
 
     @Override
     protected int getBlockLightLevel(StitchedEntity entity, BlockPos pos) {
-        if (entity.getState() == 1) return 15; // Işık saçsın
+        // Hem dirilirken (1) hem yetenek kullanırken (6) ışık saçsın
+        if (entity.getState() == 1 || entity.getState() == 6) return 15;
         return super.getBlockLightLevel(entity, pos);
     }
 
     @Override
     public ResourceLocation getTextureLocation(StitchedEntity entity) {
-        if (entity.getState() == 1 && entity.tickCount % 2 == 0) {
-            return TEXTURE_SKELETON; // Elektrikliyken yanıp sönme
+        // Yanıp sönme efekti
+        if ((entity.getState() == 1 || entity.getState() == 6) && entity.tickCount % 2 == 0) {
+            return TEXTURE_SKELETON;
         }
         return TEXTURE;
     }
 
-    // --- ANİMASYON YÖNETİCİSİ (Stitched sınıfını extend ediyor) ---
     private static final class AnimatedModel extends Stitched {
         private final ModelPart root;
 
-        // HierarchicalModel, animasyonları (animate metodu) kullanabilmek için şart.
-        // Stitched sınıfı EntityModel'den türediği için bu yardımcıyı kullanıyoruz.
         private final HierarchicalModel<StitchedEntity> animator = new HierarchicalModel<StitchedEntity>() {
             @Override public ModelPart root() { return root; }
 
@@ -85,12 +83,15 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
             public void setupAnim(StitchedEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
                 this.root().getAllParts().forEach(ModelPart::resetPose);
 
-                // --- ANIMASYONLAR ---
-                // Bu isimlerin StitchedAnimation dosyanla aynı olduğundan emin ol
-
                 this.animate(entity.idleState, StitchedAnimation.idle, ageInTicks, 0.3f);
                 this.animate(entity.passiveState, StitchedAnimation.passive, ageInTicks, 1f);
+
+                // DÜZELTME: Dirilme (Electrocuted)
                 this.animate(entity.electrocutedState, StitchedAnimation.electrocuted, ageInTicks, 1.4f);
+
+                // YENİ: Yetenek (Electricity) - Entity'ye bu variable'ı ekleyeceğiz
+                this.animate(entity.electricityState, StitchedAnimation.electricity, ageInTicks, 0.7f);
+
                 this.animate(entity.standupState, StitchedAnimation.standup, ageInTicks, 0.7f);
                 float walkSpeed = Math.min(limbSwingAmount * 1.5F, 1.0F);
                 this.animate(entity.walkState, StitchedAnimation.walking, ageInTicks, walkSpeed);
@@ -108,11 +109,7 @@ public class StitchedRenderer extends MobRenderer<StitchedEntity, Stitched> {
 
         @Override
         public void setupAnim(StitchedEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-            // Önce animatörü çalıştır (Pozları ayarla)
             animator.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-
-            // Sonra super.setupAnim çağır (Gerekirse)
-            // Stitched sınıfındaki setupAnim boş ama yine de çağırmak adettendir.
             super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
         }
     }

@@ -18,4 +18,5 @@ public class ReverieModMobEffects {
 	public static final RegistryObject<MobEffect> FOCUS = REGISTRY.register("focus", () -> new FocusMobEffect());
 	public static final RegistryObject<MobEffect> POSSESSION = REGISTRY.register("possession", () -> new PossessionMobEffect());
 	public static final RegistryObject<MobEffect> ANCIENT_CLOAK = REGISTRY.register("ancient_cloak", () -> new net.eris.reverie.effect.AncientCloakMobEffect());
+	public static final RegistryObject<MobEffect> ZAPPED = REGISTRY.register("zapped", ZappedMobEffect::new);
 }

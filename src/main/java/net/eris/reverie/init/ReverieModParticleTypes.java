@@ -20,4 +20,7 @@ public class ReverieModParticleTypes {
 	public static final RegistryObject<SimpleParticleType> BARREL_SHARD_2 = REGISTRY.register("barrel_shard_2", () -> new SimpleParticleType(false));
 	public static final RegistryObject<SimpleParticleType> BARREL_NAIL = REGISTRY.register("barrel_nail", () -> new SimpleParticleType(false));
 	public static final RegistryObject<SimpleParticleType> BARREL_METAL_SHARD = REGISTRY.register("barrel_metal_shard", () -> new SimpleParticleType(false));
+	public static final RegistryObject<SimpleParticleType> STITCHED_ZAP_PARTICLE = REGISTRY.register("stitched_zap_particle",
+			() -> new SimpleParticleType(false));
+
 }

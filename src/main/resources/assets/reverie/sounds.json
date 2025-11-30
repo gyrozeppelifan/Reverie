@@ -461,5 +461,14 @@
         "stream": false
       }
     ]
+  },
+  "stitched_zap": {
+    "subtitle": "subtitles.zapped",
+    "sounds": [
+      {
+        "name": "reverie:stitched_zapped",
+        "stream": false
+      }
+    ]
   }
 }

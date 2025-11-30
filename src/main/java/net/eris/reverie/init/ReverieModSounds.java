@@ -39,6 +39,7 @@ public class ReverieModSounds {
 	public static final RegistryObject<SoundEvent> ANCIENT_CROSSBOW_LOAD = REGISTRY.register("ancient_crossbow_load", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "ancient_crossbow_load")));
 	public static final RegistryObject<SoundEvent> ANCIENT_CROSSBOW_CLOAK_SHOOT = REGISTRY.register("ancient_crossbow_cloak_shoot", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "ancient_crossbow_cloak_shoot")));
 	public static final RegistryObject<SoundEvent> KISSING = REGISTRY.register("kissing", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "kissing")));
+	public static final RegistryObject<SoundEvent> STITCHED_ZAP = REGISTRY.register("stitched_zap", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("reverie", "stitched_zap")));
 }
 
 
