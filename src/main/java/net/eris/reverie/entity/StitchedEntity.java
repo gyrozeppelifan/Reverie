@@ -75,7 +75,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
 
     private int animationTimer = 0;
     private int attackAnimationTick = 0;
-    private static final int ATTACK_DURATION = 15;
+    private static final int ATTACK_DURATION = 12;
     private int roarAnimationTick = 0;
     private static final int ROAR_DURATION = 80;
 

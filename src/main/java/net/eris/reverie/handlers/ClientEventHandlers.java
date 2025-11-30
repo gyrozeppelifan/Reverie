@@ -1,40 +1,32 @@
-// src/main/java/net/eris/reverie/client/ClientEventHandlers.java
 package net.eris.reverie.handlers;
 
-import net.eris.reverie.client.renderer.layer.DrunkenOutlineLayer;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.client.renderer.entity.layers.RenderLayer;
-import net.minecraft.world.entity.EntityType;
+import net.eris.reverie.ReverieMod;
+import net.eris.reverie.util.IAncientCloakData; // Arayüzü import et
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent.AddLayers;
+import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
-@Mod.EventBusSubscriber(
-    modid = "reverie",
-    bus   = Mod.EventBusSubscriber.Bus.MOD,
-    value = Dist.CLIENT
-)
+@Mod.EventBusSubscriber(modid = ReverieMod.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ClientEventHandlers {
 
-    @SuppressWarnings({"rawtypes","unchecked"})
     @SubscribeEvent
-    public static void onAddLayers(AddLayers event) {
-        for (EntityType<?> type : ForgeRegistries.ENTITY_TYPES.getValues()) {
-            try {
-                EntityType<LivingEntity> livingType = (EntityType<LivingEntity>) type;
-                var rendererObj = event.getRenderer(livingType);
-                if (!(rendererObj instanceof LivingEntityRenderer<?, ?>)) continue;
+    public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
+        LivingEntity entity = event.getEntity();
 
-                LivingEntityRenderer<LivingEntity, ?> renderer =
-                    (LivingEntityRenderer<LivingEntity, ?>) rendererObj;
+        // DÜZELTME: Potion Effect yerine Synched Data kontrolü yapıyoruz!
+        // Bu sayede server-client gecikmesi olmadan anında titrer.
+        if (entity instanceof IAncientCloakData dataHolder && dataHolder.reverie$hasZapped()) {
 
-                renderer.addLayer((RenderLayer) new DrunkenOutlineLayer<>(renderer));
-            } catch (ClassCastException ignored) {
-                // atla
-            }
+            // Titreme Şiddeti (0.15F gayet belirgin bir titreme yapar)
+            float shakeAmount = 0.15F;
+
+            float offsetX = (float) ((Math.random() - 0.5) * shakeAmount);
+            float offsetY = (float) ((Math.random() - 0.5) * shakeAmount);
+            float offsetZ = (float) ((Math.random() - 0.5) * shakeAmount);
+
+            event.getPoseStack().translate(offsetX, offsetY, offsetZ);
         }
     }
 }

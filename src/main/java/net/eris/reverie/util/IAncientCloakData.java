@@ -8,4 +8,8 @@ public interface IAncientCloakData {
     // YENİ: Drunken Rage (Bunu ekliyoruz)
     boolean reverie$hasDrunkenRage();
     void reverie$setDrunkenRage(boolean hasRage);
+
+    // YENİ: Zapped (Çarpılma) Verisi
+    boolean reverie$hasZapped();
+    void reverie$setZapped(boolean hasZapped);
 }
