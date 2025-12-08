@@ -97,9 +97,11 @@ public class ReverieMod {
 					ServerboundNameStitchedPacket::toBytes,
 					ServerboundNameStitchedPacket::new,
 					ServerboundNameStitchedPacket::handle
+
 			);
 		});
 	}
+
 
 
 	private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();

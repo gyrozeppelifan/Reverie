@@ -54,6 +54,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
     public final ItemStackHandler inventory = new ItemStackHandler(4) {
         @Override
         protected void onContentsChanged(int slot) {
+            // Sadece görsel senkronizasyon kaldı
             if (slot == 0) {
                 StitchedEntity.this.setHeadItem(this.getStackInSlot(0));
             }
@@ -64,8 +65,8 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
     // --- ANİMASYONLAR ---
     public final AnimationState idleState = new AnimationState();
     public final AnimationState passiveState = new AnimationState();
-    public final AnimationState electrocutedState = new AnimationState(); // Dirilme (State 1)
-    public final AnimationState electricityState = new AnimationState();  // YENİ: Yetenek (State 6)
+    public final AnimationState electrocutedState = new AnimationState();
+    public final AnimationState electricityState = new AnimationState();
     public final AnimationState standupState = new AnimationState();
     public final AnimationState walkState = new AnimationState();
     public final AnimationState walkNoArmsState = new AnimationState();
@@ -97,8 +98,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
         this(ReverieModEntities.STITCHED.get(), level);
     }
 
-    // ... Capability, DefineSynchedData, Save/Read metodları AYNEN KALIYOR ...
-    // (Kısaltmak için buraya tekrar yazmıyorum, önceki kodundan kopyala)
     @Override
     public <T> @NotNull LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
         if (cap == ForgeCapabilities.ITEM_HANDLER) {
@@ -146,19 +145,32 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         ItemStack itemstack = player.getItemInHand(hand);
+
         if (this.getState() == 3) {
+            // 1. EVCİLLEŞTİRME
             if (!this.isTame() && itemstack.is(Items.DIAMOND)) {
-                if (!player.getAbilities().instabuild) itemstack.shrink(1);
+                if (!player.getAbilities().instabuild) {
+                    itemstack.shrink(1);
+                }
                 if (!this.level().isClientSide) {
                     this.tame(player);
                     this.navigation.stop();
+
+                    // --- CRITICAL BUG FIX ---
                     this.setTarget(null);
+                    this.setLastHurtByMob(null);
+                    this.setLastHurtMob(null);
+                    this.setOrderedToSit(false);
+                    // ------------------------
+
                     this.level().broadcastEntityEvent(this, (byte) 7);
                     player.sendSystemMessage(Component.literal("§aStitched artık dostun!"));
                     this.reassessTameGoals();
                 }
                 return InteractionResult.sidedSuccess(this.level().isClientSide);
             }
+
+            // 2. GUI AÇMA
             if (this.isTame() && this.isOwnedBy(player) && player.isShiftKeyDown()) {
                 if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
                     NetworkHooks.openScreen(serverPlayer, this, buf -> buf.writeInt(this.getId()));
@@ -181,8 +193,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
         this.setPersistenceRequired();
     }
 
-    // ... reassessTameGoals, Dimensions, registerGoals, Attributes, thunderHit ...
-    // (Bunları aynen koru)
     public void reassessTameGoals() {
         this.goalSelector.removeAllGoals(g -> true);
         this.targetSelector.removeAllGoals(g -> true);
@@ -200,7 +210,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
     @Override
     public EntityDimensions getDimensions(Pose pose) {
         int state = this.getState();
-        if (state != 3 && state != 6) { // State 6 (Yetenek) da ayakta sayılır
+        if (state != 3 && state != 6) {
             return EntityDimensions.fixed(1.8f, 1.0f);
         }
         return super.getDimensions(pose);
@@ -223,7 +233,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
 
     @Override
     protected void registerGoals() {
-        if (getState() != 3 && getState() != 6) return; // State 6 da AI çalışabilir ama kilitliyoruz
+        if (getState() != 3 && getState() != 6) return;
 
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
@@ -304,8 +314,12 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
         if (this.roarAnimationTick > 0) this.roarAnimationTick--;
 
         if (this.level().isClientSide) {
-            if (this.attackAnimationTick <= 0 && this.attackState.isStarted()) this.attackState.stop();
-            if (this.roarAnimationTick <= 0 && this.roaringState.isStarted()) this.roaringState.stop();
+            if (this.attackAnimationTick <= 0 && this.attackState.isStarted()) {
+                this.attackState.stop();
+            }
+            if (this.roarAnimationTick <= 0 && this.roaringState.isStarted()) {
+                this.roaringState.stop();
+            }
         }
 
         if (abilityCooldown > 0) abilityCooldown--;
@@ -321,7 +335,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
 
         if (!this.level().isClientSide) {
             if (currentAbility != null) {
-                // Hareketi Kilitle
                 this.getNavigation().stop();
                 this.setDeltaMovement(0, this.getDeltaMovement().y, 0);
                 this.yBodyRot = this.yRotO;
@@ -332,7 +345,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
                     currentAbility.stop(this);
                     currentAbility = null;
                     abilityTick = 0;
-                    // Eğer yetenek bittiyse ve state 6 ise normale dön
                     if (getState() == 6) setState(3);
                 }
             } else {
@@ -352,21 +364,19 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
         return result;
     }
 
-    // --- ANIMASYON EVENTLERİ ---
-    // ID 9: Lightning Ability Start
     @Override
     public void handleEntityEvent(byte id) {
-        if (id == 4) { // Attack
+        if (id == 4) {
             this.attackAnimationTick = ATTACK_DURATION;
             this.attackState.stop();
             this.attackState.start(this.tickCount);
-        } else if (id == 8) { // Roar
+        } else if (id == 8) {
             this.roarAnimationTick = ROAR_DURATION;
             this.roaringState.start(this.tickCount);
             this.attackState.stop();
             this.walkState.stop();
             this.idleState.stop();
-        } else if (id == 9) { // YENİ: LIGHTNING (Electricity)
+        } else if (id == 9) {
             this.electricityState.start(this.tickCount);
             this.attackState.stop();
             this.walkState.stop();
@@ -396,7 +406,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
                 this.level().broadcastEntityEvent(this, (byte) 8);
                 this.roarAnimationTick = ROAR_DURATION;
             } else if (abilityToUse instanceof AbilityLightning) {
-                // YENİ: Lightning yeteneği için State 6 ve ID 9
                 this.setState(6);
                 this.level().broadcastEntityEvent(this, (byte) 9);
             }
@@ -416,7 +425,6 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
                 this.reassessTameGoals();
             }
         }
-        // State 6 kontrolü tick() içinde yapılıyor (ability bitince dönüyor)
     }
 
     private void setupAnimationStates() {
@@ -426,7 +434,7 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
         if (state != 1) electrocutedState.stop();
         if (state != 2) standupState.stop();
         if (state != 5) sitRoaringState.stop();
-        if (state != 6) electricityState.stop(); // State 6 değilse durdur
+        if (state != 6) electricityState.stop();
 
         if (state == 0 || state == 4) {
             passiveState.startIfStopped(this.tickCount);
@@ -440,9 +448,8 @@ public class StitchedEntity extends TamableAnimal implements Enemy, MenuProvider
         else if (state == 5) {
             sitRoaringState.startIfStopped(this.tickCount);
         }
-        else if (state == 6) { // YENİ: Yetenek Modu
+        else if (state == 6) {
             electricityState.startIfStopped(this.tickCount);
-            // Diğerlerini durdur
             walkState.stop();
             walkNoArmsState.stop();
             idleState.stop();
