@@ -10,7 +10,8 @@
     "LivingEntityRendererMixin",
 	"PlayerRendererMixin",
     "ServerPlayerMixin",
-    "LivingEntityDataMixin"
+    "LivingEntityDataMixin",
+    "HogMountMixin"
   ],
   "client": [
     "MouseHandlerMixin",
@@ -21,7 +22,8 @@
     "MinecraftMixin",
     "MouseBlockerMixin",
     "LocalPlayerMixin",
-    "ItemInHandLayerMixin"
+    "ItemInHandLayerMixin",
+    "HogMountMixin"
   ],
   "minVersion": "0.8"
 }

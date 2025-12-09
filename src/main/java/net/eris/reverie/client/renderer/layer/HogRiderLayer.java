@@ -23,31 +23,30 @@ public class HogRiderLayer extends RenderLayer<HogEntity, HogModel> {
         if (!pHog.isVehicle()) return;
 
         for (Entity passenger : pHog.getPassengers()) {
-            // Kendi oyuncumuzu (First Person) çizmeyelim, kafa karışmasın
             if (passenger == Minecraft.getInstance().player && Minecraft.getInstance().options.getCameraType().isFirstPerson()) {
                 continue;
             }
 
             pPoseStack.pushPose();
 
-            // 1. Modelin "root" kemiğinin pozisyonunu al
+            // 1. Root pozisyonu
             ModelPart root = this.getParentModel().root;
             root.translateAndRotate(pPoseStack);
 
-            // 2. "mountplace" kemiğinin pozisyonunu al (Root'un çocuğu olduğu için üstüne eklenir)
+            // 2. Mount point pozisyonu
             ModelPart mount = this.getParentModel().mountplace;
             mount.translateAndRotate(pPoseStack);
 
-            // 3. Oyuncuyu Düzelt
-            // Blockbench koordinat sistemiyle Minecraft entity sistemi bazen ters düşer.
-            // Oyuncu ters duruyorsa buradaki 180 dereceyi sil veya değiştir.
+            // 3. DÜZELTMELER
+            // Blockbench modelleri genelde X ekseninde 180 derece dönük gelir
             pPoseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
+
+            // Oyuncu ters duruyorsa bu satır onu düzeltir (Gerekirse aç/kapa)
             pPoseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
 
-            // Hafif yukarı/aşağı ayar (Eğer domuzun içine gömülürse Y değerini oyna)
-            pPoseStack.translate(0.0D, -0.5D, 0.0D);
+            // MANUEL YÜKSELTME: Domuzun içine girmemesi için 0.8 blok yukarı alıyoruz
+            pPoseStack.translate(0.0D, 0.8D, 0.0D);
 
-            // 4. Yolcuyu Çiz
             renderPassenger(passenger, pPartialTick, pPoseStack, pBuffer, pPackedLight);
 
             pPoseStack.popPose();
@@ -57,7 +56,6 @@ public class HogRiderLayer extends RenderLayer<HogEntity, HogModel> {
     private <E extends Entity> void renderPassenger(E entity, float partialTick, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         EntityRenderer<? super E> renderer = Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entity);
         if (renderer != null) {
-            // Oyuncunun kendi rotasyonunu sıfırla ki domuza göre dönsün
             renderer.render(entity, 0.0F, partialTick, poseStack, buffer, packedLight);
         }
     }

@@ -24,5 +24,6 @@ public class ReverieModParticleTypes {
 			() -> new SimpleParticleType(false));
 	public static final RegistryObject<SimpleParticleType> SPIRIT_ORB = REGISTRY.register("spirit_orb",
 			() -> new SimpleParticleType(true));
+	public static final RegistryObject<SimpleParticleType> SPIRITUAL_BEAM = REGISTRY.register("spiritual_beam", () -> new SimpleParticleType(true));
 
 }
