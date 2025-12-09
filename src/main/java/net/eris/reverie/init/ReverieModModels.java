@@ -24,6 +24,7 @@ public class ReverieModModels {
 		event.registerLayerDefinition(ModelGoblinFlag.LAYER_LOCATION, ModelGoblinFlag::createBodyLayer);
 		event.registerLayerDefinition(Stitched.LAYER_LOCATION, Stitched::createBodyLayer);
 		event.registerLayerDefinition(MutagenBlobModel.LAYER_LOCATION, MutagenBlobModel::createBodyLayer);
+		event.registerLayerDefinition(HogModel.LAYER_LOCATION, HogModel::createBodyLayer);
 
 	}
 }

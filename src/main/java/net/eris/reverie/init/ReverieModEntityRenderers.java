@@ -26,6 +26,7 @@ public class ReverieModEntityRenderers {
 		event.registerEntityRenderer(ReverieModEntities.MUTAGEN_BLOB.get(), MutagenBlobRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.MAGIC_ARROW.get(), MagicArrowRenderer::new);
 		event.registerEntityRenderer(ReverieModEntities.STITCHED.get(), StitchedRenderer::new);
+		event.registerEntityRenderer(ReverieModEntities.HOG.get(), HogRenderer::new);
 
 	}
 }

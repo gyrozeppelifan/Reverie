@@ -21,5 +21,6 @@ public class ReverieModParticles {
 		event.registerSpriteSet(ReverieModParticleTypes.BARREL_NAIL.get(), BarrelNailParticle::provider);
 		event.registerSpriteSet(ReverieModParticleTypes.BARREL_METAL_SHARD.get(), BarrelMetalShardParticle::provider);
 		event.registerSpriteSet(ReverieModParticleTypes.STITCHED_ZAP_PARTICLE.get(), StitchedZapParticle.Provider::new);
+		event.registerSpriteSet(ReverieModParticleTypes.SPIRIT_ORB.get(), SpiritOrbParticle.Provider::new);
 	}
-}
+	}

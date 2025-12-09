@@ -30,5 +30,25 @@ public class ReverieRenderTypes extends RenderType {
                         .setCullState(NO_CULL) // Artık hata vermez!
                         .setWriteMaskState(COLOR_WRITE) // Artık hata vermez!
                         .createCompositeState(false));
+
+
+    }
+
+    // SPIRITUAL PIG AURA - GÜNCELLENDİ
+    public static RenderType getSpiritualAura(ResourceLocation texture) {
+        return create("spiritual_aura",
+                DefaultVertexFormat.NEW_ENTITY, // Formatı düzelttik
+                VertexFormat.Mode.QUADS,
+                256,
+                false,
+                true,
+                RenderType.CompositeState.builder()
+                        .setShaderState(new RenderStateShard.ShaderStateShard(() -> ReverieClientEvents.spiritualAuraShader))
+                        .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                        .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                        .setCullState(NO_CULL)
+                        .setLightmapState(LIGHTMAP) // Işıklandırmayı açtık (shader'da kullanmasak bile veri akışı için şart)
+                        .setOverlayState(OVERLAY) // Overlay verisi şart
+                        .createCompositeState(false));
     }
 }

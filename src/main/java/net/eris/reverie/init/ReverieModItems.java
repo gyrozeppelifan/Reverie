@@ -3,6 +3,7 @@ package net.eris.reverie.init;
 
 import net.eris.reverie.item.*;
 import net.eris.reverie.registry.ReverieBannerPatterns;
+import net.eris.reverie.util.GoblinReputation;
 import net.minecraft.world.item.BannerPatternItem;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -88,6 +89,16 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> STITCHED_LEATHER_TILES = block(ReverieModBlocks.STITCHED_LEATHER_TILES);
 	public static final RegistryObject<Item> PATCHED_LEATHER_TILES = block(ReverieModBlocks.PATCHED_LEATHER_TILES);
 	public static final RegistryObject<Item> STITCHED_CONTROLLER = REGISTRY.register("stitched_controller", () -> new StitchedControllerItem());
+	public static final RegistryObject<Item> BOAR_WHISPERER_SCROLL = REGISTRY.register("boar_whisperer_scroll",
+			() -> new BoarWhispererScrollItem(new Item.Properties().stacksTo(1)));
+	public static final RegistryObject<Item> PURIFIED_SCROLL = REGISTRY.register("purified_scroll",
+			() -> new Item(new Item.Properties().fireResistant().stacksTo(1)));
+	public static final RegistryObject<Item> SPIRIT_FRAGMENT = REGISTRY.register("spirit_fragment",
+			() -> new Item(new Item.Properties()));
+	public static final RegistryObject<Item> BOAR_MONK_SEAL = REGISTRY.register("boar_monk_seal",
+			() -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.RARE).stacksTo(1)));
+	public static final RegistryObject<Item> RAINBOW_DROPPING = REGISTRY.register("rainbow_dropping",
+			() -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.RARE).stacksTo(1)));
 
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {

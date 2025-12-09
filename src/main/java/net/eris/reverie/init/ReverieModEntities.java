@@ -47,6 +47,12 @@ public class ReverieModEntities {
 	public static final RegistryObject<EntityType<GoblinBarrelEntity>> GOBLIN_BARREL = register("goblin_barrel",
 			EntityType.Builder.<GoblinBarrelEntity>of(GoblinBarrelEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GoblinBarrelEntity::new)
 					.sized(2.1f, 2.1f));
+	public static final RegistryObject<EntityType<HogEntity>> HOG = register("hog",
+			EntityType.Builder.<HogEntity>of(HogEntity::new, MobCategory.CREATURE)
+					.sized(1.4F, 1.4F) // Geniş ve iri (At: 1.39, Domuz: 0.9)
+					.setTrackingRange(64)
+					.setUpdateInterval(3)
+					.setCustomClientFactory(HogEntity::new)); // Önemli!
 	public static final RegistryObject<EntityType<GobletEntity>> GOBLET = register("goblet",
 			EntityType.Builder.<GobletEntity>of(GobletEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(GobletEntity::new)
 					.sized(0.6f, 0.8f));
@@ -117,7 +123,8 @@ public class ReverieModEntities {
 		event.put(GOBLIN_BARREL.get(), GoblinBarrelEntity.createAttributes().build());
 		event.put(GOBLET.get(), GobletEntity.createAttributes().build());
 		event.put(GOBLIN_BRUTE.get(),  GoblinBruteEntity.createAttributes().build());
-		event.put(STITCHED.get(),  GoblinBruteEntity.createAttributes().build());
+		event.put(STITCHED.get(),  StitchedEntity.createAttributes().build());
 		event.put(POSSESSION_PUPPET.get(), PossessionPuppetEntity.createAttributes().build());
+		event.put(HOG.get(),  HogEntity.createAttributes().build());
 	}
 }

@@ -5,9 +5,11 @@ import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.renderer.layer.AncientCloakLayer;
 import net.eris.reverie.client.renderer.layer.DrunkenOutlineLayer;
 import net.eris.reverie.client.renderer.layer.DrunkenTrailLayer;
+import net.eris.reverie.client.renderer.layer.SpiritualPigLayer; // YENİ: Layer Importu
 import net.eris.reverie.init.ReverieModItems;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.PlayerModel;
+import net.minecraft.client.model.PigModel; // YENİ: Pig Model Importu
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -15,6 +17,7 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.Pig; // YENİ: Pig Importu
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterShadersEvent;
@@ -32,8 +35,9 @@ public class ReverieClientEvents {
     public static ShaderInstance ancientCloakShader;
     public static ShaderInstance drunkenRageShader;
     public static ShaderInstance magicArrowShader;
-    // YENİ EKLENEN: Stitched Flash Shader
     public static ShaderInstance stitchedFlashShader;
+    // YENİ: Spiritual Aura Shader
+    public static ShaderInstance spiritualAuraShader;
 
     // --- 1. SHADER KAYDI ---
     @SubscribeEvent
@@ -82,13 +86,24 @@ public class ReverieClientEvents {
             e.printStackTrace();
         }
 
-        // --- YENİ EKLENEN: Stitched Flash ---
+        // Stitched Flash
         try {
             event.registerShader(new ShaderInstance(
                     event.getResourceProvider(),
                     new ResourceLocation(ReverieMod.MODID, "stitched_flash"),
                     DefaultVertexFormat.NEW_ENTITY
             ), shaderInstance -> stitchedFlashShader = shaderInstance);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+// YENİ: Spiritual Aura (Domuzlar için) - DÜZELTİLDİ
+        try {
+            event.registerShader(new ShaderInstance(
+                    event.getResourceProvider(),
+                    new ResourceLocation(ReverieMod.MODID, "spiritual_aura"),
+                    DefaultVertexFormat.NEW_ENTITY // Önemli değişiklik burada!
+            ), shaderInstance -> spiritualAuraShader = shaderInstance);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -152,6 +167,22 @@ public class ReverieClientEvents {
             } catch (Exception e) {
                 // Hata yoksay
             }
+        }
+
+        // C) YENİ: DOMUZA ÖZEL LAYER
+        try {
+            // Pig renderer'ını bul
+            var renderer = event.getRenderer(EntityType.PIG);
+            if (renderer instanceof LivingEntityRenderer) {
+                @SuppressWarnings("unchecked")
+                LivingEntityRenderer<Pig, PigModel<Pig>> pigRenderer =
+                        (LivingEntityRenderer<Pig, PigModel<Pig>>) renderer;
+
+                // Bizim layer'ı çak
+                pigRenderer.addLayer(new SpiritualPigLayer(pigRenderer));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
