@@ -1,0 +1,26 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:boar_monk_seal"
+    },
+    "title": {
+      "translate": "advancements.mind_over_matter.title"
+    },
+    "description": {
+      "translate": "advancements.mind_over_matter.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "reverie:root",
+  "criteria": {
+    "meditation_feat": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "rewards": {
+    "experience": 10
+  }
+}

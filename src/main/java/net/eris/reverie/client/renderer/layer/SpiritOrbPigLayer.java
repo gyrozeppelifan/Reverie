@@ -60,7 +60,7 @@ public class SpiritOrbPigLayer extends RenderLayer<Pig, PigModel<Pig>> {
 
         VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(ORB_TEXTURE));
 
-        int orbCount = 6;
+        int orbCount = 3;
         float radius = 1.1F;
         float speed = 0.05F;
 
@@ -77,12 +77,12 @@ public class SpiritOrbPigLayer extends RenderLayer<Pig, PigModel<Pig>> {
             float z = Mth.sin(angle) * radius;
 
             // --- AYARLANDI: DAHA AŞAĞIDA (0.4F) ---
-            float y = 0.4F + Mth.sin((time * 0.1F) + i) * 0.2F;
+            float y = 1.5F + Mth.sin((time * 0.1F) + i) * 0.2F;
 
             poseStack.translate(x, y, z);
 
             // --- AYARLANDI: DAHA BÜYÜK (0.8F) ---
-            float scale = 0.8F;
+            float scale = 1.2F;
             poseStack.scale(scale, -scale, scale);
 
             float selfRot = time * 4.0F;

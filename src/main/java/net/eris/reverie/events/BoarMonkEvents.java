@@ -183,27 +183,52 @@ public class BoarMonkEvents {
         }
     }
 
-    // --- 4. ANIMASYON & SPAWN (TEMİZLENDİ) ---
+    // --- 4. ANIMASYON & SPAWN (GÜNCELLENDİ: AMBIENT EFEKT EKLENDİ) ---
     @SubscribeEvent
     public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         if (event.getEntity() instanceof Pig pig) {
             CompoundTag data = pig.getPersistentData();
 
-            // SADECE MANTIK KODU KALDI.
-            // Partikül kodlarının HEPSİNİ sildik çünkü RenderLayer hallediyor.
-
+            // --- A) RİTÜEL / DÖNÜŞÜM MODU ---
             if (data.contains(TAG_TRANSFORMING)) {
                 int timer = data.getInt(TAG_TRANSFORMING);
                 if (timer > 0) {
+                    // Hareket Kilidi ve Yükselme
                     pig.getNavigation().stop();
-                    pig.setDeltaMovement(0, 0.03, 0);
+                    pig.setDeltaMovement(0, 0.03, 0); // Yavaşça yüksel
                     pig.setNoGravity(true);
 
+                    // --- GÖRSEL EFEKTLER (RİTÜEL BÜYÜK EFEKT) ---
+                    if (!pig.level().isClientSide && pig.level() instanceof ServerLevel serverLevel) {
+                        float time = pig.tickCount;
+                        double radius = 1.3; // Sarmalın genişliği
+
+                        // 3 Kollu Sarmal
+                        for (int i = 0; i < 3; i++) {
+                            double angle = (time * 0.4) + (i * (Math.PI * 2 / 3));
+                            double offsetX = Math.cos(angle) * radius;
+                            double offsetZ = Math.sin(angle) * radius;
+                            double offsetY = (time * 0.2) % 2.5;
+
+                            serverLevel.sendParticles(ParticleTypes.FIREWORK,
+                                    pig.getX() + offsetX,
+                                    pig.getY() + offsetY,
+                                    pig.getZ() + offsetZ,
+                                    1, 0, 0, 0, 0);
+
+                            if (i == 0 && time % 2 == 0) {
+                                serverLevel.sendParticles(ParticleTypes.END_ROD,
+                                        pig.getX() + offsetX,
+                                        pig.getY() + offsetY - 0.2,
+                                        pig.getZ() + offsetZ,
+                                        1, 0, 0, 0, 0.01);
+                            }
+                        }
+                    }
                     data.putInt(TAG_TRANSFORMING, timer - 1);
                 } else {
                     if (!pig.level().isClientSide) {
                         ServerLevel level = (ServerLevel) pig.level();
-                        // Bu patlama efekti kalabilir, çünkü server-side ve tek seferlik.
                         level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, pig.getX(), pig.getY(), pig.getZ(), 1, 0, 0, 0, 0);
                         level.playSound(null, pig.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.NEUTRAL, 1.0f, 1.0f);
 
@@ -223,8 +248,37 @@ public class BoarMonkEvents {
                     data.remove(TAG_TRANSFORMING);
                 }
             }
-            // SİLİNDİ: else if (pig.level().isClientSide) { ... addParticle ... }
-            // O kısım tamamen kaldırıldı.
+            // --- B) SPIRITUAL AURA (YENİ EKLENDİ) ---
+            else {
+                // Eğer domuzun spirituality özelliği varsa ve ritüelde DEĞİLSE
+                if (ReverieModAttributes.SPIRITUALITY != null) {
+                    AttributeInstance spirituality = pig.getAttribute(ReverieModAttributes.SPIRITUALITY);
+                    if (spirituality != null && spirituality.getValue() > 0.0D) {
+                        // Sadece Server tarafında partikül yolla
+                        if (!pig.level().isClientSide && pig.level() instanceof ServerLevel level) {
+                            float time = pig.tickCount;
+
+                            // Çok sık olmasın, hafif kalsın diye % 3 (Her 3 tickte bir)
+                            if (time % 3 == 0) {
+                                double radius = 0.7; // Küçük yarıçap
+                                double angle = time * 0.15; // Yavaşça dönüyor
+
+                                double offsetX = Math.cos(angle) * radius;
+                                double offsetZ = Math.sin(angle) * radius;
+                                // Yükseklik hafifçe dalgalansın
+                                double offsetY = 0.6 + Math.sin(time * 0.1) * 0.15;
+
+                                // Tek bir dönen pırıltı
+                                level.sendParticles(ParticleTypes.FIREWORK,
+                                        pig.getX() + offsetX,
+                                        pig.getY() + offsetY,
+                                        pig.getZ() + offsetZ,
+                                        0, 0, 0, 0, 0); // Sayı 0 = Tek partikül, Hız yok
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -235,7 +289,7 @@ public class BoarMonkEvents {
             AttributeInstance spirituality = pig.getAttribute(ReverieModAttributes.SPIRITUALITY);
 
             if (spirituality != null && spirituality.getValue() == 0.0D) {
-                if (event.getLevel().random.nextFloat() < 0.1f) {
+                if (event.getLevel().random.nextFloat() < 0.05f) {
                     spirituality.setBaseValue(1.0D);
                 }
             }

@@ -97,7 +97,8 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> SPIRIT_FRAGMENT = REGISTRY.register("spirit_fragment",
 			() -> new Item(new Item.Properties()));
 	public static final RegistryObject<Item> BOAR_MONK_SEAL = REGISTRY.register("boar_monk_seal",
-			() -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.RARE).stacksTo(1)));
+			() -> new BoarMonkSealItem());
+
 	public static final RegistryObject<Item> RAINBOW_DROPPING = REGISTRY.register("rainbow_dropping",
 			() -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.RARE).stacksTo(1)));
 

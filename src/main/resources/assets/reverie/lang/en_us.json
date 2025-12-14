@@ -152,5 +152,9 @@
   "subtitles.spiked_log_crash": "Spiked log crashed",
   "subtitles.spiked_log_roll": "Spiked Log rolls",
   "subtitles.spiked_log_rolling": "Spiked Log rolls",
-  "subtitles.spiked_log_throw": "Spiked Log threw"
+  "subtitles.spiked_log_throw": "Spiked Log threw",
+  "reverie.message.meditation_start": "Meditation Started",
+  "reverie.message.meditation_end": "Meditation Ended",
+  "reverie.message.meditation_needs_seal": "Meditation needs Boar Monk Seal to start",
+  "reverie.message.meditation_cooldown": "Seal on cool down"
 }

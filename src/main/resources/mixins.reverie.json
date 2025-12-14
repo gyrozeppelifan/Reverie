@@ -4,11 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "refmap": "mixins.reverie.refmap.json",
   "mixins": [
-    "MouseHandlerMixin",
-    "ClientPlayerInputMixin",
-	"ProjectileFocusMixin",
-    "LivingEntityRendererMixin",
-	"PlayerRendererMixin",
+    "ProjectileFocusMixin",
     "ServerPlayerMixin",
     "LivingEntityDataMixin",
     "HogMountMixin"
@@ -16,14 +12,13 @@
   "client": [
     "MouseHandlerMixin",
     "ClientPlayerInputMixin",
-	"LivingEntityRendererMixin",
-	"PlayerRendererMixin",
+    "LivingEntityRendererMixin",
+    "PlayerRendererMixin",
     "KeyboardInputMixin",
     "MinecraftMixin",
     "MouseBlockerMixin",
     "LocalPlayerMixin",
     "ItemInHandLayerMixin",
-    "HogMountMixin",
     "PlayerModelMixin"
   ],
   "minVersion": "0.8"
