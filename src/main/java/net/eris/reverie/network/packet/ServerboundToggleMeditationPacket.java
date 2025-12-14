@@ -46,8 +46,11 @@ public class ServerboundToggleMeditationPacket {
                         cap.setMeditating(true);
                         cap.setOriginY(player.getY());
 
+                        // 🔥 İŞTE BURAYA EKLİYORUZ! Sayacı başlatırken sıfırla.
+                        cap.resetTimer(); // <<< SAYAÇ SIFIRLAMA KODU EKLENDİ
+
                         // 3. Cooldown Ekle (20 sn = 400 tick)
-                        player.getCooldowns().addCooldown(ReverieModItems.BOAR_MONK_SEAL.get(), 400);
+                        player.getCooldowns().addCooldown(ReverieModItems.BOAR_MONK_SEAL.get(), 800);
 
                         player.displayClientMessage(Component.translatable("reverie.message.meditation_start"), true);
                     } else {

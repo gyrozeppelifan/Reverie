@@ -56,7 +56,8 @@ public class ResonantGongBlockEntity extends BlockEntity {
                 // Patlama efekti
                 level.addParticle(ParticleTypes.SONIC_BOOM, cx, cy, cz, 0, 0, 0);
 
-                // Notalar
+                // Notalar - KALDIRILDI!
+                /*
                 for (int i = 0; i < 15; i++) {
                     level.addParticle(ParticleTypes.NOTE,
                             cx + (level.random.nextDouble() - 0.5),
@@ -64,6 +65,7 @@ public class ResonantGongBlockEntity extends BlockEntity {
                             cz + (level.random.nextDouble() - 0.5),
                             level.random.nextDouble(), 0, 0);
                 }
+                */
             }
             // 3. EFEKTLER (SERVER TARAFI)
             else {
