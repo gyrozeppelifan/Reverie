@@ -4,8 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.client.model.HogModel;
 import net.eris.reverie.client.model.animations.HogAnimation;
-import net.eris.reverie.client.renderer.layer.HogRainbowTrailLayer;
-import net.eris.reverie.client.renderer.layer.HogRiderLayer;
+// import net.eris.reverie.client.renderer.layer.HogRainbowTrailLayer; // ARTIK GEREK YOK
+//import net.eris.reverie.client.renderer.layer.HogRiderLayer;
 import net.eris.reverie.entity.HogEntity;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -18,8 +18,6 @@ public class HogRenderer extends MobRenderer<HogEntity, HogModel> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(ReverieMod.MODID, "textures/entities/hog.png");
 
     public HogRenderer(EntityRendererProvider.Context context) {
-        // --- STITCHED USULÜ ---
-        // Modeli constructor içinde oluşturup, metodunu burada eziyoruz.
         super(context, new HogModel(context.bakeLayer(HogModel.LAYER_LOCATION)) {
             @Override
             public void setupAnim(HogEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
@@ -27,35 +25,35 @@ public class HogRenderer extends MobRenderer<HogEntity, HogModel> {
                 this.root().getAllParts().forEach(ModelPart::resetPose);
 
                 // 2. Animasyonları Oynat
-                float walkSpeed = Math.min(limbSwingAmount * 1.5F, 1.0F);
+                float speedFactor = Math.abs(entity.currentSpeed) > 0.01F ? Math.abs(entity.currentSpeed) * 4.0F : limbSwingAmount;
+                float walkSpeed = Math.min(speedFactor, 2.5F);
 
-                // HOG ANIMATION WALKING KULLANIYORUZ
                 this.animate(entity.walkState, HogAnimation.walking, ageInTicks, walkSpeed);
                 this.animate(entity.idleState, HogAnimation.idle, ageInTicks, 1.0F);
-                this.animate(entity.dashState, HogAnimation.dash, ageInTicks, 1.0F);
                 this.animate(entity.roarState, HogAnimation.roar, ageInTicks, 1.0F);
                 this.animate(entity.flyState, HogAnimation.fly, ageInTicks, 1.0F);
 
-                // 3. FİZİK (Nose Dive)
-                float verticalSpeed = (float) entity.getDeltaMovement().y;
+                // 3. FİZİK & DASH POZU
+                if (entity.isDashing()) {
+                    this.root.xRot += 0.35F;
+                    this.head.xRot += 0.4F;
+                    this.root.y += 2.0F;
+                }
+
+                if (!entity.onGround() && !entity.isUnicornMode()) {
+                    float verticalSpeed = (float) entity.getDeltaMovement().y;
+                    float targetRot = -verticalSpeed * 1.5F;
+                    targetRot = Mth.clamp(targetRot, -0.8F, 0.8F);
+
+                    this.root.xRot += targetRot;
+                    this.leg1left.xRot += targetRot * 0.5F;
+                    this.leg1right.xRot += targetRot * 0.5F;
+                    this.leg2left.xRot -= targetRot * 0.5F;
+                    this.leg2right.xRot -= targetRot * 0.5F;
+                }
 
                 if (entity.isUnicornMode()) {
                     this.root.xRot = entity.getXRot() * ((float)Math.PI / 180F);
-                } else {
-                    if (verticalSpeed > 0.05) {
-                        // Zıplama
-                        this.root.xRot -= 0.4F;
-                        this.leg1left.xRot -= 0.6F;
-                        this.leg1right.xRot -= 0.6F;
-                    }
-                    else if (verticalSpeed < -0.05) {
-                        // Düşme
-                        this.root.xRot += Math.min(Math.abs(verticalSpeed) * 2.0F, 0.8F);
-
-                        float drag = Math.min(Math.abs(verticalSpeed), 1.2F);
-                        this.leg2left.xRot += drag;
-                        this.leg2right.xRot += drag;
-                    }
                 }
 
                 // 4. Görünürlük
@@ -63,8 +61,8 @@ public class HogRenderer extends MobRenderer<HogEntity, HogModel> {
             }
         }, 1.0F);
 
-        this.addLayer(new HogRiderLayer(this));
-        this.addLayer(new HogRainbowTrailLayer(this));
+        //this.addLayer(new HogRiderLayer(this));
+        // this.addLayer(new HogRainbowTrailLayer(this)); // BU SATIRI SİLDİM VEYA YORUMA ALDIM
     }
 
     @Override

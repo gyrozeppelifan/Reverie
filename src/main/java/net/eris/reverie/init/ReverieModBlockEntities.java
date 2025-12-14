@@ -3,6 +3,7 @@ package net.eris.reverie.init;
 import net.eris.reverie.block.entity.CopperConduitBlockEntity;
 import net.eris.reverie.block.entity.CopperJunctionBlockEntity;
 import net.eris.reverie.block.entity.ElderOliveHeartBlockEntity;
+import net.eris.reverie.block.entity.ResonantGongBlockEntity;
 import net.eris.reverie.init.ReverieModBlocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -23,6 +24,12 @@ public class ReverieModBlockEntities {
     public static final RegistryObject<BlockEntityType<CopperJunctionBlockEntity>> COPPER_JUNCTION =
             BLOCK_ENTITIES.register("copper_junction",
                     () -> BlockEntityType.Builder.of(CopperJunctionBlockEntity::new, ReverieModBlocks.COPPER_JUNCTION.get()).build(null)
+
+            );
+
+    public static final RegistryObject<BlockEntityType<ResonantGongBlockEntity>> RESONANT_GONG =
+            BLOCK_ENTITIES.register("resonant_gong",
+                    () -> BlockEntityType.Builder.of(ResonantGongBlockEntity::new, ReverieModBlocks.RESONANT_GONG.get()).build(null)
 
             );
 

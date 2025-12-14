@@ -1,111 +1,91 @@
 package net.eris.reverie.client.particle;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.eris.reverie.ReverieMod;
+import net.eris.reverie.client.model.SpiritOrbModel;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.*;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+import com.mojang.math.Axis;
 
-@OnlyIn(Dist.CLIENT)
-public class SpiritOrbParticle extends TextureSheetParticle {
+public class SpiritOrbParticle extends Particle {
 
-    // --- PROVIDER (FABRİKA) ---
-    // Senin kayıt sistemine uygun Provider yapısı
-    public static class Provider implements ParticleProvider<SimpleParticleType> {
-        private final SpriteSet spriteSet;
+    private final SpiritOrbModel model;
+    private static final ResourceLocation TEXTURE = new ResourceLocation(ReverieMod.MODID, "textures/particle/spirit_orb.png");
 
-        public Provider(SpriteSet spriteSet) {
-            this.spriteSet = spriteSet;
-        }
+    private final float orbScale;
 
+    protected SpiritOrbParticle(ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, SpiritOrbModel model) {
+        super(level, x, y, z);
+        this.model = model;
+
+        // Hızları sıfırlıyoruz, çünkü Handler zaten her tick yeni pozisyona koyuyor.
+        this.xd = 0;
+        this.yd = 0;
+        this.zd = 0;
+
+        // --- KRİTİK AYAR 1: ÖMÜR ---
+        // Sadece 1 Tick yaşasın. Böylece arkada iz bırakmaz, binlerce olmaz.
+        this.lifetime = 1;
+
+        this.gravity = 0.0F;
+
+        // --- KRİTİK AYAR 2: BOYUT ---
+        // 0.5F küçüktü, 0.85F yaptık (Daha dolgun dursun)
+        this.orbScale = 0.85F;
+    }
+
+    @Override
+    public void render(VertexConsumer buffer, Camera camera, float partialTicks) {
+        Vec3 camPos = camera.getPosition();
+        float f = (float)(Mth.lerp(partialTicks, this.xo, this.x) - camPos.x());
+        float f1 = (float)(Mth.lerp(partialTicks, this.yo, this.y) - camPos.y());
+        float f2 = (float)(Mth.lerp(partialTicks, this.zo, this.z) - camPos.z());
+
+        PoseStack poseStack = new PoseStack();
+        poseStack.pushPose();
+        poseStack.translate(f, f1, f2);
+
+        poseStack.scale(this.orbScale, -this.orbScale, this.orbScale);
+
+        // --- DÖNME MANTIĞI GÜNCELLENDİ ---
+        // Partikül her tick yenilendiği için "this.age" hep 0 olur ve dönmez.
+        // O yüzden Dünya Zamanını (GameTime) kullanarak döndürüyoruz.
+        float time = (Minecraft.getInstance().level.getGameTime() + partialTicks) * 0.1F;
+        float rot = time * 15.0F; // Dönüş hızı
+
+        poseStack.mulPose(Axis.YP.rotationDegrees(rot));
+        poseStack.mulPose(Axis.XP.rotationDegrees(rot * 0.5F)); // Hafif çapraz da dönsün
+
+        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+        VertexConsumer consumer = bufferSource.getBuffer(net.minecraft.client.renderer.RenderType.entityTranslucent(TEXTURE));
+
+        this.model.renderToBuffer(poseStack, consumer, 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+
+        bufferSource.endBatch();
+        poseStack.popPose();
+    }
+
+    // ... (Geri kalan metotlar, getRenderType ve Factory aynı kalıyor) ...
+    @Override
+    public ParticleRenderType getRenderType() { return ParticleRenderType.CUSTOM; }
+
+    public static class Factory implements ParticleProvider<SimpleParticleType> {
+        public Factory() { }
         @Override
-        public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn,
-                                       double x, double y, double z,
-                                       double xSpeed, double ySpeed, double zSpeed) {
-            return new SpiritOrbParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet);
+        public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+            SpiritOrbModel model = new SpiritOrbModel(Minecraft.getInstance().getEntityModels().bakeLayer(SpiritOrbModel.LAYER_LOCATION));
+            return new SpiritOrbParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, model);
         }
-    }
-
-    private final SpriteSet spriteSet;
-    private final double centerX, centerZ; // Dönüş merkezi
-
-    protected SpiritOrbParticle(ClientLevel world,
-                                double x, double y, double z,
-                                double vx, double vy, double vz,
-                                SpriteSet spriteSet) {
-        super(world, x, y, z);
-        this.spriteSet = spriteSet;
-
-        // Domuzun merkezini (başlangıç noktasını) kaydet
-        this.centerX = x;
-        this.centerZ = z;
-
-        // Görsel Ayarlar
-        this.quadSize = 0.15F + (this.random.nextFloat() * 0.1F); // Boyut
-        this.lifetime = 30 + this.random.nextInt(10); // Ömür
-        this.gravity = 0.0F; // Yerçekimi yok, biz kontrol ediyoruz
-        this.hasPhysics = false; // Bloklara takılmasın, içinden geçsin
-
-        // Hız değerlerini "Dönüş Hızı" ve "Yarıçap" olarak kullanacağız
-        this.xd = vx;
-        this.yd = vy;
-        this.zd = vz;
-
-        // RENK PALETİ: Monk Teması (%70 Akuamarin, %30 Altın)
-        if (this.random.nextFloat() < 0.7f) {
-            this.rCol = 0.6F; this.gCol = 1.0F; this.bCol = 0.84F; // #99ffd6 (Akuamarin)
-        } else {
-            this.rCol = 1.0F; this.gCol = 0.9F; this.bCol = 0.4F; // Altın
-        }
-
-        // Sprite seçimi
-        this.pickSprite(spriteSet);
-    }
-
-    @Override
-    public void tick() {
-        this.xo = this.x;
-        this.yo = this.y;
-        this.zo = this.z;
-
-        if (this.age++ >= this.lifetime) {
-            this.remove();
-        } else {
-            // --- MONK EFEKTİ: SPİRAL YÖRÜNGE ---
-
-            // 1. Yukarı süzülme
-            double riseSpeed = 0.05D;
-            this.y += riseSpeed;
-
-            // 2. Dönüş Hızı (Zamanla yavaşlasın veya hızlansın)
-            double rotationSpeed = 0.3D;
-            double currentAngle = (this.age * rotationSpeed) + (this.xd * 10); // xd'yi rastgele açı ofseti olarak kullandık
-
-            // 3. Yarıçap (Zamanla genişlesin)
-            double radius = 0.6D + (this.age * 0.01D);
-
-            // 4. Yeni Konumu Hesapla (Merkez + Sin/Cos)
-            // centerX ve centerZ sabit kaldığı için domuz hareket edince arkada iz bırakır (Trail effect)
-            this.x = this.centerX + Math.cos(currentAngle) * radius;
-            this.z = this.centerZ + Math.sin(currentAngle) * radius;
-
-            // Parlama Efekti (Fade Out)
-            if (this.age > this.lifetime - 10) {
-                this.alpha = 1.0F - ((float)(this.age - (this.lifetime - 10)) / 10.0F);
-            } else {
-                this.alpha = 1.0F;
-            }
-        }
-    }
-
-    @Override
-    public ParticleRenderType getRenderType() {
-        // PARTICLE_SHEET_LIT: Karanlıkta parlar (Glow efektinin sırrı bu)
-        return ParticleRenderType.PARTICLE_SHEET_LIT;
-    }
-
-    @Override
-    public int getLightColor(float partialTick) {
-        return 15728880; // Full parlaklık (BoozeBubbles ile aynı)
     }
 }

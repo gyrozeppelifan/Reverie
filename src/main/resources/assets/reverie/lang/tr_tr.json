@@ -94,5 +94,9 @@
   "subtitles.spiked_log_crash": "Dikenli Tomruk parçalandı",
   "subtitles.spiked_log_roll": "Dikenli Tomruk yuvarlanıyor",
   "subtitles.spiked_log_rolling": "Dikenli Tomruk yuvarlanıyor",
-  "subtitles.spiked_log_throw": "Dikenli Tomruk fırlatıldı"
+  "subtitles.spiked_log_throw": "Dikenli Tomruk fırlatıldı",
+  "message.reverie.scroll_purified": "§bParşömen ruh ateşiyle arındı...",
+  "message.reverie.ritual_success": "§5Kadim ruhlar çağrına cevap verdi...",
+  "message.reverie.ritual_missing_items": "§cRitüel için bir Ruh Parçası ve Elmas eksik!",
+  "message.reverie.ritual_table_not_ready": "§7Masa hazır değil... (Etrafına 4 mum koymalısın)"
 }

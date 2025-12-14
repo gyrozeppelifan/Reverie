@@ -78,6 +78,7 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> GREEN_OLIVE_BLOCK = block(ReverieModBlocks.GREEN_OLIVE_BLOCK);
 	public static final RegistryObject<Item> BLACK_OLIVE_BLOCK = block(ReverieModBlocks.BLACK_OLIVE_BLOCK);
 	public static final RegistryObject<Item> CARVED_ELDER_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_ELDER_OLIVE_BLOCK);
+	public static final RegistryObject<Item> RESONANT_GONG = block(ReverieModBlocks.RESONANT_GONG);
 	public static final RegistryObject<Item> CARVED_BLACK_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_BLACK_OLIVE_BLOCK);
 	public static final RegistryObject<Item> CARVED_GREEN_OLIVE_BLOCK = block(ReverieModBlocks.CARVED_GREEN_OLIVE_BLOCK);
 	public static final RegistryObject<Item> GOBLIN_BRUTE_SPAWN_EGG = REGISTRY.register("goblin_brute_spawn_egg", () -> new ForgeSpawnEggItem(ReverieModEntities.GOBLIN_BRUTE, -1, -1, new Item.Properties()));

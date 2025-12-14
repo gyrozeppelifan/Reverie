@@ -2,6 +2,9 @@
 package net.eris.reverie.init;
 
 import net.eris.reverie.block.*;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
@@ -14,6 +17,8 @@ public class ReverieModBlocks {
 	public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, ReverieMod.MODID);
 	public static final RegistryObject<Block> GOLDEN_GRAVEL = REGISTRY.register("coin_pile_block",
 			() -> new GoldenGravelBlock());
+	public static final RegistryObject<Block> RESONANT_GONG = REGISTRY.register("resonant_gong",
+			() -> new ResonantGongBlock());
 	public static final RegistryObject<Block> COIN_PILE = REGISTRY.register("coin_pile",
 			() -> new CoinPileBlock());
 	public static final RegistryObject<Block> HAY_THATCH = REGISTRY.register("hay_thatch", () -> new HayThatchBlock());

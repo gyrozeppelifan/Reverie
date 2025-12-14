@@ -23,7 +23,8 @@
     "MouseBlockerMixin",
     "LocalPlayerMixin",
     "ItemInHandLayerMixin",
-    "HogMountMixin"
+    "HogMountMixin",
+    "PlayerModelMixin"
   ],
   "minVersion": "0.8"
 }

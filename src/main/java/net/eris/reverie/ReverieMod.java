@@ -25,9 +25,9 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import net.eris.reverie.registry.ReverieBannerPatterns;
 
-import net.eris.reverie.util.GoblinReputation; // <-- GoblinReputation'un yolunu buraya göre ayarla
-import net.eris.reverie.events.GoblinRepEvent; // <-- Event dosyanı doğru importla!
-
+import net.eris.reverie.util.GoblinReputation;
+import net.eris.reverie.events.GoblinRepEvent;
+import net.eris.reverie.network.packet.ServerboundHogDashPacket;
 import java.util.function.Supplier;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
@@ -55,7 +55,12 @@ public class ReverieMod {
 		MinecraftForge.EVENT_BUS.register(GoblinRepPersistEvent.class);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonSetup);
 
+
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+
+		// --- EKLENEN SATIR (Loot Drop için) ---
+		net.eris.reverie.loot.SoulSandDropModifier.GLM_REGISTRY.register(bus);
+
 		ReverieBannerPatterns.BANNER_PATTERNS.register(bus);
 		ReverieModSounds.REGISTRY.register(bus);
 		ReverieModBlocks.REGISTRY.register(bus);
@@ -67,15 +72,12 @@ public class ReverieMod {
 		ReverieModParticleTypes.REGISTRY.register(bus);
 		ReverieModPaintings.PAINTINGS.register(bus);
 		ReverieModMenus.MENUS.register(bus);
-
-
-
-
 	}
 
 	private static final String PROTOCOL_VERSION = "1";
 	public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 	private static int messageID = 0;
+
 
 	public static <T> void addNetworkMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {
 		PACKET_HANDLER.registerMessage(messageID, messageType, encoder, decoder, messageConsumer);
@@ -92,14 +94,36 @@ public class ReverieMod {
 					net.eris.reverie.client.network.ScreenShakeS2CPacket::handle
 			);
 
-			// 2. Stitched İsim Değiştirme Paketi (EKSİK OLAN BUYDU!)
+			// 2. Stitched İsim Değiştirme Paketi
 			addNetworkMessage(
 					ServerboundNameStitchedPacket.class,
 					ServerboundNameStitchedPacket::toBytes,
 					ServerboundNameStitchedPacket::new,
 					ServerboundNameStitchedPacket::handle
-
 			);
+
+			// 3. Hog Dash Paketi (G TUŞU İÇİN EKLENDİ)
+			addNetworkMessage(
+					net.eris.reverie.network.packet.ServerboundHogDashPacket.class,
+					net.eris.reverie.network.packet.ServerboundHogDashPacket::toBytes,
+					net.eris.reverie.network.packet.ServerboundHogDashPacket::new,
+					net.eris.reverie.network.packet.ServerboundHogDashPacket::handle
+			);
+
+			addNetworkMessage(
+					net.eris.reverie.network.packet.ServerboundToggleMeditationPacket.class,
+					net.eris.reverie.network.packet.ServerboundToggleMeditationPacket::toBytes,
+					net.eris.reverie.network.packet.ServerboundToggleMeditationPacket::new,
+					net.eris.reverie.network.packet.ServerboundToggleMeditationPacket::handle
+			);
+
+			addNetworkMessage(
+					net.eris.reverie.network.packet.ClientboundSyncMeditationPacket.class,
+					net.eris.reverie.network.packet.ClientboundSyncMeditationPacket::toBytes,
+					net.eris.reverie.network.packet.ClientboundSyncMeditationPacket::new,
+					net.eris.reverie.network.packet.ClientboundSyncMeditationPacket::handle
+			);
+
 		});
 	}
 

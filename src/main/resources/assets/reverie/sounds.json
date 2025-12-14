@@ -470,5 +470,27 @@
         "stream": false
       }
     ]
+  },
+  "gong_play": {
+    "subtitle": "subtitles.gong",
+    "sounds": [
+      {
+        "name": "reverie:gong_play1",
+        "stream": false
+      },
+      {
+        "name": "reverie:gong_play2",
+        "stream": false
+      }
+    ]
+  },
+  "meditation_ambiance": {
+    "subtitle": "subtitles.meditation_ambiance",
+    "sounds": [
+      {
+        "name": "reverie:meditation_ambiance",
+        "stream": false
+      }
+    ]
   }
 }
