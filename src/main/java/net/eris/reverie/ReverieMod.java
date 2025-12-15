@@ -72,6 +72,7 @@ public class ReverieMod {
 		ReverieModParticleTypes.REGISTRY.register(bus);
 		ReverieModPaintings.PAINTINGS.register(bus);
 		ReverieModMenus.MENUS.register(bus);
+		ReverieModEnchantments.REGISTRY.register(bus);
 	}
 
 	private static final String PROTOCOL_VERSION = "1";

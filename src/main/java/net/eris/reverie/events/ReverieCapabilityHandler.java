@@ -66,7 +66,8 @@ public class ReverieCapabilityHandler {
         player.getCapability(MeditationProvider.PLAYER_MEDITATION).ifPresent(cap -> {
             ReverieMod.PACKET_HANDLER.send(
                     PacketDistributor.PLAYER.with(() -> player),
-                    new ClientboundSyncMeditationPacket(cap.isMeditating(), cap.getOriginY())
+                    // Başa player.getId() ekledik
+                    new ClientboundSyncMeditationPacket(player.getId(), cap.isMeditating(), cap.getOriginY())
             );
         });
     }

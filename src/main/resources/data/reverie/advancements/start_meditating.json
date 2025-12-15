@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:boar_whisperer_scroll"
+    },
+    "title": {
+      "translate": "advancements.start_meditating.title"
+    },
+    "description": {
+      "translate": "advancements.start_meditating.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "start_meditating_0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "reverie:reverie_start"
+}

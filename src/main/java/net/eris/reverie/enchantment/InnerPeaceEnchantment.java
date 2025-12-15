@@ -11,7 +11,7 @@ public class InnerPeaceEnchantment extends Enchantment {
         // Rarity.RARE: Nadir (Büyü masasında zor çıkar)
         // WEAPON: Silah kategorisi (Seal için uygun)
         // MAINHAND/OFFHAND: İki elde de çalışsın
-        super(Rarity.RARE, EnchantmentCategory.WEAPON, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
+        super(Rarity.RARE, EnchantmentCategory.BREAKABLE, new EquipmentSlot[]{EquipmentSlot.MAINHAND, EquipmentSlot.OFFHAND});
     }
 
     @Override

@@ -156,5 +156,25 @@
   "reverie.message.meditation_start": "Meditation Started",
   "reverie.message.meditation_end": "Meditation Ended",
   "reverie.message.meditation_needs_seal": "Meditation needs Boar Monk Seal to start",
-  "reverie.message.meditation_cooldown": "Seal on cool down"
+  "reverie.message.meditation_cooldown": "Seal on cool down",
+
+  "advancements.start_meditating.title": "Omm... Oink...",
+  "advancements.start_meditating.description": "Meditate. Feel the ancient power of the pigs flowing through you.",
+
+  "enchantment.reverie.inner_peace": "Inner Peace",
+  "enchantment.reverie.inner_peace.desc": "Greatly increases health regeneration, ascension rate and ascent speed while meditating. Higher levels increase speed.",
+
+  "enchantment.reverie.spirit_guard": "Spirit Guard",
+  "enchantment.reverie.spirit_guard.desc": "Pushes nearby enemies away while meditating. Creates a safe zone around you.",
+
+  "enchantment.reverie.spirit_deflection": "Spirit Deflection",
+  "enchantment.reverie.spirit_deflection.desc": "Deflects incoming projectiles (arrows, tridents) while meditating. Matrix style!",
+
+  "enchantment.reverie.natures_breath": "Nature's Breath",
+  "enchantment.reverie.natures_breath.desc": "Accelerates the growth of crops and saplings around you while meditating.",
+
+  "advancements.mind_over_matter.title": "Mind Over Matter",
+  "advancements.mind_over_matter.description": "Deflect a threat using pure willpower while meditating.",
+
+  "jei.reverie.boar_monk_seal.info": "Hold M (default key) to start Meditating.\n\nYou will levitate and gain resistance.\nDepending on the enchantments on this Seal, you can gain special effects:\n\n- Inner Peace: Regen & Speed\n- Spirit Guard: Push Enemies\n- Spirit Deflection: Deflect Arrows\n- Nature's Breath: Grow Crops"
 }

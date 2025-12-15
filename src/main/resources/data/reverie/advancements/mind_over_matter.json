@@ -14,13 +14,10 @@
     "announce_to_chat": true,
     "hidden": false
   },
-  "parent": "reverie:root",
   "criteria": {
-    "meditation_feat": {
+    "mind_over_matter_0": {
       "trigger": "minecraft:impossible"
     }
   },
-  "rewards": {
-    "experience": 10
-  }
+  "parent": "reverie:start_meditating"
 }
