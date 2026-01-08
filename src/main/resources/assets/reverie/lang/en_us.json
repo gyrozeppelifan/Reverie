@@ -176,5 +176,38 @@
   "advancements.mind_over_matter.title": "Mind Over Matter",
   "advancements.mind_over_matter.description": "Deflect a threat using pure willpower while meditating.",
 
+  "enchantment.reverie.wildfire": "Wildfire",
+  "enchantment.reverie.wildfire.desc": "Sets the log on fire, burning everything in its path.",
+
+  "enchantment.reverie.momentum": "Momentum",
+  "enchantment.reverie.momentum.desc": "Increases the rolling speed and knockback force.",
+
+  "enchantment.reverie.ricochet": "Ricochet",
+  "enchantment.reverie.ricochet.desc": "The log bounces off walls. Incompatible with Recall.",
+
+  "enchantment.reverie.vortex": "Vortex",
+  "enchantment.reverie.vortex.desc": "Pulls nearby enemies towards the log to be crushed.",
+
+  "enchantment.reverie.recall": "Recall",
+  "enchantment.reverie.recall.desc": "The log returns to its owner after rolling. Incompatible with Ricochet.",
+
+  "advancements.reverie.spiked_log_flame.title": "Flame on!",
+  "advancements.reverie.spiked_log_flame.descr": "Hit an enemy with flamed on Spiked Log.",
+
+  "advancements.reverie.spiked_log_momentum.title": "Unstoppable Force",
+  "advancements.reverie.spiked_log_momentum.descr": "Hit an enemy with a momentum-boosted log.",
+
+  "advancements.reverie.spiked_log_ricochet.title": "Pinball Wizard",
+  "advancements.reverie.spiked_log_ricochet.descr": "Bounce the log off a wall.",
+
+  "advancements.reverie.spiked_log_vortex.title": "Event Horizon",
+  "advancements.reverie.spiked_log_vortex.descr": "Pull enemies into the log's path.",
+
+  "advancements.reverie.spiked_log_recall.title": "Daddy's Little Log",
+  "advancements.reverie.spiked_log_recall.descr": "Have your log return to you after its journey.",
+
+
   "jei.reverie.boar_monk_seal.info": "Hold M (default key) to start Meditating.\n\nYou will levitate and gain resistance.\nDepending on the enchantments on this Seal, you can gain special effects:\n\n- Inner Peace: Regen & Speed\n- Spirit Guard: Push Enemies\n- Spirit Deflection: Deflect Arrows\n- Nature's Breath: Grow Crops"
 }
+
+

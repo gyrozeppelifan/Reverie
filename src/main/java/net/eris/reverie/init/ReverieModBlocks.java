@@ -70,4 +70,8 @@ public class ReverieModBlocks {
 	public static final RegistryObject<Block> LAYERED_PELT_BLOCK = REGISTRY.register("layered_pelt_block", () -> new LayeredPeltBlock());
 	public static final RegistryObject<Block> STITCHED_LEATHER_TILES = REGISTRY.register("stitched_leather_tiles", () -> new StitchedLeatherTilesBlock());
 	public static final RegistryObject<Block> PATCHED_LEATHER_TILES = REGISTRY.register("patched_leather_tiles", () -> new PatchedLeatherTilesBlock());
+
+	//WILD WEST
+	public static final RegistryObject<Block> SALOON_BAR = REGISTRY.register("saloon_bar_block", () -> new PatchedLeatherTilesBlock());
+
 }

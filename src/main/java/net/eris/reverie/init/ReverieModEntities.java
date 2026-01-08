@@ -4,6 +4,9 @@ package net.eris.reverie.init;
 import io.netty.util.Attribute;
 import net.eris.reverie.client.renderer.GoblinBarrelRenderer;
 import net.eris.reverie.entity.*;
+import net.eris.reverie.entity.custom.ArmadillawSheriffEntity;
+import net.eris.reverie.entity.custom.FolkEntity;
+import net.eris.reverie.entity.custom.GeckEntity;
 import net.eris.reverie.entity.projectile.MagicArrow;
 import net.eris.reverie.entity.projectile.MutagenBlobEntity;
 import net.eris.reverie.util.GoblinReputation;
@@ -76,6 +79,23 @@ public class ReverieModEntities {
 					.clientTrackingRange(4)
 					.updateInterval(20)
 					.build("magic_arrow"));
+
+	// --- GECK REGISTRY ---
+	public static final RegistryObject<EntityType<GeckEntity>> GECK = register("geck",
+			EntityType.Builder.of(GeckEntity::new, MobCategory.CREATURE)
+					.setShouldReceiveVelocityUpdates(true)
+					.setTrackingRange(64)
+					.setUpdateInterval(3)
+					.sized(0.6f, 1.8f));
+
+	// --- ARMADILLAW SHERIFF REGISTRY ---
+	public static final RegistryObject<EntityType<ArmadillawSheriffEntity>> ARMADILLAW_SHERIFF = register("armadillaw_sheriff",
+			EntityType.Builder.of(ArmadillawSheriffEntity::new, MobCategory.CREATURE)
+					.setShouldReceiveVelocityUpdates(true)
+					.setTrackingRange(64)
+					.setUpdateInterval(3)
+					.sized(0.8f, 1.2f));
+
 	public static final RegistryObject<EntityType<PossessionPuppetEntity>> POSSESSION_PUPPET = register("possession_puppet",
 			EntityType.Builder.<PossessionPuppetEntity>of(PossessionPuppetEntity::new, MobCategory.MISC)
 					.setShouldReceiveVelocityUpdates(false) // gereksiz trafik yok
@@ -84,6 +104,7 @@ public class ReverieModEntities {
 					.setCustomClientFactory(PossessionPuppetEntity::new)
 					.sized(0.6f, 1.8f)          // oyuncu ölçüsü → doğru path
 					.noSummon()                 // yumurta vb. ile çağrılmasın
+
 
 
 	);
@@ -126,5 +147,8 @@ public class ReverieModEntities {
 		event.put(STITCHED.get(),  StitchedEntity.createAttributes().build());
 		event.put(POSSESSION_PUPPET.get(), PossessionPuppetEntity.createAttributes().build());
 		event.put(HOG.get(),  HogEntity.createAttributes().build());
+		event.put(GECK.get(), GeckEntity.createAttributes().build());
+		event.put(ARMADILLAW_SHERIFF.get(), ArmadillawSheriffEntity.createAttributes().build());
+
 	}
 }

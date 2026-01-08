@@ -5,11 +5,11 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.eris.reverie.ReverieMod;
 import net.eris.reverie.capability.MeditationProvider;
 import net.eris.reverie.client.model.SpiritOrbModel;
+import net.eris.reverie.init.ReverieModEnchantments; // <-- Bunu ekledik
 import net.eris.reverie.init.ReverieModSounds;
 import net.eris.reverie.network.packet.ServerboundToggleMeditationPacket;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -19,6 +19,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack; // <-- Bunu ekledik
+import net.minecraft.world.item.enchantment.EnchantmentHelper; // <-- Bunu ekledik
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
@@ -45,7 +47,7 @@ public class MeditationClientHandler {
         }
     }
 
-    // RENDER (Herkes için - Zaten doğru çalışıyordu)
+    // RENDER (Herkes için - Aynen bıraktım)
     @SubscribeEvent
     public static void onRenderPlayer(RenderPlayerEvent.Pre event) {
         Player player = event.getEntity();
@@ -95,8 +97,7 @@ public class MeditationClientHandler {
         poseStack.popPose();
     }
 
-    // --- DEĞİŞEN KISIM: PlayerTickEvent KULLANIYORUZ ---
-    // Bu sayede ekrandaki HER OYUNCU için çalışır.
+    // --- BURADA DEĞİŞİKLİK YAPTIK: Inner Peace Mantığını Entegre Ettik ---
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || event.side != net.minecraftforge.fml.LogicalSide.CLIENT) return;
@@ -113,13 +114,24 @@ public class MeditationClientHandler {
                 // 2. FİZİKSEL YUMUŞATMA VE SES (SADECE KENDİM İÇİN)
                 if (player == mc.player) {
                     player.setNoGravity(true);
-                    double targetY = cap.getOriginY() + 3.0;
+
+                    // --- BURASI DEĞİŞTİ ---
+                    // Server ile aynı hesabı yapıyoruz ki Client aşağı çekmeye çalışmasın.
+                    int peaceLevel = getEnchantLevel(player, ReverieModEnchantments.INNER_PEACE.get());
+
+                    // Hedef Yükseklik: Base 3.0 + (Level * 1.5) -> Level 3'te +7.5 Blok
+                    double targetY = cap.getOriginY() + 3.0 + (peaceLevel * 1.5);
+
+                    // Hız: Base 0.05 + (Level * 0.07) -> Level arttıkça roket gibi
+                    double ascentSpeed = 0.05 + (peaceLevel * 0.07);
+
                     if (player.getY() < targetY) {
-                        player.setDeltaMovement(0, 0.08, 0);
+                        player.setDeltaMovement(0, ascentSpeed, 0); // Hız formülünü buraya koyduk
                     } else {
                         player.setDeltaMovement(0, 0, 0);
                         if (player.getY() > targetY + 0.1) player.setPos(player.getX(), targetY, player.getZ());
                     }
+                    // -----------------------
 
                     // Ambiyans Sesi
                     if (activeAmbience == null || !mc.getSoundManager().isActive(activeAmbience)) {
@@ -141,7 +153,7 @@ public class MeditationClientHandler {
         });
     }
 
-    private static void spawnAmbientParticles(Player player) { // LocalPlayer -> Player yaptık
+    private static void spawnAmbientParticles(Player player) {
         RandomSource r = player.getRandom();
         if (player.getDeltaMovement().y > 0.01) {
             for (int i = 0; i < 2; i++) {
@@ -153,7 +165,7 @@ public class MeditationClientHandler {
         }
     }
 
-    private static void spawnOrbitingParticles(Player player) { // LocalPlayer -> Player yaptık
+    private static void spawnOrbitingParticles(Player player) {
         float time = player.tickCount + Minecraft.getInstance().getFrameTime();
         int particleCount = 3;
         double radius = 1.8;
@@ -171,5 +183,14 @@ public class MeditationClientHandler {
                     player.getZ() + offsetZ,
                     0, 0.03, 0);
         }
+    }
+
+    // --- YENİ EKLENEN YARDIMCI METOT ---
+    private static int getEnchantLevel(Player player, net.minecraft.world.item.enchantment.Enchantment enchant) {
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
+        int lvlMain = EnchantmentHelper.getItemEnchantmentLevel(enchant, main);
+        int lvlOff = EnchantmentHelper.getItemEnchantmentLevel(enchant, off);
+        return Math.max(lvlMain, lvlOff);
     }
 }

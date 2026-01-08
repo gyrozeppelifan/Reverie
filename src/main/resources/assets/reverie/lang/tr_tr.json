@@ -117,7 +117,33 @@
   "enchantment.reverie.spirit_deflection.desc": "Meditasyon sırasında gelen okları ve mermileri saptırır.",
   "enchantment.reverie.natures_breath": "Doğa'nın Nefesi",
   "enchantment.reverie.natures_breath.desc": "Meditasyon yaparken etrafındaki ekinleri/fidanları hızla büyütür.",
+  "enchantment.reverie.wildfire": "Orman Yangını",
+  "enchantment.reverie.wildfire.desc": "Kütüğü ateşe verir, ezdiği düşmanları çıra gibi yakar.",
+  "enchantment.reverie.momentum": "Momentum",
+  "enchantment.reverie.momentum.desc": "Kütüğün hızını ve düşmanı uçurma gücünü artırır. Ez geç!",
+  "enchantment.reverie.ricochet": "Langırt",
+  "enchantment.reverie.ricochet.desc": "Kütük duvara çarpınca durmaz, seker. (Geri Dönüş ile basılamaz)",
+  "enchantment.reverie.vortex": "Girdap",
+  "enchantment.reverie.vortex.desc": "Yakındaki düşmanları kütüğün altına çeker. Kaçış yok!",
+  "enchantment.reverie.recall": "Sahibinin Gülü",
+  "enchantment.reverie.recall.desc": "İşi biten kütük tıpış tıpış sahibine geri döner. (Langırt ile basılamaz)",
   "advancements.mind_over_matter.title": "Zihin Maddeden Üstündür",
   "advancements.mind_over_matter.description": "Meditasyon sırasında irade gücünle bir tehdidi savuştur.",
+
+  "advancements.reverie.spiked_log_flame.title": "YANIYOOOOOOOOR!",
+  "advancements.reverie.spiked_log_flame.descr": "Bir düşmanı alevlenmiş Dikenli Kütük ile ez.",
+
+  "advancements.reverie.spiked_log_momentum.title": "Durdurulamaz Güç",
+  "advancements.reverie.spiked_log_momentum.descr": "Bir düşmanı hızlandırılmış kütükle ez.",
+
+  "advancements.reverie.spiked_log_ricochet.title": "Langırt Ustası",
+  "advancements.reverie.spiked_log_ricochet.descr": "Kütüğü duvardan sektirerek kaos yarat!",
+
+  "advancements.reverie.spiked_log_vortex.title": "Olay Ufku",
+  "advancements.reverie.spiked_log_vortex.descr": "Düşmanları kütüğün içine çek.",
+
+  "advancements.reverie.spiked_log_recall.title": "Sahibinin Oduncuğu",
+  "advancements.reverie.spiked_log_recall.descr": "Fırlattığın kütük tıpış tıpış geri gelsin.",
+
   "jei.reverie.boar_monk_seal.info": "Meditasyona başlamak için M tuşuna bas (ayarlardan değiştirebilirsin).\n\nHavaya yükselir ve direnç kazanırsın.\nBu Mühürdeki büyülere göre şu etkileri kazanırsın:\n\n- İç Huzur: Can Yenileme & Hız\n- Ruhsal Kalkan: Düşman İtme\n- Ruhsal Saptırma: Ok Saptırma\n- Doğa'nın Nefesi: Ekin Büyütme"
 }

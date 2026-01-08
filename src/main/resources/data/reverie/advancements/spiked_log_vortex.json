@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "item": "reverie:spiked_log_item"
+    },
+    "title": {
+      "translate": "advancements.reverie.spiked_log_vortex.title"
+    },
+    "description": {
+      "translate": "advancements.reverie.spiked_log_vortex.descr"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "spiked_log_vortex_0": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "parent": "reverie:spiked_log_use"
+}

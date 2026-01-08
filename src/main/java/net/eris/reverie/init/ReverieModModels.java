@@ -2,6 +2,7 @@
 package net.eris.reverie.init;
 
 import net.eris.reverie.client.model.*;
+import net.eris.reverie.entity.custom.GeckEntity;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -27,5 +28,6 @@ public class ReverieModModels {
 		event.registerLayerDefinition(HogModel.LAYER_LOCATION, HogModel::createBodyLayer);
 		event.registerLayerDefinition(ResonantGongModel.LAYER_LOCATION, ResonantGongModel::createBodyLayer);
 		event.registerLayerDefinition(SpiritOrbModel.LAYER_LOCATION, SpiritOrbModel::createBodyLayer);
+		event.registerLayerDefinition(GeckModel.LAYER_LOCATION, GeckModel::createBodyLayer);
 	}
 }
