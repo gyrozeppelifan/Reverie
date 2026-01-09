@@ -58,6 +58,8 @@ public class ReverieModTabs {
 
 						// Leather & Hides (Olive derived blocks removed)
 						List<Item> hideBlocks = List.of(
+								ReverieModBlocks.SALOON_BAR.get().asItem(),
+								ReverieModBlocks.GUNSMITH_TABLE.get().asItem(),
 								ReverieModBlocks.LEATHER_BLOCK.get().asItem(),
 								ReverieModBlocks.LEATHER_PATCH_BLOCK.get().asItem(),
 								ReverieModBlocks.LAYERED_PELT_BLOCK.get().asItem(),

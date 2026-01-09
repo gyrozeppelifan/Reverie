@@ -18,7 +18,6 @@ public class GeckRenderer extends MobRenderer<GeckEntity, GeckModel<GeckEntity>>
         String variant = switch (entity.getVariant()) {
             case 1 -> "lizard"; case 2 -> "snake"; default -> "chameleon";
         };
-        // Örn: reverie:textures/entity/folk/geck/geck_chameleon.png
         return new ResourceLocation("reverie", "textures/entity/folk/geck/geck_" + variant + ".png");
     }
 }

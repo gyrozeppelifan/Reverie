@@ -1,289 +1,275 @@
 package net.eris.reverie.entity.custom;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
-import net.eris.reverie.entity.ai.FolkLookAtTradingPlayerGoal;
-import net.eris.reverie.entity.ai.FolkTradeWithPlayerGoal;
-import net.minecraft.core.BlockPos;
+import net.eris.reverie.entity.ai.FolkBrain;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.particles.ParticleOptions; // YENİ IMPORT
+import net.minecraft.core.particles.ParticleTypes;   // YENİ IMPORT
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.entity.AnimationState;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.TradeWithPlayerGoal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.trading.Merchant;
 import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
-import net.eris.reverie.entity.ai.FolkBrain;
-import java.util.List;
 
-public abstract class FolkEntity extends PathfinderMob implements Merchant {
-    // --- SENKRONİZE VERİLER (Server & Client) ---
+import java.util.OptionalInt;
+
+public class FolkEntity extends PathfinderMob implements Merchant {
+    // Data Sync ID'leri
     private static final EntityDataAccessor<Integer> DATA_PROFESSION = SynchedEntityData.defineId(FolkEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> DATA_VARIANT = SynchedEntityData.defineId(FolkEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> WORKING_TICKS = SynchedEntityData.defineId(FolkEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_LEVEL = SynchedEntityData.defineId(FolkEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_XP = SynchedEntityData.defineId(FolkEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> DATA_IS_PANICKING = SynchedEntityData.defineId(FolkEntity.class, EntityDataSerializers.BOOLEAN);
 
-    // --- DEĞİŞKENLER ---
-    @Nullable private BlockPos workstationPos; // İş yerinin koordinatı
-    @Nullable private Player tradingPlayer;    // O an ticaret yaptığı oyuncu
-    protected MerchantOffers offers;           // Takas listesi
+    private final FolkTradeManager tradeManager;
+    @Nullable private Player tradingPlayer;
+    @Nullable private MerchantOffers offers;
+    private long lastRestockGameTime = 0;
 
-    // --- ANİMASYON DURUMLARI ---
+    // Animasyon State'leri
     public final AnimationState idleAnimationState = new AnimationState();
-    public final AnimationState walkAnimationState = new AnimationState();
     public final AnimationState panicAnimationState = new AnimationState();
     public final AnimationState workAnimationState = new AnimationState();
 
-    protected FolkEntity(EntityType<? extends PathfinderMob> pEntityType, Level pLevel) {
+    public FolkEntity(EntityType<? extends PathfinderMob> pEntityType, Level pLevel) {
         super(pEntityType, pLevel);
+        this.setCanPickUpLoot(true);
+        this.tradeManager = new FolkTradeManager(this);
+        if (this.getFolkLevel() == 0) this.setFolkLevel(1);
     }
 
-    // --- HİBRİT SİSTEM BÖLÜM 1: REFLEKSLER (GOALS) ---
-    // Buraya anlık tepkileri koyuyoruz (Suya düşme, Oyuncuya bakma vb.)
-    @Override
-    protected void registerGoals() {
-        // 0. Öncelik: Suda batmama (Hayatta kalma)
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-
-        // 1. Öncelik: Ticaret (Etkileşim)
-        this.goalSelector.addGoal(1, new FolkTradeWithPlayerGoal(this));
-        this.goalSelector.addGoal(1, new FolkLookAtTradingPlayerGoal(this));
-
-        // 2. Öncelik: Oyuncuya bakma (Doğallık)
-        this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 8.0F));
-    }
-
-    // --- HİBRİT SİSTEM BÖLÜM 2: ZEKA (BRAIN) ---
-    // Buraya uzun vadeli planları koyuyoruz (İşe gitme, Çalışma, Gezme)
-    @Override
-    protected Brain.Provider<FolkEntity> brainProvider() {
-        return Brain.provider(
-                // Hafıza Modülleri: İş yeri, Yürüme hedefi, Bakma hedefi vb.
-                List.of(MemoryModuleType.JOB_SITE, MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, MemoryModuleType.PATH),
-                // Sensörler: Etraftaki canlıları algılama
-                List.of(net.minecraft.world.entity.ai.sensing.SensorType.NEAREST_LIVING_ENTITIES)
-        );
-    }
-
-    @Override
-    protected Brain<?> makeBrain(Dynamic<?> pDynamic) {
-        Brain<FolkEntity> brain = this.brainProvider().makeBrain(pDynamic);
-        // Beyni SADECE BİR KERE başlatıyoruz
-        FolkBrain.init(this, brain);
-        return brain;
-    }
-
-    @Override
-    public Brain<FolkEntity> getBrain() {
-        return (Brain<FolkEntity>) super.getBrain();
-    }
-
-    @Override
-    protected void customServerAiStep() {
-        this.level().getProfiler().push("folkBrain");
-
-        // Beyni ve aktiviteleri güncelle
-        this.getBrain().tick((ServerLevel) this.level(), this);
-        FolkBrain.updateActivity(this);
-
-        this.level().getProfiler().pop();
-
-        // --- DİNAMİK MESLEK KONTROLÜ ---
-        if (this.level() instanceof ServerLevel serverLevel) {
-            // Hafızada bir iş yeri var mı?
-            if (this.getBrain().getMemory(MemoryModuleType.JOB_SITE).isPresent()) {
-                // İş yerinin koordinatını al (GlobalPos'tan BlockPos'a)
-                BlockPos jobPos = this.getBrain().getMemory(MemoryModuleType.JOB_SITE).get().pos();
-
-                // Eğer henüz bir mesleğim yoksa veya iş yerim değiştiyse kontrol et
-                if (this.getProfessionId() == 0) {
-                    this.assignProfessionFromBlock(jobPos);
-                }
-            } else {
-                // Hafızada iş yeri yoksa işsiz kal
-                if (this.getProfessionId() != 0) {
-                    this.setProfessionId(0);
-                }
-            }
-        }
-
-        super.customServerAiStep();
-    }
-
-    // İş yerini bırakma ve hafızayı temizleme metodu
-    public void releaseWorkstation() {
-        // Sadece sunucu tarafında çalışmalı
-        if (this.level() instanceof ServerLevel serverLevel && this.workstationPos != null) {
-            // POI Manager'a gidip "Bu koordinattaki rezervasyonumu iptal et" diyoruz.
-            // Böylece başka bir Geck orayı kapabilir.
-            serverLevel.getPoiManager().release(this.workstationPos);
-        }
-
-        // Kendi hafızamızdan da siliyoruz
-        this.workstationPos = null;
-        this.setProfessionId(0); // Artık resmen işsizsin!
-    }
-
-    // --- YENİ EKLENECEK METOD: BLOĞA GÖRE MESLEK SEÇİCİ ---
-    private void assignProfessionFromBlock(BlockPos pos) {
-        // Bloğun ne olduğuna bak
-        net.minecraft.world.level.block.state.BlockState state = this.level().getBlockState(pos);
-
-        // 1. BARMENLİK KONTROLÜ
-        if (state.is(net.eris.reverie.init.ReverieModBlocks.SALOON_BAR.get())) {
-            this.setProfessionId(1); // 1: Barmen
-        }
-        // 2. İLERİDE EKLENECEK ŞERİF KONTROLÜ (Örnek)
-        // else if (state.is(ReverieBlocks.SHERIFF_DESK.get())) {
-        //     this.setProfessionId(2);
-        // }
-        // 3. İLERİDE EKLENECEK DEMİRCİ KONTROLÜ (Örnek)
-        // else if (state.is(ReverieBlocks.ANVIL_STATION.get())) {
-        //     this.setProfessionId(3);
-        // }
-
-        // Eğer hiçbirine uymuyorsa (belki blok kırılmıştır), işi bırak
-        else {
-            this.releaseWorkstation();
-        }
-    }
-
-    // --- ANİMASYON VE FİZİK MANTIĞI ---
-    @Override
-    public void tick() {
-        super.tick();
-
-        if (this.level().isClientSide()) {
-            handleAnimationLogic(); // Client: Animasyon oynat
-        } else {
-            // Server: Çalışma sayacını düşür
-            if (this.getWorkingTicks() > 0) {
-                this.setWorkingTicks(this.getWorkingTicks() - 1);
-            }
-        }
-    }
-
-    private void handleAnimationLogic() {
-        // 1. Panik (En yüksek öncelik)
-        if (this.isPanicking()) {
-            this.panicAnimationState.startIfStopped(this.tickCount);
-            this.idleAnimationState.stop();
-            this.walkAnimationState.stop();
-            this.workAnimationState.stop();
-            return;
-        } else {
-            this.panicAnimationState.stop();
-        }
-
-        // 2. Çalışma (İş yerindeyken)
-        if (this.getWorkingTicks() > 0) {
-            this.workAnimationState.startIfStopped(this.tickCount);
-            this.idleAnimationState.stop();
-            this.walkAnimationState.stop();
-        } else {
-            this.workAnimationState.stop();
-
-            // 3. Yürüme vs Idle
-            if (this.getDeltaMovement().horizontalDistanceSqr() > 1.0E-6D) {
-                this.walkAnimationState.startIfStopped(this.tickCount);
-                this.idleAnimationState.stop();
-            } else {
-                this.idleAnimationState.startIfStopped(this.tickCount);
-                this.walkAnimationState.stop();
-            }
-        }
-    }
-
-    public boolean isPanicking() {
-        return this.getLastHurtByMob() != null && (this.tickCount - this.getLastHurtByMobTimestamp() < 100);
-    }
-
-    // --- KAYIT SİSTEMİ (NBT) ---
-    // Oyundan çıkıp girince verileri hatırla
-    @Override
-    public void addAdditionalSaveData(CompoundTag pCompound) {
-        super.addAdditionalSaveData(pCompound);
-        pCompound.putInt("Profession", this.getProfessionId());
-        pCompound.putInt("Variant", this.getVariant());
-        if (this.workstationPos != null) {
-            pCompound.put("WorkstationPos", NbtUtils.writeBlockPos(this.workstationPos));
-        }
-    }
-
-    @Override
-    public void readAdditionalSaveData(CompoundTag pCompound) {
-        super.readAdditionalSaveData(pCompound);
-        this.setProfessionId(pCompound.getInt("Profession"));
-        this.setVariant(pCompound.getInt("Variant"));
-        if (pCompound.contains("WorkstationPos")) {
-            this.workstationPos = NbtUtils.readBlockPos(pCompound.getCompound("WorkstationPos"));
-        }
-    }
-
-    // --- GETTERS & SETTERS ---
-    // Verilere dışarıdan erişim
-    public int getProfessionId() { return this.entityData.get(DATA_PROFESSION); }
-    public void setProfessionId(int id) { this.entityData.set(DATA_PROFESSION, id); }
-
-    public int getVariant() { return this.entityData.get(DATA_VARIANT); }
-    public void setVariant(int id) { this.entityData.set(DATA_VARIANT, id); }
-
-    public int getWorkingTicks() { return this.entityData.get(WORKING_TICKS); }
-    public void setWorkingTicks(int ticks) { this.entityData.set(WORKING_TICKS, ticks); }
-
-    @Nullable public BlockPos getWorkstationPos() { return workstationPos; }
-    public void setWorkstationPos(@Nullable BlockPos pos) { this.workstationPos = pos; }
-
-    // --- ENTITY CONFIG ---
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 20.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.5D); // Hız ayarı
+                .add(Attributes.MOVEMENT_SPEED, 0.25D)
+                .add(Attributes.ATTACK_DAMAGE, 3.0D)
+                .add(Attributes.FOLLOW_RANGE, 48.0D);
     }
 
+    // --- PARTİKÜL SİNYALİNİ YAKALAMA (YENİ!) ---
+    @Override
+    public void handleEntityEvent(byte pId) {
+        if (pId == 14) { // 14 = HAPPY VILLAGER (Yeşil Yıldızlar)
+            this.addParticlesAroundSelf(ParticleTypes.HAPPY_VILLAGER);
+        } else {
+            super.handleEntityEvent(pId);
+        }
+    }
+
+    // Partikül oluşturucu yardımcı metod
+    private void addParticlesAroundSelf(ParticleOptions pParticleOption) {
+        for(int i = 0; i < 5; ++i) {
+            double d0 = this.random.nextGaussian() * 0.02D;
+            double d1 = this.random.nextGaussian() * 0.02D;
+            double d2 = this.random.nextGaussian() * 0.02D;
+            this.level().addParticle(pParticleOption, this.getRandomX(1.0D), this.getRandomY() + 1.0D, this.getRandomZ(1.0D), d0, d1, d2);
+        }
+    }
+
+    // --- SENKRONİZASYON ---
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_PROFESSION, 0);
         this.entityData.define(DATA_VARIANT, 0);
         this.entityData.define(WORKING_TICKS, 0);
+        this.entityData.define(DATA_LEVEL, 1);
+        this.entityData.define(DATA_XP, 0);
+        this.entityData.define(DATA_IS_PANICKING, false);
     }
 
-    // --- MERCHANT (TİCARET) ARAYÜZÜ ---
-    @Override public void setTradingPlayer(@Nullable Player pPlayer) { this.tradingPlayer = pPlayer; }
-    @Override @Nullable public Player getTradingPlayer() { return this.tradingPlayer; }
-    @Override public MerchantOffers getOffers() {
-        if (this.offers == null) {
-            this.offers = new MerchantOffers();
-            // Buraya ileride tarifler eklenecek
+    // --- STOK & SİLAH ---
+    public boolean isHoldingWeapon() {
+        ItemStack stack = this.getMainHandItem();
+        return stack.getItem() instanceof net.minecraft.world.item.SwordItem ||
+                stack.getItem() instanceof net.minecraft.world.item.AxeItem ||
+                stack.getItem() instanceof net.minecraft.world.item.BowItem ||
+                stack.getItem() instanceof net.minecraft.world.item.CrossbowItem ||
+                stack.getItem() instanceof net.minecraft.world.item.TridentItem;
+    }
+
+    public boolean tryRestockTrades() {
+        if (this.level().isClientSide()) return false;
+        long time = this.level().getGameTime();
+        if (time - this.lastRestockGameTime > 2000) {
+            this.lastRestockGameTime = time;
+            for (MerchantOffer offer : this.getOffers()) { offer.resetUses(); }
+            return true;
         }
+        return false;
+    }
+
+    // --- ETKİLEŞİM & TİCARET ---
+    public boolean isTrading() { return this.tradingPlayer != null; }
+
+    @Override
+    public InteractionResult mobInteract(Player pPlayer, InteractionHand pHand) {
+        if (this.isAlive() && !this.isTrading() && !this.isBaby()) {
+            if (this.isSleeping()) return InteractionResult.FAIL;
+
+            if (pHand == InteractionHand.MAIN_HAND) {
+                if (this.getProfessionId() != 0) {
+                    if (!this.level().isClientSide) {
+                        this.setTradingPlayer(pPlayer);
+                        this.openTradingScreen(pPlayer, this.getDisplayName(), this.getFolkLevel());
+                    }
+                    return InteractionResult.sidedSuccess(this.level().isClientSide);
+                }
+            }
+        }
+        return super.mobInteract(pPlayer, pHand);
+    }
+
+    @Override public void notifyTrade(MerchantOffer offer) { this.tradeManager.onTrade(offer); }
+
+    @Override
+    public MerchantOffers getOffers() {
+        if (this.offers == null) { this.offers = new MerchantOffers(); this.tradeManager.updateTrades(this.offers); }
+        if (this.offers.isEmpty() && this.getProfessionId() != 0) { this.tradeManager.updateTrades(this.offers); }
         return this.offers;
     }
-    @Override public void overrideOffers(MerchantOffers pOffers) { this.offers = pOffers; }
-    @Override public void notifyTrade(MerchantOffer pOffer) {
-        pOffer.increaseUses();
-        this.ambientSoundTime = -this.getAmbientSoundInterval();
-        this.playSound(this.getNotifyTradeSound(), this.getSoundVolume(), this.getVoicePitch());
+
+    @Override
+    public void openTradingScreen(Player pPlayer, Component pDisplayName, int pLevel) {
+        OptionalInt optionalint = pPlayer.openMenu(new SimpleMenuProvider((id, inventory, player) -> new MerchantMenu(id, inventory, this), pDisplayName));
+        if (optionalint.isPresent()) {
+            MerchantOffers merchantoffers = this.getOffers();
+            if (!merchantoffers.isEmpty()) pPlayer.sendMerchantOffers(optionalint.getAsInt(), merchantoffers, pLevel, this.getFolkXp(), true, true);
+        }
     }
-    @Override public void notifyTradeUpdated(ItemStack pStack) {} // UI güncellemesi gerekirse
-    @Override public int getVillagerXp() { return 0; } // XP sistemi şimdilik kapalı
-    @Override public void overrideXp(int pXp) {}
-    @Override public boolean showProgressBar() { return true; } // Ticaret barı görünsün
-    @Override public SoundEvent getNotifyTradeSound() { return SoundEvents.VILLAGER_TRADE; } // Evet sesi
-    @Override public boolean isClientSide() { return this.level().isClientSide(); }
+
+    // --- TICK & ANİMASYON ---
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.level().isClientSide()) {
+            setupAnimationStates();
+        } else {
+            boolean actuallyPanicking = this.getBrain().isActive(net.minecraft.world.entity.schedule.Activity.PANIC);
+            this.entityData.set(DATA_IS_PANICKING, actuallyPanicking);
+        }
+        if (this.getWorkingTicks() > 0) {
+            this.setWorkingTicks(this.getWorkingTicks() - 1);
+        }
+    }
+
+    private void setupAnimationStates() {
+        if (this.isSleeping()) {
+            this.idleAnimationState.stop();
+            this.workAnimationState.stop();
+            this.panicAnimationState.stop();
+            return;
+        }
+        if (isPanicking()) {
+            this.idleAnimationState.stop();
+            this.workAnimationState.stop();
+            this.panicAnimationState.startIfStopped(this.tickCount);
+        }
+        else if (this.getWorkingTicks() > 0) {
+            this.idleAnimationState.stop();
+            this.panicAnimationState.stop();
+            this.workAnimationState.startIfStopped(this.tickCount);
+        }
+        else {
+            this.panicAnimationState.stop();
+            this.workAnimationState.stop();
+            this.idleAnimationState.startIfStopped(this.tickCount);
+        }
+    }
+
+    public boolean isPanicking() { return this.entityData.get(DATA_IS_PANICKING); }
+
+    @Override public boolean isWithinMeleeAttackRange(LivingEntity pEntity) { return this.getPerceivedTargetDistanceSquareForMeleeAttack(pEntity) <= this.getMeleeAttackRangeSqr(pEntity) + 3.0D; }
+
+    @Override
+    public boolean doHurtTarget(Entity pEntity) {
+        boolean flag = super.doHurtTarget(pEntity);
+        if (flag) { this.swing(InteractionHand.MAIN_HAND); this.playSound(SoundEvents.PLAYER_ATTACK_STRONG, 1.0F, 1.0F); }
+        return flag;
+    }
+
+    // --- BRAIN & KAYIT ---
+    @Override
+    protected Brain.Provider<FolkEntity> brainProvider() {
+        return Brain.provider(
+                ImmutableList.of(
+                        MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.PATH, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
+                        MemoryModuleType.ATTACK_TARGET, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.ATTACK_COOLING_DOWN,
+                        MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
+                        MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE,
+                        MemoryModuleType.HOME
+                ),
+                ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY)
+        );
+    }
+
+    @Override protected Brain<?> makeBrain(Dynamic<?> pDynamic) { return FolkBrain.create(this.brainProvider().makeBrain(pDynamic)); }
+    @SuppressWarnings("unchecked") @Override public Brain<FolkEntity> getBrain() { return (Brain<FolkEntity>) super.getBrain(); }
+    @Override protected void customServerAiStep() { this.level().getProfiler().push("folkBrain"); FolkBrain.tick(this); this.getBrain().tick((ServerLevel) this.level(), this); this.level().getProfiler().pop(); super.customServerAiStep(); }
+
+    @Override public void addAdditionalSaveData(CompoundTag pCompound) { super.addAdditionalSaveData(pCompound); pCompound.putInt("Profession", this.getProfessionId()); pCompound.putInt("Variant", this.getVariant()); pCompound.putInt("FolkLevel", this.getFolkLevel()); pCompound.putInt("FolkXp", this.getFolkXp()); pCompound.putLong("LastRestock", this.lastRestockGameTime); if (this.offers != null) pCompound.put("Offers", this.offers.createTag()); }
+    @Override public void readAdditionalSaveData(CompoundTag pCompound) { super.readAdditionalSaveData(pCompound); this.setProfessionId(pCompound.getInt("Profession")); this.setVariant(pCompound.getInt("Variant")); int loadedLevel = pCompound.getInt("FolkLevel"); this.setFolkLevel(loadedLevel <= 0 ? 1 : loadedLevel); this.setFolkXp(pCompound.getInt("FolkXp")); this.lastRestockGameTime = pCompound.getLong("LastRestock"); if (pCompound.contains("Offers")) this.offers = new MerchantOffers(pCompound.getCompound("Offers")); }
+
+    // GETTERS & SETTERS
+    public int getProfessionId() { return this.entityData.get(DATA_PROFESSION); }
+    public void setProfessionId(int id) { this.entityData.set(DATA_PROFESSION, id); }
+    public int getVariant() { return this.entityData.get(DATA_VARIANT); }
+    public void setVariant(int id) { this.entityData.set(DATA_VARIANT, id); }
+    public int getWorkingTicks() { return this.entityData.get(WORKING_TICKS); }
+    public void setWorkingTicks(int ticks) { this.entityData.set(WORKING_TICKS, ticks); }
+    public int getFolkLevel() { return this.entityData.get(DATA_LEVEL); }
+    public void setFolkLevel(int level) { this.entityData.set(DATA_LEVEL, level); }
+    public int getFolkXp() { return this.entityData.get(DATA_XP); }
+    public void setFolkXp(int xp) { this.entityData.set(DATA_XP, xp); }
+
+    @Override
+    public void die(net.minecraft.world.damagesource.DamageSource pDamageSource) {
+        super.die(pDamageSource);
+        releasePoi();
+    }
+
+    private void releasePoi() {
+        if (this.level() instanceof ServerLevel serverLevel) {
+            if (this.getBrain().hasMemoryValue(MemoryModuleType.JOB_SITE)) {
+                GlobalPos jobPos = this.getBrain().getMemory(MemoryModuleType.JOB_SITE).get();
+                if (jobPos.dimension() == serverLevel.dimension()) serverLevel.getPoiManager().release(jobPos.pos());
+            }
+            if (this.getBrain().hasMemoryValue(MemoryModuleType.HOME)) {
+                GlobalPos homePos = this.getBrain().getMemory(MemoryModuleType.HOME).get();
+                if (homePos.dimension() == serverLevel.dimension()) serverLevel.getPoiManager().release(homePos.pos());
+            }
+        }
+    }
+
+    @Override public void setTradingPlayer(@Nullable Player pPlayer) { this.tradingPlayer = pPlayer; }
+    @Override @Nullable public Player getTradingPlayer() { return this.tradingPlayer; }
+    @Override public void overrideOffers(MerchantOffers pOffers) { this.offers = pOffers; }
+    @Override public void notifyTradeUpdated(ItemStack pStack) {}
+    @Override public int getVillagerXp() { return this.getFolkXp(); }
+    @Override public void overrideXp(int pXp) { this.setFolkXp(pXp); }
+    @Override public boolean showProgressBar() { return true; }
+    @Override public SoundEvent getNotifyTradeSound() { return SoundEvents.VILLAGER_TRADE; }
+    @Override public boolean isClientSide() { return this.level().isClientSide; }
 }

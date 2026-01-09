@@ -19,7 +19,6 @@ public class GeckModel<T extends FolkEntity> extends HierarchicalModel<T> {
     private final ModelPart head;
     private final ModelPart body;
     private final ModelPart tail;
-    // Diğer wear/hat parçaları model hiyerarşisinde tanımlı olduğu için doğrudan root üzerinden yönetilir.
 
     public GeckModel(ModelPart root) {
         this.root = root.getChild("geck");
@@ -32,7 +31,6 @@ public class GeckModel<T extends FolkEntity> extends HierarchicalModel<T> {
         MeshDefinition meshdefinition = new MeshDefinition();
         PartDefinition partdefinition = meshdefinition.getRoot();
 
-        // Senin Blockbench'ten attığın o detaylı Mesh yapısı:
         PartDefinition geck = partdefinition.addOrReplaceChild("geck", CubeListBuilder.create(), PartPose.offset(-2.0F, 11.0F, 0.0F));
 
         PartDefinition body = geck.addOrReplaceChild("body", CubeListBuilder.create().texOffs(0, 49).addBox(-1.0F, -9.0F, 0.0F, 8.0F, 12.0F, 6.0F, new CubeDeformation(0.0F))
@@ -71,23 +69,53 @@ public class GeckModel<T extends FolkEntity> extends HierarchicalModel<T> {
 
     @Override
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
-        this.root().getAllParts().forEach(ModelPart::resetPose); // Her kareden önce pozu sıfırlıyoruz.
+        this.root().getAllParts().forEach(ModelPart::resetPose);
+
+        // --- UYKU MODU AYARI (YENİ) ---
+        if (entity.isSleeping()) {
+            // Uyurken kafa sağa sola dönmesin, komik durur :D
+            this.head.yRot = 0.0F;
+            this.head.xRot = 0.0F;
+
+            // YATAK AYARI:
+            // Normalde modelin Y'si 11.0F idi.
+            // Uyurken onu 24.0F civarına indiriyoruz ki yatağın içine otursun, havada kalmasın.
+            // Bu sayıyı (23.0F) oyun içinde bakıp deneyerek ince ayar yapabilirsin.
+            this.root.setPos(-2.0F, 15.0F, 0.0F);
+
+            // Uyurken başka hiçbir animasyon oynatma!
+            return;
+        } else {
+            // Uyumuyorsa normal konuma geri çek
+            this.root.setPos(-2.0F, 11.0F, 0.0F);
+        }
+
+        // --- NORMAL ANİMASYONLAR (Uyumuyorsa çalışır) ---
 
         // Kafa Hareketleri
         this.head.yRot = netHeadYaw * ((float)Math.PI / 180F);
         this.head.xRot = headPitch * ((float)Math.PI / 180F);
 
-        // --- ANİMASYON TETİKLEYİCİLERİ ---
-        // Boşta durma ve yürüme (Ana döngü)
+        // Yürüme ve Idle
         this.animate(entity.idleAnimationState, GeckAnimation.idle, ageInTicks);
-        this.animateWalk(GeckAnimation.walk, limbSwing, limbSwingAmount, 1.0f, 1.0f);
+        // Hız ayarını burada yapmıştık (2.0f, 2.5f)
+        this.animateWalk(GeckAnimation.walk, limbSwing, limbSwingAmount, 2.0f, 2.5f);
 
-        // Özel Durumlar (Panik ve Meslek Çalışması)
-        this.animate(entity.panicAnimationState, GeckAnimation.panic, ageInTicks);
+        // Panik
+        if (entity.isPanicking()) {
+            this.animate(entity.panicAnimationState, GeckAnimation.panic, ageInTicks);
+        }
 
-        // Meslek spesifik animasyonlar (Mesela Barmen)
-        if (entity.getProfessionId() == 1) { // BARKEEPER
-            this.animate(entity.idleAnimationState, GeckAnimation.workBarkeeper, ageInTicks);
+        // Çalışma
+        if (entity.getWorkingTicks() > 0) {
+            int prof = entity.getProfessionId();
+            if (prof == 1) {
+                this.animate(entity.workAnimationState, GeckAnimation.workBarkeeper, ageInTicks);
+            } else if (prof == 2) {
+                this.animate(entity.workAnimationState, GeckAnimation.workGunsmith, ageInTicks);
+            } else {
+                this.animate(entity.workAnimationState, GeckAnimation.work, ageInTicks);
+            }
         }
     }
 

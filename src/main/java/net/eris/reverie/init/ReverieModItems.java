@@ -102,6 +102,11 @@ public class ReverieModItems {
 	public static final RegistryObject<Item> RAINBOW_DROPPING = REGISTRY.register("rainbow_dropping",
 			() -> new Item(new Item.Properties().rarity(net.minecraft.world.item.Rarity.RARE).stacksTo(1)));
 
+//WILD WEST
+public static final RegistryObject<Item> SALOON_BAR = block(ReverieModBlocks.SALOON_BAR);
+	public static final RegistryObject<Item> GUNSMITH_TABLE = block(ReverieModBlocks.GUNSMITH_TABLE);
+
+
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {
 		return REGISTRY.register(block.getId().getPath(), () -> new BlockItem(block.get(), new Item.Properties()));
