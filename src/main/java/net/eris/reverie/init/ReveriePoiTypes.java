@@ -43,8 +43,11 @@ public class ReveriePoiTypes {
     public static final RegistryObject<PoiType> UNDERTAKER_POI = POI_TYPES.register("undertaker_poi",
             () -> new PoiType(getAllStates(ReverieModBlocks.COFFIN_TRESTLE.get()), 1, 1));
 
+    // 8. BULUŞMA NOKTASI (MEETING POINT) -> HAM ALTIN BLOKU
+    // maxTickets: 64 yaptık (Eskiden 1'di, sorun buydu!)
+    // validRange: 1 (Bloğun ne kadar yakınında olması gerektiği)
     public static final RegistryObject<PoiType> MEETING_POI = POI_TYPES.register("meeting_poi",
-            () -> new PoiType(getAllStates(net.minecraft.world.level.block.Blocks.RAW_GOLD_BLOCK), 1, 1));
+            () -> new PoiType(getAllStates(net.minecraft.world.level.block.Blocks.RAW_GOLD_BLOCK), 64, 1));
 
 
     private static Set<BlockState> getAllStates(Block block) {

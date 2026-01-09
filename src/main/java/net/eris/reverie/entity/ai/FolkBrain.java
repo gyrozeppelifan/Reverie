@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import net.eris.reverie.entity.custom.FolkEntity;
+import net.eris.reverie.init.ReverieActivities; // Bunu import etmeyi unutma!
 import net.eris.reverie.init.ReveriePoiTypes;
-import net.eris.reverie.init.ReverieActivities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
@@ -38,6 +38,7 @@ public class FolkBrain {
         addFightActivities(brain);
         addPanicActivities(brain);
         addTradeActivities(brain);
+        addMeetActivities(brain); // GOSSIP İÇİN BULUŞMA
 
         brain.setCoreActivities(ImmutableSet.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);
@@ -48,6 +49,7 @@ public class FolkBrain {
     private static void addCoreActivities(Brain<FolkEntity> brain) {
         brain.addActivity(Activity.CORE, ImmutableList.of(
                 Pair.of(0, new Swim(0.8F)),
+                // Kapı açma davranışı (DOORS_TO_CLOSE hafızası şart)
                 Pair.of(0, InteractWithDoor.create()),
                 Pair.of(0, new LookAtTargetSink(45, 90)),
                 Pair.of(0, new MoveToTargetSink())
@@ -55,9 +57,48 @@ public class FolkBrain {
     }
 
     private static void addTradeActivities(Brain<FolkEntity> brain) {
+        // ReverieActivities.TRADE.get() kullanıyoruz (Sabit Durma)
         brain.addActivity(ReverieActivities.TRADE.get(), ImmutableList.of(
                 Pair.of(0, new RunOne<FolkEntity>(ImmutableList.of(
                         Pair.of(SetEntityLookTarget.create(EntityType.PLAYER, 8.0F), 1)
+                )))
+        ));
+    }
+
+    // --- BULUŞMA & DEDİKODU (GOSSIP) ---
+    private static void addMeetActivities(Brain<FolkEntity> brain) {
+        brain.addActivity(ReverieActivities.MEET.get(), ImmutableList.of(
+                Pair.of(0, new RunOne<FolkEntity>(ImmutableList.of(
+                        // 1. Buluşma Noktasına Git
+                        Pair.of(BehaviorBuilder.<FolkEntity>create(context ->
+                                context.group(context.present(MemoryModuleType.MEETING_POINT)).apply(context, (meetMem) ->
+                                        (world, entity, time) -> {
+                                            GlobalPos gp = context.get(meetMem);
+                                            if (gp.dimension() != world.dimension()) { meetMem.erase(); return true; }
+                                            BlockPos pos = gp.pos();
+
+                                            // Uzaksan Yürü
+                                            if (pos.distSqr(entity.blockPosition()) > 6) {
+                                                entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, 0.5F, 2));
+                                            }
+                                            // Yakındaysan Dedikodu Yap
+                                            else {
+                                                entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).ifPresent(mobs -> {
+                                                    mobs.findClosest(e -> e instanceof FolkEntity && e.distanceToSqr(entity) < 9).ifPresent(target -> {
+                                                        entity.getLookControl().setLookAt(target);
+                                                        // %5 ihtimalle dedikodu paylaş
+                                                        if (world.random.nextFloat() < 0.05F) {
+                                                            entity.getGossipManager().shareGossipWith((FolkEntity) target);
+                                                        }
+                                                    });
+                                                });
+                                            }
+                                            return true;
+                                        }
+                                )
+                        ), 10),
+                        // 2. Etrafta dolan
+                        Pair.of(StrollAroundPoi.create(MemoryModuleType.MEETING_POINT, 0.7F, 15), 5)
                 )))
         ));
     }
@@ -80,7 +121,7 @@ public class FolkBrain {
                                     GlobalPos homePos = context.get(homeMem);
                                     if (homePos.dimension() != world.dimension()) { homeMem.erase(); return true; }
                                     BlockPos pos = homePos.pos();
-                                    if (pos.distSqr(entity.blockPosition()) > 4) entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, 0.7F, 1));
+                                    if (pos.distSqr(entity.blockPosition()) > 4) entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, 1.0F, 1));
                                     else if (!entity.isSleeping()) entity.startSleeping(pos);
                                     return true;
                                 }
@@ -99,7 +140,7 @@ public class FolkBrain {
                                             if (globalPos.dimension() != world.dimension()) { jobSiteMem.erase(); return true; }
                                             BlockPos pos = globalPos.pos();
                                             if (pos.distSqr(entity.blockPosition()) > 4) {
-                                                entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, 0.6F, 1));
+                                                entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, 1.0F, 1));
                                             } else {
                                                 entity.getLookControl().setLookAt(pos.getX(), pos.getY(), pos.getZ());
                                                 if (entity.getWorkingTicks() <= 0 && world.random.nextFloat() < 0.02F && entity.tryRestockTrades()) {
@@ -132,83 +173,77 @@ public class FolkBrain {
         brain.addActivity(Activity.PANIC, ImmutableList.of(Pair.of(0, SetWalkTargetAwayFrom.entity(MemoryModuleType.HURT_BY_ENTITY, 1.75F, 12, true))));
     }
 
-    // --- YENİ DÜZENLENMİŞ TICK METODU ---
+    // --- TICK METODU ---
     public static void tick(FolkEntity folk) {
         Brain<FolkEntity> brain = folk.getBrain();
         ServerLevel level = (ServerLevel) folk.level();
         PoiManager poiManager = level.getPoiManager();
 
-        // 1. İŞ BULMA & İŞ YERİ YENİLEME
-        // İş yeri hafızası yoksa (işsizse veya masası kırıldıysa)
-        if (folk.tickCount % 20 == 0 && !brain.hasMemoryValue(MemoryModuleType.JOB_SITE)) {
+        // 1. İŞ, EV VE BULUŞMA NOKTASI ARAMA
+        if (folk.tickCount % 20 == 0) {
+            // A) İş Bulma
+            if (!brain.hasMemoryValue(MemoryModuleType.JOB_SITE)) {
+                if (folk.getProfessionId() == 0) {
+                    // İşsizse her şeyi ara
+                    Optional<BlockPos> poi = poiManager.take(holder ->
+                                    holder.is(ReveriePoiTypes.BARKEEPER_POI.getKey()) || holder.is(ReveriePoiTypes.GUNSMITH_POI.getKey()) ||
+                                            holder.is(ReveriePoiTypes.TAILOR_POI.getKey()) || holder.is(ReveriePoiTypes.STABLE_MASTER_POI.getKey()) ||
+                                            holder.is(ReveriePoiTypes.BANKER_POI.getKey()) || holder.is(ReveriePoiTypes.BOUNTY_CLERK_POI.getKey()) ||
+                                            holder.is(ReveriePoiTypes.UNDERTAKER_POI.getKey()),
+                            (holder, pos) -> true, folk.blockPosition(), 48);
 
-            // SENARYO A: Hiç mesleği yoksa (XP=0, Prof=0) -> Herhangi bir iş ara
-            if (folk.getProfessionId() == 0) {
-                Optional<BlockPos> poi = poiManager.take(
-                        holder -> holder.is(ReveriePoiTypes.BARKEEPER_POI.getKey()) ||
-                                holder.is(ReveriePoiTypes.GUNSMITH_POI.getKey()) ||
-                                holder.is(ReveriePoiTypes.TAILOR_POI.getKey()) ||
-                                holder.is(ReveriePoiTypes.STABLE_MASTER_POI.getKey()) ||
-                                holder.is(ReveriePoiTypes.BANKER_POI.getKey()) ||
-                                holder.is(ReveriePoiTypes.BOUNTY_CLERK_POI.getKey()) ||
-                                holder.is(ReveriePoiTypes.UNDERTAKER_POI.getKey()),
-                        (holder, pos) -> true, folk.blockPosition(), 48
-                );
-
-                poi.ifPresent(blockPos -> {
-                    brain.setMemory(MemoryModuleType.JOB_SITE, GlobalPos.of(level.dimension(), blockPos));
-                    // Yeni meslek ata...
-                    Optional<Holder<PoiType>> type = poiManager.getType(blockPos);
-                    if (type.isPresent()) {
-                        if (type.get().is(ReveriePoiTypes.BARKEEPER_POI.getKey())) folk.setProfessionId(1);
-                        else if (type.get().is(ReveriePoiTypes.GUNSMITH_POI.getKey())) folk.setProfessionId(2);
-                        else if (type.get().is(ReveriePoiTypes.TAILOR_POI.getKey())) folk.setProfessionId(3);
-                        else if (type.get().is(ReveriePoiTypes.STABLE_MASTER_POI.getKey())) folk.setProfessionId(4);
-                        else if (type.get().is(ReveriePoiTypes.BANKER_POI.getKey())) folk.setProfessionId(5);
-                        else if (type.get().is(ReveriePoiTypes.BOUNTY_CLERK_POI.getKey())) folk.setProfessionId(6);
-                        else if (type.get().is(ReveriePoiTypes.UNDERTAKER_POI.getKey())) folk.setProfessionId(7);
+                    poi.ifPresent(blockPos -> {
+                        brain.setMemory(MemoryModuleType.JOB_SITE, GlobalPos.of(level.dimension(), blockPos));
+                        Optional<Holder<PoiType>> type = poiManager.getType(blockPos);
+                        if (type.isPresent()) {
+                            if (type.get().is(ReveriePoiTypes.BARKEEPER_POI.getKey())) folk.setProfessionId(1);
+                            else if (type.get().is(ReveriePoiTypes.GUNSMITH_POI.getKey())) folk.setProfessionId(2);
+                            else if (type.get().is(ReveriePoiTypes.TAILOR_POI.getKey())) folk.setProfessionId(3);
+                            else if (type.get().is(ReveriePoiTypes.STABLE_MASTER_POI.getKey())) folk.setProfessionId(4);
+                            else if (type.get().is(ReveriePoiTypes.BANKER_POI.getKey())) folk.setProfessionId(5);
+                            else if (type.get().is(ReveriePoiTypes.BOUNTY_CLERK_POI.getKey())) folk.setProfessionId(6);
+                            else if (type.get().is(ReveriePoiTypes.UNDERTAKER_POI.getKey())) folk.setProfessionId(7);
+                            folk.playSound(SoundEvents.VILLAGER_WORK_MASON, 1.0F, 1.0F); level.broadcastEntityEvent(folk, (byte) 14);
+                        }
+                    });
+                } else {
+                    // Mesleği varsa sadece kendi masasını ara (Meslek Koruma)
+                    Predicate<Holder<PoiType>> targetPoi = switch (folk.getProfessionId()) {
+                        case 1 -> h -> h.is(ReveriePoiTypes.BARKEEPER_POI.getKey());
+                        case 2 -> h -> h.is(ReveriePoiTypes.GUNSMITH_POI.getKey());
+                        case 3 -> h -> h.is(ReveriePoiTypes.TAILOR_POI.getKey());
+                        case 4 -> h -> h.is(ReveriePoiTypes.STABLE_MASTER_POI.getKey());
+                        case 5 -> h -> h.is(ReveriePoiTypes.BANKER_POI.getKey());
+                        case 6 -> h -> h.is(ReveriePoiTypes.BOUNTY_CLERK_POI.getKey());
+                        case 7 -> h -> h.is(ReveriePoiTypes.UNDERTAKER_POI.getKey());
+                        default -> h -> false;
+                    };
+                    Optional<BlockPos> existingPoi = poiManager.take(targetPoi, (holder, pos) -> true, folk.blockPosition(), 48);
+                    existingPoi.ifPresent(blockPos -> {
+                        brain.setMemory(MemoryModuleType.JOB_SITE, GlobalPos.of(level.dimension(), blockPos));
                         folk.playSound(SoundEvents.VILLAGER_WORK_MASON, 1.0F, 1.0F); level.broadcastEntityEvent(folk, (byte) 14);
-                    }
-                });
+                    });
+                }
             }
 
-            // SENARYO B: Mesleği var (XP > 0) ama masası yok -> SADECE KENDİ MASASINI ARA
-            else {
-                // Mesleğe göre aranacak POI'yi belirle
-                Predicate<Holder<PoiType>> targetPoi = switch (folk.getProfessionId()) {
-                    case 1 -> holder -> holder.is(ReveriePoiTypes.BARKEEPER_POI.getKey());
-                    case 2 -> holder -> holder.is(ReveriePoiTypes.GUNSMITH_POI.getKey());
-                    case 3 -> holder -> holder.is(ReveriePoiTypes.TAILOR_POI.getKey());
-                    case 4 -> holder -> holder.is(ReveriePoiTypes.STABLE_MASTER_POI.getKey());
-                    case 5 -> holder -> holder.is(ReveriePoiTypes.BANKER_POI.getKey());
-                    case 6 -> holder -> holder.is(ReveriePoiTypes.BOUNTY_CLERK_POI.getKey());
-                    case 7 -> holder -> holder.is(ReveriePoiTypes.UNDERTAKER_POI.getKey());
-                    default -> holder -> false;
-                };
+            // B) Ev Bulma
+            if (!brain.hasMemoryValue(MemoryModuleType.HOME)) {
+                Optional<BlockPos> bed = poiManager.take(holder -> holder.is(PoiTypes.HOME), (holder, pos) -> true, folk.blockPosition(), 48);
+                bed.ifPresent(pos -> { brain.setMemory(MemoryModuleType.HOME, GlobalPos.of(level.dimension(), pos)); level.broadcastEntityEvent(folk, (byte) 14); });
+            }
 
-                Optional<BlockPos> existingPoi = poiManager.take(targetPoi, (holder, pos) -> true, folk.blockPosition(), 48);
-
-                // Eğer kendi masasını bulursa, tekrar orayı sahiplen (Meslek değişmez!)
-                existingPoi.ifPresent(blockPos -> {
-                    brain.setMemory(MemoryModuleType.JOB_SITE, GlobalPos.of(level.dimension(), blockPos));
-                    folk.playSound(SoundEvents.VILLAGER_WORK_MASON, 1.0F, 1.0F);
-                    level.broadcastEntityEvent(folk, (byte) 14);
-                });
+            // C) Buluşma Noktası (Altın Blok) Bulma
+            if (!brain.hasMemoryValue(MemoryModuleType.MEETING_POINT)) {
+                Optional<BlockPos> meetPos = poiManager.take(holder -> holder.is(ReveriePoiTypes.MEETING_POI.getKey()), (holder, pos) -> true, folk.blockPosition(), 64);
+                meetPos.ifPresent(pos -> brain.setMemory(MemoryModuleType.MEETING_POINT, GlobalPos.of(level.dimension(), pos)));
             }
         }
 
-        // 1.5 EV BULMA
-        if (folk.tickCount % 20 == 0 && !brain.hasMemoryValue(MemoryModuleType.HOME)) {
-            Optional<BlockPos> bed = poiManager.take(holder -> holder.is(PoiTypes.HOME), (holder, pos) -> true, folk.blockPosition(), 48);
-            bed.ifPresent(pos -> { brain.setMemory(MemoryModuleType.HOME, GlobalPos.of(level.dimension(), pos)); level.broadcastEntityEvent(folk, (byte) 14); });
-        }
-
-        // 2. POI KONTROL (Kırıldı mı?)
+        // 2. POI GEÇERLİLİK KONTROLÜ
         if (folk.tickCount % 100 == 0) {
+            // İş yeri kırıldı mı?
             if (brain.hasMemoryValue(MemoryModuleType.JOB_SITE)) {
                 GlobalPos gp = brain.getMemory(MemoryModuleType.JOB_SITE).get();
-
-                // Blok hala geçerli mi?
                 boolean isValid = gp.dimension() == level.dimension() && level.getPoiManager().exists(gp.pos(), holder ->
                         holder.is(ReveriePoiTypes.BARKEEPER_POI.getKey()) || holder.is(ReveriePoiTypes.GUNSMITH_POI.getKey()) ||
                                 holder.is(ReveriePoiTypes.TAILOR_POI.getKey()) || holder.is(ReveriePoiTypes.STABLE_MASTER_POI.getKey()) ||
@@ -216,36 +251,38 @@ public class FolkBrain {
                                 holder.is(ReveriePoiTypes.UNDERTAKER_POI.getKey()));
 
                 if (!isValid) {
-                    // Masası kırılmış!
                     brain.eraseMemory(MemoryModuleType.JOB_SITE);
-
-                    // --- KRİTİK DEĞİŞİKLİK ---
-                    // Eğer adamın hiç tecrübesi (XP) yoksa, mesleğini sıfırla (İşsiz kalır).
-                    // Ama XP varsa (Trade yaptıysa), mesleğini KORU (ID sıfırlama!).
-                    if (folk.getFolkXp() == 0) {
-                        folk.setProfessionId(0);
-                    }
-                    // XP > 0 ise ID kalır, yukarıdaki SENARYO B çalışır ve yeni masa arar.
+                    // XP yoksa işi bırak, varsa işi koru
+                    if (folk.getFolkXp() == 0) folk.setProfessionId(0);
                 }
             }
+            // Ev kırıldı mı?
             if (brain.hasMemoryValue(MemoryModuleType.HOME)) {
                 GlobalPos hp = brain.getMemory(MemoryModuleType.HOME).get();
                 if (hp.dimension() == level.dimension() && !level.getPoiManager().exists(hp.pos(), holder -> holder.is(PoiTypes.HOME))) {
                     brain.eraseMemory(MemoryModuleType.HOME);
                 }
             }
+            // Buluşma noktası kırıldı mı?
+            if (brain.hasMemoryValue(MemoryModuleType.MEETING_POINT)) {
+                GlobalPos mp = brain.getMemory(MemoryModuleType.MEETING_POINT).get();
+                if (mp.dimension() == level.dimension() && !level.getPoiManager().exists(mp.pos(), holder -> holder.is(ReveriePoiTypes.MEETING_POI.getKey()))) {
+                    brain.eraseMemory(MemoryModuleType.MEETING_POINT);
+                }
+            }
         }
 
-        // 3. TİCARET
+        // 3. TİCARET KONTROLÜ (Sabit Durma)
         if (folk.isTrading()) {
             Player customer = folk.getTradingPlayer();
             if (customer == null || customer.distanceToSqr(folk) > 16.0D || !customer.isAlive()) {
                 folk.setTradingPlayer(null);
             } else {
-                brain.eraseMemory(MemoryModuleType.WALK_TARGET); brain.eraseMemory(MemoryModuleType.PATH);
+                brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+                brain.eraseMemory(MemoryModuleType.PATH);
                 if (!brain.isActive(ReverieActivities.TRADE.get())) brain.setActiveActivityIfPossible(ReverieActivities.TRADE.get());
                 folk.getLookControl().setLookAt(customer.getX(), customer.getEyeY(), customer.getZ());
-                return;
+                return; // Diğer işlere bakma
             }
         }
 
@@ -274,20 +311,32 @@ public class FolkBrain {
             brain.setActiveActivityIfPossible(Activity.IDLE);
         }
 
-        // 5. VARDİYA
+        // 5. VARDİYA SİSTEMİ (06:00 Uyan, 08:00 İş, 17:00 Buluşma, 22:00 Uyku)
         if (!isThreatened && !folk.isTrading()) {
             long time = level.getDayTime() % 24000;
             int profession = folk.getProfessionId();
-            long workStart = 2000;
-            long workEnd = (profession == 1) ? 16000 : 11000;
 
+            // Sabah uyanma
             if (folk.isSleeping() && time < 16000 && time > 0) folk.stopSleeping();
 
-            if (profession != 0 && time > workStart && time < workEnd) {
+            // İŞ VAKTİ (08:00 - 17:00)
+            if (profession != 0 && time > 2000 && time < 11000) {
                 if (!brain.isActive(Activity.WORK)) brain.setActiveActivityIfPossible(Activity.WORK);
-            } else if (time > 16000 && brain.hasMemoryValue(MemoryModuleType.HOME)) {
+            }
+            // BULUŞMA VAKTİ (17:00 - 22:00)
+            else if (time >= 11000 && time < 16000) {
+                if (brain.hasMemoryValue(MemoryModuleType.MEETING_POINT)) {
+                    if (!brain.isActive(ReverieActivities.MEET.get())) brain.setActiveActivityIfPossible(ReverieActivities.MEET.get());
+                } else {
+                    // Buluşma noktası yoksa boş gez
+                    if (!brain.isActive(Activity.IDLE)) brain.setActiveActivityIfPossible(Activity.IDLE);
+                }
+            }
+            // UYKU VAKTİ (22:00 sonrası)
+            else if (time >= 16000 && brain.hasMemoryValue(MemoryModuleType.HOME)) {
                 if (!brain.isActive(Activity.REST)) brain.setActiveActivityIfPossible(Activity.REST);
-            } else {
+            }
+            else {
                 if (!brain.isActive(Activity.IDLE)) brain.setActiveActivityIfPossible(Activity.IDLE);
             }
         }
