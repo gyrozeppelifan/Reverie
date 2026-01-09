@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 import net.eris.reverie.entity.ai.FolkBrain;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.particles.ParticleOptions; // YENİ IMPORT
-import net.minecraft.core.particles.ParticleTypes;   // YENİ IMPORT
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -22,6 +22,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.MerchantMenu;
@@ -48,7 +49,6 @@ public class FolkEntity extends PathfinderMob implements Merchant {
     @Nullable private MerchantOffers offers;
     private long lastRestockGameTime = 0;
 
-    // Animasyon State'leri
     public final AnimationState idleAnimationState = new AnimationState();
     public final AnimationState panicAnimationState = new AnimationState();
     public final AnimationState workAnimationState = new AnimationState();
@@ -57,6 +57,13 @@ public class FolkEntity extends PathfinderMob implements Merchant {
         super(pEntityType, pLevel);
         this.setCanPickUpLoot(true);
         this.tradeManager = new FolkTradeManager(this);
+
+        // Kapı açma yetkisi
+        if (this.getNavigation() instanceof GroundPathNavigation groundNav) {
+            groundNav.setCanOpenDoors(true);
+        }
+        this.getNavigation().setCanFloat(true);
+
         if (this.getFolkLevel() == 0) this.setFolkLevel(1);
     }
 
@@ -68,17 +75,15 @@ public class FolkEntity extends PathfinderMob implements Merchant {
                 .add(Attributes.FOLLOW_RANGE, 48.0D);
     }
 
-    // --- PARTİKÜL SİNYALİNİ YAKALAMA (YENİ!) ---
     @Override
     public void handleEntityEvent(byte pId) {
-        if (pId == 14) { // 14 = HAPPY VILLAGER (Yeşil Yıldızlar)
+        if (pId == 14) {
             this.addParticlesAroundSelf(ParticleTypes.HAPPY_VILLAGER);
         } else {
             super.handleEntityEvent(pId);
         }
     }
 
-    // Partikül oluşturucu yardımcı metod
     private void addParticlesAroundSelf(ParticleOptions pParticleOption) {
         for(int i = 0; i < 5; ++i) {
             double d0 = this.random.nextGaussian() * 0.02D;
@@ -88,7 +93,6 @@ public class FolkEntity extends PathfinderMob implements Merchant {
         }
     }
 
-    // --- SENKRONİZASYON ---
     @Override
     protected void defineSynchedData() {
         super.defineSynchedData();
@@ -100,7 +104,6 @@ public class FolkEntity extends PathfinderMob implements Merchant {
         this.entityData.define(DATA_IS_PANICKING, false);
     }
 
-    // --- STOK & SİLAH ---
     public boolean isHoldingWeapon() {
         ItemStack stack = this.getMainHandItem();
         return stack.getItem() instanceof net.minecraft.world.item.SwordItem ||
@@ -121,7 +124,6 @@ public class FolkEntity extends PathfinderMob implements Merchant {
         return false;
     }
 
-    // --- ETKİLEŞİM & TİCARET ---
     public boolean isTrading() { return this.tradingPlayer != null; }
 
     @Override
@@ -160,7 +162,6 @@ public class FolkEntity extends PathfinderMob implements Merchant {
         }
     }
 
-    // --- TICK & ANİMASYON ---
     @Override
     public void tick() {
         super.tick();
@@ -210,7 +211,7 @@ public class FolkEntity extends PathfinderMob implements Merchant {
         return flag;
     }
 
-    // --- BRAIN & KAYIT ---
+    // --- KRİTİK DÜZELTME BURADA ---
     @Override
     protected Brain.Provider<FolkEntity> brainProvider() {
         return Brain.provider(
@@ -218,8 +219,11 @@ public class FolkEntity extends PathfinderMob implements Merchant {
                         MemoryModuleType.WALK_TARGET, MemoryModuleType.LOOK_TARGET, MemoryModuleType.PATH, MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
                         MemoryModuleType.ATTACK_TARGET, MemoryModuleType.HURT_BY_ENTITY, MemoryModuleType.ATTACK_COOLING_DOWN,
                         MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryModuleType.NEAREST_VISIBLE_PLAYER, MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM,
-                        MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE,
-                        MemoryModuleType.HOME
+                        MemoryModuleType.JOB_SITE, MemoryModuleType.POTENTIAL_JOB_SITE, MemoryModuleType.HOME,
+
+                        // --- EKLENEN HAFIZA MODÜLLERİ (KAPI İÇİN) ---
+                        MemoryModuleType.DOORS_TO_CLOSE, // Kapıyı kapatmak için
+                        MemoryModuleType.INTERACTION_TARGET // Etkileşim için
                 ),
                 ImmutableList.of(SensorType.NEAREST_LIVING_ENTITIES, SensorType.NEAREST_PLAYERS, SensorType.NEAREST_ITEMS, SensorType.HURT_BY)
         );
@@ -232,7 +236,6 @@ public class FolkEntity extends PathfinderMob implements Merchant {
     @Override public void addAdditionalSaveData(CompoundTag pCompound) { super.addAdditionalSaveData(pCompound); pCompound.putInt("Profession", this.getProfessionId()); pCompound.putInt("Variant", this.getVariant()); pCompound.putInt("FolkLevel", this.getFolkLevel()); pCompound.putInt("FolkXp", this.getFolkXp()); pCompound.putLong("LastRestock", this.lastRestockGameTime); if (this.offers != null) pCompound.put("Offers", this.offers.createTag()); }
     @Override public void readAdditionalSaveData(CompoundTag pCompound) { super.readAdditionalSaveData(pCompound); this.setProfessionId(pCompound.getInt("Profession")); this.setVariant(pCompound.getInt("Variant")); int loadedLevel = pCompound.getInt("FolkLevel"); this.setFolkLevel(loadedLevel <= 0 ? 1 : loadedLevel); this.setFolkXp(pCompound.getInt("FolkXp")); this.lastRestockGameTime = pCompound.getLong("LastRestock"); if (pCompound.contains("Offers")) this.offers = new MerchantOffers(pCompound.getCompound("Offers")); }
 
-    // GETTERS & SETTERS
     public int getProfessionId() { return this.entityData.get(DATA_PROFESSION); }
     public void setProfessionId(int id) { this.entityData.set(DATA_PROFESSION, id); }
     public int getVariant() { return this.entityData.get(DATA_VARIANT); }

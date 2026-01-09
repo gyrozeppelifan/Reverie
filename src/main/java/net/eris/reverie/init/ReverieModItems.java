@@ -105,7 +105,11 @@ public class ReverieModItems {
 //WILD WEST
 public static final RegistryObject<Item> SALOON_BAR = block(ReverieModBlocks.SALOON_BAR);
 	public static final RegistryObject<Item> GUNSMITH_TABLE = block(ReverieModBlocks.GUNSMITH_TABLE);
-
+	public static final RegistryObject<Item> SADDLE_RACK = block(ReverieModBlocks.SADDLE_RACK);
+	public static final RegistryObject<Item> COFFIN_TRESTLE = block(ReverieModBlocks.COFFIN_TRESTLE);
+	public static final RegistryObject<Item> SEWING_STATION = block(ReverieModBlocks.SEWING_STATION);
+	public static final RegistryObject<Item> VAULT = block(ReverieModBlocks.VAULT);
+	public static final RegistryObject<Item> BOUNTY_BOARD = block(ReverieModBlocks.BOUNTY_BOARD);
 
 
 	private static RegistryObject<Item> block(RegistryObject<Block> block) {

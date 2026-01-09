@@ -74,6 +74,7 @@ public class ReverieMod {
 		ReverieModMenus.MENUS.register(bus);
 		ReverieModEnchantments.REGISTRY.register(bus);
 		ReveriePoiTypes.POI_TYPES.register(bus);
+		ReverieActivities.register(bus);
 	}
 
 	private static final String PROTOCOL_VERSION = "1";

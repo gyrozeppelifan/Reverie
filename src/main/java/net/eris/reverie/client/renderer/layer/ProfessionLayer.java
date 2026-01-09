@@ -40,13 +40,11 @@ public class ProfessionLayer<T extends FolkEntity, M extends GeckModel<T>> exten
         return switch (id) {
             case 1 -> "barkeeper";
             case 2 -> "gunsmith";
-            case 3 -> "banker";
+            case 3 -> "tailor";
             case 4 -> "stable_master";
-            case 5 -> "bounty_clerk";
-            case 6 -> "tailor";
+            case 5 -> "banker";
+            case 6 -> "bounty_clerk";
             case 7 -> "undertaker";
-            case 8 -> "prospector";
-            case 9 -> "outfitter";
             default -> "unemployed";
         };
     }

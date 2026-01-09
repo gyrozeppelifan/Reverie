@@ -60,6 +60,11 @@ public class ReverieModTabs {
 						List<Item> hideBlocks = List.of(
 								ReverieModBlocks.SALOON_BAR.get().asItem(),
 								ReverieModBlocks.GUNSMITH_TABLE.get().asItem(),
+								ReverieModBlocks.VAULT.get().asItem(),
+								ReverieModBlocks.BOUNTY_BOARD.get().asItem(),
+								ReverieModBlocks.COFFIN_TRESTLE.get().asItem(),
+								ReverieModBlocks.SEWING_STATION.get().asItem(),
+								ReverieModBlocks.SADDLE_RACK.get().asItem(),
 								ReverieModBlocks.LEATHER_BLOCK.get().asItem(),
 								ReverieModBlocks.LEATHER_PATCH_BLOCK.get().asItem(),
 								ReverieModBlocks.LAYERED_PELT_BLOCK.get().asItem(),

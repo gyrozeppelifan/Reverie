@@ -74,5 +74,9 @@ public class ReverieModBlocks {
 	//WILD WEST
 	public static final RegistryObject<Block> SALOON_BAR = REGISTRY.register("saloon_bar_block", () -> new SaloonBarBlock());
 	public static final RegistryObject<Block> GUNSMITH_TABLE = REGISTRY.register("gunsmith_table", () -> new GunsmithTable());
-
+	public static final RegistryObject<Block> SEWING_STATION = REGISTRY.register("sewing_station", () -> new SewingStationBlock());
+	public static final RegistryObject<Block> COFFIN_TRESTLE = REGISTRY.register("coffin_trestle", () -> new CoffinTrestleBlock());
+	public static final RegistryObject<Block> VAULT = REGISTRY.register("vault", () -> new VaultBlock());
+	public static final RegistryObject<Block> BOUNTY_BOARD = REGISTRY.register("bounty_board", () -> new BountyBoardBlock());
+	public static final RegistryObject<Block> SADDLE_RACK = REGISTRY.register("saddle_rack", () -> new SaddleRackBlock());
 }
